@@ -383,6 +383,27 @@ export class AuthController {
     return { mahalls, members, cases: Object.fromEntries(cases.map(({ status, _count }) => [status, _count])), confirmedPaise: collections._sum.amountPaise ?? 0 };
   }
 
+  @Get('dashboard')
+  @Header('Cache-Control', 'no-store')
+  async userDashboard(@Req() request: Request) {
+    const user = await this.account(request);
+    const db = this.prisma.client;
+    const [direct, committee, supported, eligibility, mahallu] = await db.$transaction([
+      db.zakatHandover.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
+      db.committeeContribution.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
+      db.zakatHandover.groupBy({ by: ['caseId'], where: { giverId: user.id, confirmedAt: { not: null } } }),
+      db.eligibilityCase.findUnique({ where: { applicantId: user.id }, select: { status: true } }),
+      db.user.findUnique({ where: { id: user.id }, select: { mahall: { select: { name: true } } } }),
+    ]);
+    return {
+      confirmedPaise: (direct._sum.amountPaise ?? 0) + (committee._sum.amountPaise ?? 0),
+      confirmedGifts: direct._count + committee._count,
+      familiesSupported: supported.length,
+      eligibility: eligibility?.status ?? null,
+      mahallName: mahallu?.mahall?.name ?? null,
+    };
+  }
+
   @Get('mahalls/directory')
   @Header('Cache-Control', 'no-store')
   async mahallDirectory(@Req() request: Request) {

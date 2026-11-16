@@ -1,3 +1,4 @@
+import { Link } from './navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowLeft, Check, ChevronRight, Plus } from 'lucide-react'
 import { API_BASE_URL } from './config/api'
@@ -79,7 +80,7 @@ export function MahalluDirectory({ token, path, selectedId }: { token: string; p
 
   return (
     <section className="panel">
-      {selectedId && <a className="directory-back" href={path}><ArrowLeft size={16} aria-hidden="true" /> All Mahallus</a>}
+      {selectedId && <Link className="directory-back" href={path}><ArrowLeft size={16} aria-hidden="true" /> All Mahallus</Link>}
       <div className="directory-heading">
         <div><h1>{selected?.name ?? 'Mahallus'}</h1><p>{selected?.locality ?? (selectedId ? '' : 'Manage registered Mahallus, administrators, and members.')}</p></div>
         {!selectedId && <button type="button" className="green-action" aria-expanded={showCreate} onClick={() => {
@@ -106,9 +107,9 @@ export function MahalluDirectory({ token, path, selectedId }: { token: string; p
         <thead><tr><th scope="col">Mahallu</th><th scope="col">Admin assigned</th><th scope="col">Members</th></tr></thead>
         <tbody>{matches.map((mahall) => (
           <tr key={mahall.id}>
-            <th scope="row"><a href={path + '/' + encodeURIComponent(mahall.id)}>
+            <th scope="row"><Link href={path + '/' + encodeURIComponent(mahall.id)}>
               <span><strong>{mahall.name}</strong><small>{mahall.locality}</small></span><ChevronRight size={16} aria-hidden="true" />
-            </a></th>
+            </Link></th>
             <td>{mahall.members.some((member) => member.role === 'MAHALL_ADMIN')
               ? <span className="assigned" aria-label="Assigned"><Check size={17} aria-hidden="true" /></span>
               : <span className="unassigned">Unassigned</span>}</td>

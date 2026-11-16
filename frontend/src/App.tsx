@@ -1,7 +1,10 @@
+import { Link } from './navigation'
+import { navigate } from './navigate'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
 import { MahalluDirectory } from './MahalluDirectory'
 import { AdminOverview } from './AdminOverview'
+import { UserDashboard } from './UserDashboard'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -16,12 +19,12 @@ const sessionKey = 'amanah-session'
 const returnKey = 'amanah-return'
 const directoryPath = '/admin/mahallus'
 const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
-const protectedPaths = ['/give', '/calculate', '/help', '/account', ...adminPaths]
+const protectedPaths = ['/dashboard', '/give', '/calculate', '/help', '/account', ...adminPaths]
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
 const pages = [
-  ['/', 'Home', House],
+  ['/dashboard', 'Dashboard', House],
   ['/give', 'Give', HandHeart],
   ['/calculate', 'Calculate', Calculator],
   ['/help', 'Get help', LifeBuoy],
@@ -206,12 +209,19 @@ function Eligibility({ account }: { account: Account }) {
 }
 
 export default function App() {
-  const [page] = useState(() => {
+  const [route, setRoute] = useState(() => {
     const params = new URLSearchParams(location.hash.slice(1))
     return ['session', 'auth_error', 'verify_email'].some((key) => params.has(key))
-      ? '/login'
-      : location.pathname.replace(/\/$/, '') || '/'
+      ? '/login' + location.search
+      : location.pathname + location.search
   })
+  const [pathname, search = ''] = route.split('?')
+  const page = pathname.replace(/\/$/, '') || '/'
+  useEffect(() => {
+    const update = () => setRoute(location.pathname + location.search)
+    window.addEventListener('popstate', update)
+    return () => window.removeEventListener('popstate', update)
+  }, [])
   const [account, setAccount] = useState<Account | null>(null)
   const [loading, setLoading] = useState(() =>
     new URLSearchParams(window.location.hash.slice(1)).has('session') ||
@@ -256,19 +266,19 @@ export default function App() {
   const requiresLogin = (protectedPaths.includes(page) || isDirectoryPage(page)) && !account
   const isAdmin = Boolean(account && account.role !== 'USER')
   const canReview = account?.role === 'SUPER_ADMIN' || (account?.role === 'MAHALL_ADMIN' && Boolean(account.mahallId))
-  const nextPath = new URLSearchParams(location.search).get('next') ?? sessionStorage.getItem(returnKey)
+  const nextPath = new URLSearchParams(search).get('next') ?? sessionStorage.getItem(returnKey)
   const destination = isAdmin
     ? nextPath && isAdminPage(nextPath) ? nextPath : '/account'
-    : nextPath && protectedPaths.includes(nextPath) && !adminPaths.includes(nextPath) ? nextPath : '/account'
+    : '/dashboard'
 
   useEffect(() => {
     if (loading) return
     if (requiresLogin) {
       sessionStorage.setItem(returnKey, page)
-      location.replace('/login?next=' + encodeURIComponent(page))
+      navigate('/login?next=' + encodeURIComponent(page), true)
     } else if (page === '/login' && account) {
       sessionStorage.removeItem(returnKey)
-      location.replace(destination)
+      navigate(destination, true)
     }
   }, [account, destination, loading, page, requiresLogin])
 
@@ -282,19 +292,19 @@ export default function App() {
     {publicLayout ? (
       <header className="public-header">
         <div>
-          <a className="wordmark" href="/">Amanah</a>
-          <a className="primary-link public-login" href={account ? '/account' : '/login'}>{account ? 'My account' : 'Log in'}</a>
+          <Link className="wordmark" href="/">Amanah</Link>
+          <Link className="primary-link public-login" href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link>
         </div>
       </header>
     ) : <header className="site-header">
       <div className="site-header-inner">
-        <a className="wordmark" href="/">Amanah</a>
+        <Link className="wordmark" href="/">Amanah</Link>
         <nav className="site-nav" aria-label="Main navigation">
           {navigation.map(([path, title, Icon]) => (
-            <a key={path} href={path} aria-current={page === path || (path === directoryPath && isDirectoryPage(page)) ? 'page' : undefined}>
+            <Link key={path} href={path} aria-current={page === path || (path === directoryPath && isDirectoryPage(page)) ? 'page' : undefined}>
               <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
               <span>{path === '/account' && !account ? 'Log in' : title}</span>
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -306,16 +316,16 @@ export default function App() {
           <h1>Zakat,<br />made simple.</h1>
           <p>Give to verified recipients in your community or check your eligibility through Amanah.</p>
           <div className="hero-actions">
-            <a className="primary-link" href="/give">I want to give</a>
-            <a className="action-link" href="/help">I need help</a>
+            <Link className="primary-link" href="/give">I want to give</Link>
+            <Link className="action-link" href="/help">I need help</Link>
           </div>
         </section>
         <section className="landing-overview">
           <h2>How Amanah helps</h2>
           <div className="landing-links">
-            <a href="/give"><HandHeart aria-hidden="true" /><strong>Give Zakat</strong><span>Find verified recipients by area or give through a Mahallu committee.</span></a>
-            <a href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></a>
-            <a href="/help"><LifeBuoy aria-hidden="true" /><strong>Get help</strong><span>Send your household details for verification and track your status.</span></a>
+            <Link href="/give"><HandHeart aria-hidden="true" /><strong>Give Zakat</strong><span>Find verified recipients by area or give through a Mahallu committee.</span></Link>
+            <Link href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></Link>
+            <Link href="/help"><LifeBuoy aria-hidden="true" /><strong>Get help</strong><span>Send your household details for verification and track your status.</span></Link>
           </div>
         </section>
         <section className="landing-privacy">
@@ -323,7 +333,7 @@ export default function App() {
           <h2>Private by design.</h2>
           <p>Only authorized reviewers see household details. Givers see the recipient’s area and level of need.</p>
         </section>
-        <footer className="landing-footer">Amanah <a href={account ? '/account' : '/login'}>{account ? 'My account' : 'Log in'}</a></footer>
+        <footer className="landing-footer">Amanah <Link href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link></footer>
       </>
     )}
     {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
@@ -346,27 +356,30 @@ export default function App() {
           <button type="button" onClick={() => {
             sessionStorage.removeItem(sessionKey)
             sessionStorage.removeItem(returnKey)
-            location.assign('/login')
+            setAccount(null)
+            setError('')
+            navigate('/login')
           }}>Sign out</button>
           {page === '/account' && canReview && token && <AdminOverview token={token} />}
           {isAdmin && page === '/account' && (
             canReview ? <div className="admin-shortcuts">
-              {canViewDirectory && <a href={directoryPath}><Building2 aria-hidden="true" /><strong>Mahallu directory</strong><span>View registered Mahallus, admins, and members.</span></a>}
-              <a href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>Eligibility review</strong><span>{account.role === 'SUPER_ADMIN' ? 'Review or delegate eligibility cases.' : 'Review cases assigned to your Mahallu.'}</span></a>
-              <a href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></a>
+              {canViewDirectory && <Link href={directoryPath}><Building2 aria-hidden="true" /><strong>Mahallu directory</strong><span>View registered Mahallus, admins, and members.</span></Link>}
+              <Link href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>Eligibility review</strong><span>{account.role === 'SUPER_ADMIN' ? 'Review or delegate eligibility cases.' : 'Review cases assigned to your Mahallu.'}</span></Link>
+              <Link href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></Link>
             </div> : <p>A super admin needs to assign your Mahallu before you can review cases or collections.</p>
           )}
           {page === '/help' && <Eligibility account={account} />}
-          {page === '/account' && account.role === 'USER' && <p><a href="/help">Check your eligibility</a></p>}
+          {page === '/account' && account.role === 'USER' && <p><Link href="/help">Check your eligibility</Link></p>}
         </>
       )}
     </div>}
     {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
     {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
     {page === '/admin/collections' && token && canReview && <CommitteeAllocations token={token} admin />}
+    {page === '/dashboard' && token && account && <UserDashboard token={token} name={account.name} />}
     {page === '/help' && token && <CommitteeAllocations token={token} />}
     {isDirectoryPage(page) && token && canViewDirectory && <MahalluDirectory token={token} path={directoryPath} selectedId={page === directoryPath ? undefined : page.slice(directoryPath.length + 1)} />}
-    {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
+    {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><Link href="/account">Go to your account</Link></section>}
     {page === '/give' && token && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
