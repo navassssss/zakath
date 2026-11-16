@@ -1,7 +1,8 @@
+import { Landing } from './Landing'
 import { Link } from './navigation'
 import { navigate } from './navigate'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
+import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, UserRound, Wallet } from 'lucide-react'
 import { MahalluDirectory } from './MahalluDirectory'
 import { AdminOverview } from './AdminOverview'
 import { UserDashboard } from './UserDashboard'
@@ -231,7 +232,7 @@ export default function App() {
       : location.pathname + location.search
   })
   const [pathname, search = ''] = route.split('?')
-  const page = pathname.replace(/\/$/, '') || '/'
+  const page = pathname === '/index.html' ? '/' : pathname.replace(/\/$/, '') || '/'
   useEffect(() => {
     const update = () => setRoute(location.pathname + location.search)
     window.addEventListener('popstate', update)
@@ -309,6 +310,7 @@ export default function App() {
 
   return (
     <div className={publicLayout ? 'public-shell' : isAdmin ? 'app-shell admin-shell' : 'app-shell'}>
+    <a className="skip-link" href="#main-content">Skip to content</a>
     {publicLayout ? (
       <header className="public-header">
         <div>
@@ -330,32 +332,7 @@ export default function App() {
       </div>
     </header>}
     <main id="main-content" className={page === '/' ? 'landing' : 'workspace'}>
-    {page === '/' && (
-      <>
-        <section className="landing-hero">
-          <h1>Zakat,<br />made simple.</h1>
-          <p>Give to verified recipients in your community or check your eligibility through Amanah.</p>
-          <div className="hero-actions">
-            <Link className="primary-link" href="/give">I want to give</Link>
-            <Link className="action-link" href="/help">I need help</Link>
-          </div>
-        </section>
-        <section className="landing-overview">
-          <h2>How Amanah helps</h2>
-          <div className="landing-links">
-            <Link href="/give"><HandHeart aria-hidden="true" /><strong>Give Zakat</strong><span>Find verified recipients by area or give through a Mahallu committee.</span></Link>
-            <Link href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></Link>
-            <Link href="/help"><LifeBuoy aria-hidden="true" /><strong>Get help</strong><span>Send your household details for verification and track your status.</span></Link>
-          </div>
-        </section>
-        <section className="landing-privacy">
-          <ShieldCheck aria-hidden="true" size={32} />
-          <h2>Private by design.</h2>
-          <p>Only authorized reviewers see household details. Givers see the recipient’s area and level of need.</p>
-        </section>
-        <footer className="landing-footer">Amanah <Link href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link></footer>
-      </>
-    )}
+    {page === '/' && <Landing accountPath={account ? isAdmin ? '/account' : '/dashboard' : '/login'} />}
     {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
     {page === '/login' && <section className="login-panel">
       <h1>Welcome back</h1>
