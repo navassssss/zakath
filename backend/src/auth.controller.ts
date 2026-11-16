@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, NotFoundException, Param, Post, Query, Req, Res, ServiceUnavailableException, StreamableFile, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, HttpCode, Logger, NotFoundException, Param, Post, Query, Req, Res, ServiceUnavailableException, StreamableFile, UnauthorizedException, type RawBodyRequest } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import type { Request, Response } from 'express';
 import { PrismaService } from './prisma.service.js';
 import { verificationMailer } from './verification-mail.js';
+import { razorpayConfig, razorpayRequest, validRazorpaySignature, type RouteOrder } from './razorpay-route.js';
 
 const stateCookie = 'amanah_google_state';
 const deriveKey = promisify(scrypt);
@@ -383,6 +384,7 @@ export class AuthController {
         applicantResponse: true,
         requestCategory: true, requestReason: true, requestedPaise: true,
         verificationDocument: { select: { caseId: true } },
+        routeAccountId: reviewer.role === 'SUPER_ADMIN',
         applicant: { select: { name: true, email: true, mahallId: true } },
         reviewingMahall: { select: { id: true, name: true } },
       },
@@ -484,17 +486,19 @@ export class AuthController {
   async userDashboard(@Req() request: Request) {
     const user = await this.account(request);
     const db = this.prisma.client;
-    const [direct, committee, supported, eligibility, mahallu] = await db.$transaction([
+    const [direct, committee, online, supported, onlineSupported, eligibility, mahallu] = await db.$transaction([
       db.zakatHandover.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
       db.committeeContribution.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
+      db.routePayment.aggregate({ where: { giverId: user.id, receivedPaise: { gt: 0 } }, _sum: { receivedPaise: true }, _count: true }),
       db.zakatHandover.groupBy({ by: ['caseId'], where: { giverId: user.id, confirmedAt: { not: null } } }),
+      db.routePayment.groupBy({ by: ['caseId'], where: { giverId: user.id, receivedPaise: { gt: 0 } } }),
       db.eligibilityCase.findUnique({ where: { applicantId: user.id }, select: { status: true } }),
       db.user.findUnique({ where: { id: user.id }, select: { mahall: { select: { name: true } } } }),
     ]);
     return {
-      confirmedPaise: (direct._sum.amountPaise ?? 0) + (committee._sum.amountPaise ?? 0),
-      confirmedGifts: direct._count + committee._count,
-      familiesSupported: supported.length,
+      confirmedPaise: (direct._sum.amountPaise ?? 0) + (committee._sum.amountPaise ?? 0) + (online._sum.receivedPaise ?? 0),
+      confirmedGifts: direct._count + committee._count + online._count,
+      familiesSupported: new Set([...supported, ...onlineSupported].map(({ caseId }) => caseId)).size,
       eligibility: eligibility?.status ?? null,
       mahallName: mahallu?.mahall?.name ?? null,
     };
@@ -540,12 +544,13 @@ export class AuthController {
     const offset = 330 * 60 * 1000;
     const local = new Date(Date.now() + offset);
     const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offset);
-    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean; incomeBand: string; demo: boolean }[]>`
+    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean; incomeBand: string; demo: boolean; onlineGiving: boolean }[]>`
       SELECT ranked.id, ranked.locality, ranked.demo, ranked."incomeBand",
+        (NOT ranked.demo AND ranked.linked AND ${Boolean(razorpayConfig())}) AS "onlineGiving",
         CASE WHEN ranked.remaining >= 500000 THEN 'High unmet need' ELSE 'Unmet need' END AS priority,
         ranked.received = 0 AS "noReceipts"
       FROM (
-        SELECT e.id, e.locality, starts_with(e.id, 'demo-recipient-') AS demo,
+        SELECT e.id, e.locality, starts_with(e.id, 'demo-recipient-') AS demo, e."routeAccountId" IS NOT NULL AS linked,
           CASE WHEN e."monthlyIncomePaise" = 0 THEN 'No monthly income'
                WHEN e."monthlyIncomePaise" < 500000 THEN 'Under ₹5,000 a month'
                WHEN e."monthlyIncomePaise" < 1000000 THEN '₹5,000–₹9,999 a month'
@@ -558,6 +563,8 @@ export class AuthController {
             SELECT "amountPaise" FROM "ZakatHandover" WHERE "caseId" = e.id AND "confirmedAt" >= ${monthStart}
             UNION ALL
             SELECT "amountPaise" FROM "CommitteeAllocation" WHERE "caseId" = e.id AND "confirmedAt" >= ${monthStart}
+            UNION ALL
+            SELECT "receivedPaise" FROM "RoutePayment" WHERE "caseId" = e.id AND "receivedAt" >= ${monthStart}
           ) receipt
         ) receipts ON true
         WHERE e.status = 'APPROVED' AND e."applicantId" <> ${giver.id} AND ${match}
@@ -565,6 +572,126 @@ export class AuthController {
       WHERE ranked.remaining > 0
       ORDER BY ranked.demo, ranked.remaining DESC, ranked.received ASC, ranked.id
       LIMIT 30`;
+  }
+
+  @Post('review/:id/route-account')
+  async linkRouteAccount(@Req() request: Request, @Param('id') id: string, @Body('accountId') accountId: unknown) {
+    if ((await this.account(request)).role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    if (typeof accountId !== 'string' || !/^acc_[A-Za-z0-9]{6,40}$/.test(accountId)) {
+      throw new BadRequestException('Enter the Razorpay Route linked account ID');
+    }
+    const linked = await this.prisma.client.eligibilityCase.updateMany({
+      where: { AND: [{ id }, { NOT: { id: { startsWith: 'demo-recipient-' } } }], status: 'APPROVED' },
+      data: { routeAccountId: accountId },
+    });
+    if (!linked.count) throw new ConflictException('Only real, approved households can receive online giving');
+    return { linked: true };
+  }
+
+  @Post('route-payments')
+  @Header('Cache-Control', 'no-store')
+  async createRoutePayment(@Req() request: Request, @Body('caseId') caseId: unknown, @Body('amountPaise') amountPaise: unknown) {
+    const giver = await this.account(request);
+    const config = razorpayConfig();
+    if (!config) throw new ServiceUnavailableException('Online giving is not configured');
+    if (typeof caseId !== 'string' || caseId.startsWith('demo-recipient-') || !this.isInteger(amountPaise, 100, 2147483647)) {
+      throw new BadRequestException('Choose an eligible household and enter at least ₹1');
+    }
+    const recipient = await this.prisma.client.eligibilityCase.findFirst({
+      where: { id: caseId, status: 'APPROVED', applicantId: { not: giver.id } },
+      select: { routeAccountId: true },
+    });
+    if (!recipient?.routeAccountId) throw new ConflictException('Online giving is not available for this household');
+    const db = this.prisma.client;
+    const account = recipient.routeAccountId;
+    const payment = await db.routePayment.create({ data: { giverId: giver.id, caseId, amountPaise, recipientAccount: account }, select: { id: true } });
+    const notes = { amanah_payment_id: payment.id };
+    const order = await razorpayRequest<RouteOrder>('orders', {
+      amount: amountPaise, currency: 'INR', receipt: payment.id, notes,
+      transfers: [{ account, amount: amountPaise, currency: 'INR', notes }],
+    });
+    if (!/^order_[A-Za-z0-9]+$/.test(order.id) || order.amount !== amountPaise || order.currency !== 'INR') throw new ConflictException('Razorpay returned an invalid order');
+    await db.routePayment.update({ where: { id: payment.id }, data: { providerOrderId: order.id } });
+    return { id: payment.id, key: config.key, orderId: order.id, amountPaise };
+  }
+
+  @Get('route-payments')
+  @Header('Cache-Control', 'no-store')
+  async routePayments(@Req() request: Request) {
+    const giver = await this.account(request);
+    return this.prisma.client.routePayment.findMany({
+      where: { giverId: giver.id, providerOrderId: { not: null } }, take: 25, orderBy: { createdAt: 'desc' },
+      select: { id: true, amountPaise: true, receivedPaise: true, status: true },
+    });
+  }
+
+  @Post('route-payments/:id/check')
+  async checkRoutePayment(@Req() request: Request, @Param('id') id: string, @Body() body: { paymentId?: unknown; signature?: unknown }) {
+    const giver = await this.account(request);
+    const record = await this.prisma.client.routePayment.findFirst({ where: { id, giverId: giver.id } });
+    if (!record?.providerOrderId) throw new NotFoundException('Payment not found');
+    const config = razorpayConfig();
+    if (!config) throw new ServiceUnavailableException('Online giving is not configured');
+    if (body?.paymentId !== undefined || body?.signature !== undefined) {
+      if (typeof body.paymentId !== 'string' || !/^pay_[A-Za-z0-9]+$/.test(body.paymentId) ||
+          !validRazorpaySignature(record.providerOrderId + '|' + body.paymentId, body.signature, config.secret)) {
+        throw new BadRequestException('Payment verification failed');
+      }
+    }
+    return this.reconcileRoutePayment(record);
+  }
+
+  @Post('razorpay/webhook')
+  @HttpCode(200)
+  async razorpayWebhook(@Req() request: RawBodyRequest<Request>) {
+    const config = razorpayConfig();
+    if (!config || !request.rawBody || !validRazorpaySignature(request.rawBody, request.headers['x-razorpay-signature'], config.webhook)) {
+      throw new UnauthorizedException();
+    }
+    const event = request.body as { event?: string; payload?: { payment?: { entity?: { order_id?: string } }; refund?: { entity?: { payment_id?: string } }; transfer?: { entity?: { notes?: { amanah_payment_id?: string } } } } };
+    if (!['payment.captured', 'transfer.processed', 'transfer.failed', 'transfer.reversed', 'refund.processed'].includes(event.event ?? '')) return { received: true };
+    let orderId = event.payload?.payment?.entity?.order_id;
+    const refundedPayment = event.payload?.refund?.entity?.payment_id;
+    if (!orderId && refundedPayment && /^pay_[A-Za-z0-9]+$/.test(refundedPayment)) {
+      orderId = (await razorpayRequest<{ order_id?: string }>('payments/' + refundedPayment)).order_id;
+    }
+    const id = event.payload?.transfer?.entity?.notes?.amanah_payment_id;
+    const record = id ? await this.prisma.client.routePayment.findUnique({ where: { id } })
+      : orderId ? await this.prisma.client.routePayment.findUnique({ where: { providerOrderId: orderId } }) : null;
+    if (record?.providerOrderId) await this.reconcileRoutePayment(record);
+    return { received: true };
+  }
+
+  private async reconcileRoutePayment(record: { id: string; providerOrderId: string | null; recipientAccount: string; amountPaise: number; receivedAt: Date | null }) {
+    const order = await razorpayRequest<RouteOrder>('orders/' + record.providerOrderId + '?expand%5B%5D=transfers');
+    const db = this.prisma.client;
+    const where = { id: record.id };
+    if (order.id !== record.providerOrderId || order.currency !== 'INR' || order.amount !== record.amountPaise) throw new ConflictException('Payment details do not match this order');
+    if (order.status === 'paid' && order.amount_paid === record.amountPaise) {
+      const transfers = Array.isArray(order.transfers) ? order.transfers : order.transfers?.items;
+      const transfer = transfers?.find((item) => item.recipient === record.recipientAccount && item.currency === 'INR' && item.amount === record.amountPaise);
+      const status = transfer?.transfer_status ?? transfer?.status;
+      if (status === 'reversed' || status === 'partially_reversed') {
+        const reversed = status === 'reversed' ? record.amountPaise : transfer?.amount_reversed;
+        if (!this.isInteger(reversed, 1, record.amountPaise)) throw new ConflictException('Razorpay returned an invalid reversal');
+        const remaining = record.amountPaise - reversed;
+        await db.routePayment.updateMany({
+          where: { ...where, OR: [{ status: { notIn: ['PARTIALLY_REVERSED', 'REVERSED'] } }, { receivedPaise: { gt: remaining } }] },
+            data: { status: remaining ? 'PARTIALLY_REVERSED' : 'REVERSED', receivedPaise: remaining, receivedAt: remaining ? (record.receivedAt ?? new Date()) : null },
+        });
+      } else if (status === 'processed') {
+        await db.routePayment.updateMany({
+          where: { ...where, status: { in: ['PENDING', 'CAPTURED', 'TRANSFER_FAILED'] } },
+          data: { status: 'TRANSFERRED', receivedPaise: record.amountPaise, receivedAt: new Date() },
+        });
+      } else {
+        await db.routePayment.updateMany({
+          where: { ...where, status: { in: ['PENDING', 'CAPTURED'] } },
+          data: { status: status === 'failed' ? 'TRANSFER_FAILED' : 'CAPTURED' },
+        });
+      }
+    }
+    return db.routePayment.findUniqueOrThrow({ where, select: { id: true, status: true, receivedPaise: true } });
   }
 
   @Post('handovers')

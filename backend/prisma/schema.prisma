@@ -36,6 +36,7 @@ model User {
   eligibilityReviews EligibilityCase[]       @relation("EligibilityReviewer")
   zakatHandovers     ZakatHandover[]
   contributions      CommitteeContribution[]
+  routePayments      RoutePayment[]
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
 
@@ -91,6 +92,8 @@ model EligibilityCase {
   requestedPaise        Int?
   shareIncome           Boolean           @default(false)
   verificationDocument EligibilityDocument?
+  routeAccountId        String?
+  routePayments         RoutePayment[]
   reviewedById          String?
   reviewedBy            User?             @relation("EligibilityReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
   reviewedAt            DateTime?
@@ -109,6 +112,24 @@ model EligibilityDocument {
   eligibility EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
   contentType String
   content     Bytes
+}
+
+model RoutePayment {
+  id              String          @id @default(uuid())
+  giverId         String
+  giver           User            @relation(fields: [giverId], references: [id], onDelete: Restrict)
+  caseId          String
+  eligibility     EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  recipientAccount String
+  amountPaise     Int
+  providerOrderId String?         @unique
+  status          String          @default("PENDING")
+  receivedPaise   Int             @default(0)
+  receivedAt      DateTime?
+  createdAt       DateTime        @default(now())
+
+  @@index([giverId, createdAt])
+  @@index([caseId, receivedAt])
 }
 
 model CommitteeAllocation {

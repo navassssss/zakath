@@ -16,6 +16,7 @@ type Review = {
   requestReason: string | null
   requestedPaise: number | null
   verificationDocument: { caseId: string } | null
+  routeAccountId?: string | null
   applicant: { name: string | null; email: string; mahallId: string | null }
   reviewingMahall: { id: string; name: string } | null
 }
@@ -115,6 +116,12 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
             {review.requestCategory && review.requestedPaise !== null && <p><strong>{review.requestCategory}</strong> · {currency.format(review.requestedPaise / 100)} requested</p>}
             {review.requestReason && <p>{review.requestReason}</p>}
             {review.verificationDocument && <button type="button" onClick={() => void downloadDocument(review.id)}>Download supporting document</button>}
+            {superAdmin && review.status === 'APPROVED' && !review.id.startsWith('demo-recipient-') && (
+              <form key={review.routeAccountId ?? 'unlinked'} onSubmit={(event) => void save(event, '/auth/review/' + review.id + '/route-account')}>
+                <p><label>Verified Razorpay Route linked account ID<input name="accountId" placeholder="acc_…" defaultValue={review.routeAccountId ?? ''} required /></label></p>
+                <button disabled={busy}>{review.routeAccountId ? 'Update payout account' : 'Link payout account'}</button>
+              </form>
+            )}
             <p>{review.status.toLowerCase().replaceAll('_', ' ')} · {review.reviewingMahall?.name ?? 'Unaffiliated'}</p>
             {review.additionalInformation && <p>{review.additionalInformation}</p>}
             {review.applicantResponse && <p><strong>Applicant response</strong><br />{review.applicantResponse}</p>}
