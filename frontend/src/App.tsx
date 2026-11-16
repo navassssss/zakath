@@ -16,6 +16,8 @@ const returnKey = 'amanah-return'
 const directoryPath = '/admin/mahallus'
 const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
 const protectedPaths = ['/give', '/calculate', '/help', '/account', ...adminPaths]
+const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
+const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
 const pages = [
   ['/', 'Home', House],
@@ -250,12 +252,12 @@ export default function App() {
   }, [])
 
   const token = account ? sessionStorage.getItem(sessionKey) : null
-  const requiresLogin = protectedPaths.includes(page) && !account
+  const requiresLogin = (protectedPaths.includes(page) || isDirectoryPage(page)) && !account
   const isAdmin = Boolean(account && account.role !== 'USER')
   const canReview = account?.role === 'SUPER_ADMIN' || (account?.role === 'MAHALL_ADMIN' && Boolean(account.mahallId))
   const nextPath = new URLSearchParams(location.search).get('next') ?? sessionStorage.getItem(returnKey)
   const destination = isAdmin
-    ? nextPath && adminPaths.includes(nextPath) ? nextPath : '/account'
+    ? nextPath && isAdminPage(nextPath) ? nextPath : '/account'
     : nextPath && protectedPaths.includes(nextPath) && !adminPaths.includes(nextPath) ? nextPath : '/account'
 
   useEffect(() => {
@@ -275,7 +277,7 @@ export default function App() {
   const navigation = canViewDirectory ? superAdminPages : isAdmin ? adminPages : pages
 
   return (
-    <div className={publicLayout ? 'public-shell' : 'app-shell'}>
+    <div className={publicLayout ? 'public-shell' : isAdmin ? 'app-shell admin-shell' : 'app-shell'}>
     {publicLayout ? (
       <header className="public-header">
         <div>
@@ -288,7 +290,7 @@ export default function App() {
         <a className="wordmark" href="/">Amanah</a>
         <nav className="site-nav" aria-label="Main navigation">
           {navigation.map(([path, title, Icon]) => (
-            <a key={path} href={path === '/account' && !account ? '/login' : path} aria-current={page === path || (page === '/login' && path === '/account') ? 'page' : undefined}>
+            <a key={path} href={path} aria-current={page === path || (path === directoryPath && isDirectoryPage(page)) ? 'page' : undefined}>
               <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
               <span>{path === '/account' && !account ? 'Log in' : title}</span>
             </a>
@@ -349,7 +351,7 @@ export default function App() {
           {isAdmin && page === '/account' && (
             canReview ? <div className="admin-shortcuts">
               {canViewDirectory && <a href={directoryPath}><Building2 aria-hidden="true" /><strong>Mahallu directory</strong><span>View registered Mahallus, admins, and members.</span></a>}
-              <a href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>{account.role === 'SUPER_ADMIN' ? 'Mahallus and eligibility' : 'Eligibility review'}</strong><span>{account.role === 'SUPER_ADMIN' ? 'Manage Mahallus, assign admins, and review or delegate cases.' : 'Review cases assigned to your Mahallu.'}</span></a>
+              <a href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>Eligibility review</strong><span>{account.role === 'SUPER_ADMIN' ? 'Review or delegate eligibility cases.' : 'Review cases assigned to your Mahallu.'}</span></a>
               <a href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></a>
             </div> : <p>A super admin needs to assign your Mahallu before you can review cases or collections.</p>
           )}
@@ -360,8 +362,8 @@ export default function App() {
     </div>}
     {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
     {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
-    {page === directoryPath && token && canViewDirectory && <MahalluDirectory token={token} />}
-    {adminPaths.includes(page) && account && (page === directoryPath ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
+    {isDirectoryPage(page) && token && canViewDirectory && <MahalluDirectory token={token} path={directoryPath} selectedId={page === directoryPath ? undefined : page.slice(directoryPath.length + 1)} />}
+    {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
     {page === '/give' && token && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
@@ -369,7 +371,7 @@ export default function App() {
       </>
     )}
     {page === '/calculate' && token && <ZakatCalculator token={token} />}
-    {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && <h1>Page not found</h1>}
+    {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
     </main>
     </div>
   )

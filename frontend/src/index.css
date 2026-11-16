@@ -83,13 +83,37 @@ button:disabled { cursor: default; opacity: .55; }
 .case-breakdown { list-style: none; padding: 0; }
 .case-breakdown li { display: grid; grid-template-columns: 1fr auto; gap: .3rem .5rem; margin-block: .75rem; }
 .case-breakdown progress { grid-column: 1 / -1; width: 100%; height: .5rem; accent-color: oklch(0.55 0.12 165); }
-.directory-list { margin-top: 1.25rem; }
-.directory-list details { border-top: 1px solid var(--border); }
-.directory-list summary { display: list-item; padding: .9rem .25rem; cursor: pointer; }
-.directory-list summary svg { vertical-align: middle; margin-inline: .4rem .55rem; color: oklch(0.45 0.1 160); }
-.directory-list summary span { display: inline-grid; width: calc(100% - 4rem); vertical-align: middle; }
-.directory-list summary small { color: var(--muted); }
-.directory-people { padding-inline: .75rem; }
+.directory-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .75rem; }
+.directory-heading h1 { margin-bottom: .25rem; }
+.directory-heading p { margin-top: 0; }
+button.green-action { display: inline-flex; align-items: center; gap: .4rem; border-radius: 2rem; background: #15593f; color: white; }
+.directory-back { display: inline-flex; align-items: center; gap: .5rem; margin-bottom: 1rem; color: #15593f; }
+.directory-search { max-width: 26rem; margin-block: 1rem; }
+.directory-form { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; padding: 1rem; margin-block: 1rem; background: #f3f6f4; border-radius: .85rem; }
+.directory-form label { flex: 1 1 11rem; }
+.directory-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: .9rem; }
+.directory-table th:first-child { width: 53%; }
+.directory-table th:last-child, .directory-table td:last-child { text-align: right; }
+.directory-table thead { background: #f3f6f4; }
+.directory-table th, .directory-table td { padding: .75rem .55rem; border-bottom: 1px solid var(--border); }
+.directory-table tbody tr:hover { background: #f5faf7; }
+.directory-table a { display: flex; align-items: center; justify-content: space-between; gap: .25rem; color: inherit; text-decoration: none; }
+.directory-table a svg { flex: none; color: #15593f; }
+.directory-table small { display: block; color: var(--muted); font-weight: 400; }
+.assigned { display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #15593f; background: var(--mint); }
+.unassigned { color: var(--muted); font-size: .8rem; }
+.directory-roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.directory-people { padding: .75rem; border: 1px solid var(--border); border-radius: .75rem; }
+
+@media (min-width: 768px) {
+  .admin-shell { width: calc(100% - 2rem); max-width: 92rem; min-height: calc(100vh - 2rem); margin: 1rem auto; padding: .75rem; gap: .75rem; grid-template-columns: clamp(11rem, 16vw, 14rem) minmax(0, 1fr); background: #fff; border: 1px solid #e7ebe8; border-radius: 1.5rem; }
+  .admin-shell .site-header { border: 0; border-radius: 1rem; background: #f3f5f4; }
+  .admin-shell .workspace { max-width: none; margin: 0; padding: 1rem; background: #f3f5f4; border-radius: 1rem; }
+  .admin-shell .panel { border: 0; box-shadow: none; }
+  .admin-shell .overview-metrics div { border: 1px solid #e9eeeb; border-radius: .85rem; background: #f6f8f7; }
+  .admin-shell .overview-metrics div:first-child { background: #15593f; color: white; border-color: #15593f; }
+  .admin-shell .overview-metrics div:first-child dt { color: #e4f4ea; }
+}
 .review-card { border: 1px solid var(--border); border-radius: .85rem; padding: 1rem; margin-block: 1rem; }
 .review-card h3 { margin-top: 0; }
 .review-card form + form { border-top: 1px solid var(--border); margin-top: 1rem; }
@@ -122,6 +146,8 @@ button:disabled { cursor: default; opacity: .55; }
   .calculator-fields { grid-template-columns: 1fr; }
   .admin-shortcuts { grid-template-columns: 1fr; }
   .overview-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .directory-roster { grid-template-columns: 1fr; }
+  .directory-table th, .directory-table td { padding-inline: .3rem; }
 }
 
 @media (max-width: 360px) {

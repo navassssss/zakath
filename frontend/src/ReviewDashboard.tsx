@@ -79,21 +79,6 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
       <h2 id="review-heading">Eligibility review</h2>
       {error && <p role="alert">{error}</p>}
       {message && <p role="status">{message}</p>}
-      {superAdmin && (
-        <div className="review-card">
-          <h3>Mahallu administration</h3>
-          <form onSubmit={(event) => void save(event, '/auth/mahalls')}>
-            <p><label>Mahallu name<input name="name" maxLength={120} required /></label></p>
-            <p><label>Locality<input name="locality" maxLength={120} required /></label></p>
-            <button disabled={busy}>Register Mahallu</button>
-          </form>
-          <form onSubmit={(event) => void save(event, '/auth/mahalls/admins')}>
-            <p><label>Admin account email<input type="email" name="email" required /></label></p>
-            <p><label>Assigned Mahallu<select name="mahallId" required><option value="">Select a Mahallu</option>{options}</select></label></p>
-            <button disabled={busy || !mahalls.length}>Assign admin</button>
-          </form>
-        </div>
-      )}
       {reviews === null && !error && <p role="status">Loading cases…</p>}
       {reviews?.length === 0 && <p>No eligibility cases in this queue.</p>}
       {reviews?.map((review) => {
