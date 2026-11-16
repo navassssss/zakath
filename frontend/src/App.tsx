@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Calculator, HandHeart, House, LifeBuoy, UserRound } from 'lucide-react'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
@@ -10,6 +10,9 @@ import { CommitteeLedger } from './CommitteeLedger'
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
+const returnKey = 'amanah-return'
+const protectedPaths = ['/give', '/calculate', '/help', '/account']
+const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
 const pages = [
   ['/', 'Home', House],
   ['/give', 'Give', HandHeart],
@@ -27,6 +30,13 @@ function Eligibility({ account }: { account: Account }) {
   const [reviewNote, setReviewNote] = useState('')
   const [applicantResponse, setApplicantResponse] = useState('')
   const [saving, setSaving] = useState(false)
+  const [step, setStep] = useState(0)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  function changeStep(next: number) {
+    setStep(next)
+    heading.current?.focus()
+  }
 
   useEffect(() => {
     const request = new AbortController()
@@ -73,6 +83,10 @@ function Eligibility({ account }: { account: Account }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (step < intakeSteps.length - 1) {
+      changeStep(step + 1)
+      return
+    }
     const fields = new FormData(event.currentTarget)
     setSaving(true)
     setCaseError('')
@@ -138,33 +152,40 @@ function Eligibility({ account }: { account: Account }) {
         </form>
       )}
       {caseStatus === null && (
-      <form onSubmit={(event) => void submit(event)}>
-      <label htmlFor="mahall">Home Mahallu (optional)</label>
-      <select id="mahall" name="mahall" value={account.mahallId ?? undefined} disabled={status !== 'ready' || Boolean(account.mahallId)} style={{ display: 'block', width: '100%', padding: '0.7rem', marginTop: '0.5rem' }}>
-        <option value="">No home Mahallu</option>
-        {mahalls.map((mahall) => (
-          <option key={mahall.id} value={mahall.id}>
-            {mahall.name} ({mahall.locality})
-          </option>
-        ))}
-      </select>
-      {status === 'loading' && <p role="status">Loading Mahallus…</p>}
-      {status === 'ready' && mahalls.length === 0 && <p>No Mahallus have been registered yet.</p>}
-      {status === 'error' && (
-        <p role="alert">
-          Could not load Mahallus.{' '}
-          <button type="button" onClick={() => {
+      <form className="intake" onSubmit={(event) => void submit(event)}>
+        <p className="step-count">Step {step + 1} of {intakeSteps.length}</p>
+        <progress aria-label="Eligibility steps" value={step + 1} max={intakeSteps.length} />
+        <h3 ref={heading} tabIndex={-1}>{intakeSteps[step]}</h3>
+        <div hidden={step !== 0}>
+          <p><label>Locality<input name="locality" autoComplete="address-level2" required maxLength={120} /></label></p>
+          <p><label>PIN code<input name="postalCode" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{6}" required /></label></p>
+          <p><label>Home Mahallu (optional)
+            <select name="mahall" value={account.mahallId ?? undefined} disabled={status !== 'ready' || Boolean(account.mahallId)}>
+              <option value="">No home Mahallu</option>
+              {mahalls.map((mahall) => <option key={mahall.id} value={mahall.id}>{mahall.name} ({mahall.locality})</option>)}
+            </select>
+          </label></p>
+          {status === 'loading' && <p role="status">Loading Mahallus…</p>}
+          {status === 'error' && <p role="alert">Could not load Mahallus. <button type="button" onClick={() => {
             setStatus('loading')
             setAttempt(attempt + 1)
-          }}>Retry</button>
-        </p>
-      )}
-        <p><label>Locality <input name="locality" required maxLength={120} /></label></p>
-        <p><label>PIN code <input name="postalCode" inputMode="numeric" pattern="[0-9]{6}" required /></label></p>
-        <p><label>Household size <input name="householdSize" type="number" min="1" max="100" required /></label></p>
-        <p><label>Monthly household income (₹) <input name="income" type="number" min="0" max="21474836.47" step="0.01" required /></label></p>
-        <p><label>Monthly essential expenses (₹) <input name="expenses" type="number" min="0" max="21474836.47" step="0.01" required /></label></p>
-        <button type="submit" disabled={saving || status !== 'ready'}>Submit for verification</button>
+          }}>Retry</button></p>}
+        </div>
+        <div hidden={step !== 1}>
+          <p><label>How many people live in your household?
+            <input name="householdSize" type="number" inputMode="numeric" min="1" max="100" required={step >= 1} />
+          </label></p>
+        </div>
+        <div hidden={step !== 2}>
+          <p>Enter 0 if there is no income or expense to report.</p>
+          <p><label>Monthly household income (₹)<input name="income" type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
+          <p><label>Monthly essential expenses (₹)<input name="expenses" type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
+        </div>
+        <div className="intake-actions">
+          {step > 0 && <button type="button" disabled={saving} onClick={() => changeStep(step - 1)}>Back</button>}
+          <button disabled={saving || (step === 0 && status !== 'ready')}>{step === 2 ? 'Submit for verification' : 'Continue'}</button>
+        </div>
+        <p className="privacy-note">Only authorized reviewers can see your household details.</p>
       </form>
       )}
     </section>
@@ -175,7 +196,7 @@ export default function App() {
   const [page] = useState(() => {
     const params = new URLSearchParams(location.hash.slice(1))
     return ['session', 'auth_error', 'verify_email'].some((key) => params.has(key))
-      ? '/account'
+      ? '/login'
       : location.pathname.replace(/\/$/, '') || '/'
   })
   const [account, setAccount] = useState<Account | null>(null)
@@ -194,7 +215,7 @@ export default function App() {
     const returnedToken = params.get('session')
     if (returnedToken) sessionStorage.setItem(sessionKey, returnedToken)
     if (returnedToken || params.has('auth_error')) {
-      history.replaceState(null, '', '/account' + window.location.search)
+      history.replaceState(null, '', '/login' + window.location.search)
     }
     const token = sessionStorage.getItem(sessionKey)
     if (!token) return
@@ -219,7 +240,22 @@ export default function App() {
   }, [])
 
   const token = account ? sessionStorage.getItem(sessionKey) : null
-  const authenticated = page === '/account' || page === '/help'
+  const requiresLogin = protectedPaths.includes(page) && !account
+  const nextPath = new URLSearchParams(location.search).get('next') ?? sessionStorage.getItem(returnKey)
+  const destination = nextPath && protectedPaths.includes(nextPath) ? nextPath : '/account'
+
+  useEffect(() => {
+    if (loading) return
+    if (requiresLogin) {
+      sessionStorage.setItem(returnKey, page)
+      location.replace('/login?next=' + encodeURIComponent(page))
+    } else if (page === '/login' && account) {
+      sessionStorage.removeItem(returnKey)
+      location.replace(destination)
+    }
+  }, [account, destination, loading, page, requiresLogin])
+
+  const accountPage = page === '/account' || page === '/help'
 
   return (
     <div className="app-shell">
@@ -228,9 +264,9 @@ export default function App() {
         <a className="wordmark" href="/">Amanah</a>
         <nav className="site-nav" aria-label="Main navigation">
           {pages.map(([path, title, Icon]) => (
-            <a key={path} href={path} aria-current={page === path ? 'page' : undefined}>
+            <a key={path} href={path === '/account' && !account ? '/login' : path} aria-current={page === path || (page === '/login' && path === '/account') ? 'page' : undefined}>
               <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
-              <span>{title}</span>
+              <span>{path === '/account' && !account ? 'Log in' : title}</span>
             </a>
           ))}
         </nav>
@@ -253,24 +289,27 @@ export default function App() {
         </div>
       </>
     )}
-    {authenticated && <div className="panel account-panel">
-      <h1>{page === '/help' ? 'Get help with Zakat' : account ? 'Your account' : 'Welcome to Amanah'}</h1>
-      {page === '/help' && !account && <p>Sign in to submit your details for eligibility verification.</p>}
-      {loading && <p role="status">Checking your session…</p>}
-      {!loading && !account && (
+    {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
+    {page === '/login' && <section className="login-panel">
+      <h1>Welcome back</h1>
+      <p>{nextPath ? 'Log in to continue.' : 'Log in to Amanah.'}</p>
+      {error && <p role="alert">{error}</p>}
+      {loading ? <p role="status">Checking your session…</p> : !account && (
         <>
-          <a className="action-link" href={new URL('/auth/google', API_BASE_URL).href}>Sign in with Google</a>
           <EmailAccess sessionKey={sessionKey} />
+          <a className="action-link google-login" href={new URL('/auth/google', API_BASE_URL).href}>Sign in with Google</a>
         </>
       )}
-      {error && <p role="alert">{error}</p>}
+    </section>}
+    {accountPage && account && <div className="panel account-panel">
+      <h1>{page === '/help' ? 'Get help with Zakat' : account ? 'Your account' : 'Welcome to Amanah'}</h1>
       {account && (
         <>
           <p>Signed in as {account.name ?? account.email}</p>
           <button type="button" onClick={() => {
             sessionStorage.removeItem(sessionKey)
-            setAccount(null)
-            setError('')
+            sessionStorage.removeItem(returnKey)
+            location.assign('/login')
           }}>Sign out</button>
           {account.role !== 'USER' && page === '/account' && (
             <ReviewDashboard token={token ?? ''} superAdmin={account.role === 'SUPER_ADMIN'} />
@@ -281,14 +320,14 @@ export default function App() {
       )}
     </div>}
     {page === '/account' && token && account?.role !== 'USER' && <CommitteeLedger token={token} admin />}
-    {page === '/give' && (
+    {page === '/give' && token && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
         {token && <CommitteeLedger token={token} />}
       </>
     )}
-    {page === '/calculate' && <ZakatCalculator />}
-    {!pages.some(([path]) => path === page) && <h1>Page not found</h1>}
+    {page === '/calculate' && token && <ZakatCalculator token={token} />}
+    {page !== '/login' && !pages.some(([path]) => path === page) && <h1>Page not found</h1>}
     </main>
     </div>
   )

@@ -12,7 +12,7 @@ const fields = [
 const rupees = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 type Result = { assets: number; debts: number; net: number; due: number; thresholdReached: boolean }
 
-export function ZakatCalculator() {
+export function ZakatCalculator({ token }: { token: string }) {
   const [result, setResult] = useState<Result | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -26,7 +26,7 @@ export function ZakatCalculator() {
     setBusy(true)
     try {
       const response = await fetch(new URL('/auth/calculator', API_BASE_URL), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({ ...amounts, hawl: form.has('hawl') }),
       })
       const data = await response.json()

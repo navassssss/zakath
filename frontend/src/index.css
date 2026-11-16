@@ -32,6 +32,14 @@ body { margin: 0; overflow-wrap: anywhere; }
 .landing-links span { color: var(--muted); }
 .workspace { width: 100%; max-width: 50rem; margin: clamp(1.25rem, 4vw, 3rem) auto; padding: 0 1rem 2rem; }
 .account-panel { max-width: 42rem; margin-inline: auto; }
+.login-panel { max-width: 25.5rem; margin: clamp(1rem, 4vw, 3rem) auto; }
+.login-panel form button, .google-login { width: 100%; border-radius: 2rem; text-align: center; }
+.google-login { margin-top: .75rem; }
+.intake { max-width: 32rem; }
+.intake progress { width: 100%; height: .5rem; accent-color: oklch(0.55 0.12 165); }
+.intake .step-count, .privacy-note { font-size: .875rem; }
+.intake-actions { display: flex; gap: .65rem; margin-top: 1.5rem; }
+.intake-actions button:last-child { flex: 1; }
 .panel { min-width: 0; background: white; border: 1px solid var(--border); border-radius: 1.25rem; padding: clamp(1rem, 4vw, 2rem); box-shadow: 0 8px 24px -12px #0002; }
 .panel > h2:first-child { margin-top: 0; }
 .panel + .panel { margin-top: 1rem; }

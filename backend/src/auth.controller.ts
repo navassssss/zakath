@@ -281,7 +281,8 @@ export class AuthController {
   }
 
   @Post('calculator')
-  calculate(@Body() input: unknown) {
+  async calculate(@Req() request: Request, @Body() input: unknown) {
+    await this.account(request);
     if (!input || typeof input !== 'object') throw new BadRequestException('Enter your Zakat calculation details');
     const { cash, metals, business, investments, debts, nisab, hawl } = input as Record<string, unknown>;
     const limit = 100_000_000_000;
@@ -381,7 +382,8 @@ export class AuthController {
 
   @Get('discovery')
   @Header('Cache-Control', 'no-store')
-  async discover(@Query('area') area: unknown) {
+  async discover(@Req() request: Request, @Query('area') area: unknown) {
+    await this.account(request);
     if (typeof area !== 'string' || area.trim().length < 2 || area.trim().length > 120) {
       throw new BadRequestException('Enter a locality or six-digit PIN code');
     }

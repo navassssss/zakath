@@ -41,7 +41,7 @@ export function Giving({ token }: { token: string | null }) {
     setMessage('')
     setSelected('')
     try {
-      const response = await fetch(url)
+      const response = await fetch(url, { headers: { Authorization: 'Bearer ' + token } })
       const result = await response.json()
       if (!response.ok) throw new Error(result.message)
       setRecipients(result)
