@@ -372,6 +372,24 @@ export class AuthController {
     });
   }
 
+  @Get('mahalls/directory')
+  @Header('Cache-Control', 'no-store')
+  async mahallDirectory(@Req() request: Request) {
+    if ((await this.account(request)).role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    return this.prisma.client.mahall.findMany({
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        locality: true,
+        members: {
+          orderBy: [{ name: 'asc' }, { email: 'asc' }],
+          select: { id: true, name: true, email: true, role: true },
+        },
+      },
+    });
+  }
+
   private async reviewer(request: Request) {
     const user = await this.account(request);
     if (user.role !== 'SUPER_ADMIN' && (user.role !== 'MAHALL_ADMIN' || !user.mahallId)) {

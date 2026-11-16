@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
+import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
+import { MahalluDirectory } from './MahalluDirectory'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -11,7 +12,8 @@ type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
 const returnKey = 'amanah-return'
-const adminPaths = ['/admin/review', '/admin/collections']
+const directoryPath = '/admin/mahallus'
+const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
 const protectedPaths = ['/give', '/calculate', '/help', '/account', ...adminPaths]
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
 const pages = [
@@ -26,6 +28,7 @@ const adminPages = [
   ['/admin/review', 'Review', ClipboardCheck],
   ['/admin/collections', 'Collections', Wallet],
 ] as const
+const superAdminPages = [...adminPages, [directoryPath, 'Mahallus', Building2] as const]
 
 function Eligibility({ account }: { account: Account }) {
   const [mahalls, setMahalls] = useState<Mahall[]>([])
@@ -267,7 +270,8 @@ export default function App() {
 
   const accountPage = page === '/account' || page === '/help'
   const publicLayout = page === '/' || page === '/login' || !account
-  const navigation = isAdmin ? adminPages : pages
+  const canViewDirectory = account?.role === 'SUPER_ADMIN'
+  const navigation = canViewDirectory ? superAdminPages : isAdmin ? adminPages : pages
 
   return (
     <div className={publicLayout ? 'public-shell' : 'app-shell'}>
@@ -342,6 +346,7 @@ export default function App() {
           }}>Sign out</button>
           {isAdmin && page === '/account' && (
             canReview ? <div className="admin-shortcuts">
+              {canViewDirectory && <a href={directoryPath}><Building2 aria-hidden="true" /><strong>Mahallu directory</strong><span>View registered Mahallus, admins, and members.</span></a>}
               <a href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>{account.role === 'SUPER_ADMIN' ? 'Mahallus and eligibility' : 'Eligibility review'}</strong><span>{account.role === 'SUPER_ADMIN' ? 'Manage Mahallus, assign admins, and review or delegate cases.' : 'Review cases assigned to your Mahallu.'}</span></a>
               <a href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></a>
             </div> : <p>A super admin needs to assign your Mahallu before you can review cases or collections.</p>
@@ -353,7 +358,8 @@ export default function App() {
     </div>}
     {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
     {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
-    {adminPaths.includes(page) && account && !canReview && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
+    {page === directoryPath && token && canViewDirectory && <MahalluDirectory token={token} />}
+    {adminPaths.includes(page) && account && (page === directoryPath ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
     {page === '/give' && token && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
