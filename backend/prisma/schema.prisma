@@ -55,6 +55,7 @@ model Mahall {
   members       User[]
   assignedCases EligibilityCase[]
   contributions CommitteeContribution[]
+  allocations   CommitteeAllocation[]
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
 }
@@ -79,10 +80,25 @@ model EligibilityCase {
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
   handovers             ZakatHandover[]
+  allocations           CommitteeAllocation[]
 
   @@index([reviewingMahallId, status])
   @@index([postalCode, status])
   @@index([reviewedById])
+}
+
+model CommitteeAllocation {
+  id          String          @id @default(uuid())
+  mahallId    String
+  mahall      Mahall          @relation(fields: [mahallId], references: [id], onDelete: Restrict)
+  caseId      String
+  eligibility EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  amountPaise Int
+  createdAt   DateTime        @default(now())
+  confirmedAt DateTime?
+
+  @@index([mahallId])
+  @@index([caseId, confirmedAt])
 }
 
 model ZakatHandover {

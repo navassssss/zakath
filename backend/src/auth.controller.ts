@@ -441,8 +441,11 @@ export class AuthController {
           e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise" - COALESCE(receipts.amount, 0) AS remaining
         FROM "EligibilityCase" e
         LEFT JOIN LATERAL (
-          SELECT SUM(h."amountPaise") AS amount
-          FROM "ZakatHandover" h WHERE h."caseId" = e.id AND h."confirmedAt" >= ${monthStart}
+          SELECT SUM(receipt."amountPaise") AS amount FROM (
+            SELECT "amountPaise" FROM "ZakatHandover" WHERE "caseId" = e.id AND "confirmedAt" >= ${monthStart}
+            UNION ALL
+            SELECT "amountPaise" FROM "CommitteeAllocation" WHERE "caseId" = e.id AND "confirmedAt" >= ${monthStart}
+          ) receipt
         ) receipts ON true
         WHERE e.status = 'APPROVED' AND ${match}
       ) ranked
@@ -556,6 +559,88 @@ export class AuthController {
     });
     if (!result.count) throw new ConflictException('This pending contribution is unavailable to confirm');
     return { updated: true };
+  }
+
+  @Get('allocations')
+  @Header('Cache-Control', 'no-store')
+  async allocations(@Req() request: Request) {
+    const user = await this.account(request);
+    return this.prisma.client.committeeAllocation.findMany({
+      where: { eligibility: { applicantId: user.id } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, amountPaise: true, confirmedAt: true, mahall: { select: { name: true } } },
+    });
+  }
+
+  @Post('allocations/:id/confirm')
+  async confirmAllocation(@Req() request: Request, @Param('id') id: string) {
+    const user = await this.account(request);
+    const updated = await this.prisma.client.committeeAllocation.updateMany({
+      where: { id, confirmedAt: null, eligibility: { applicantId: user.id } },
+      data: { confirmedAt: new Date() },
+    });
+    if (!updated.count) throw new ConflictException('This allocation is unavailable to confirm');
+    return { updated: true };
+  }
+
+  @Get('committee-allocations')
+  @Header('Cache-Control', 'no-store')
+  async allocationOverview(@Req() request: Request) {
+    const reviewer = await this.reviewer(request);
+    const mahallId = reviewer.role === 'MAHALL_ADMIN' ? reviewer.mahallId! : undefined;
+    const db = this.prisma.client;
+    const [mahalls, eligible, entries, collections, reserved, distributed] = await db.$transaction([
+      db.mahall.findMany({ where: { id: mahallId }, orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+      db.eligibilityCase.findMany({
+        where: { status: 'APPROVED', reviewingMahallId: mahallId ?? { not: null }, applicantId: { not: reviewer.id } },
+        select: { id: true, reviewingMahallId: true, applicant: { select: { name: true, email: true } } },
+      }),
+      db.committeeAllocation.findMany({
+        where: { mahallId }, orderBy: { createdAt: 'desc' }, take: 100,
+        select: { id: true, amountPaise: true, confirmedAt: true, mahall: { select: { name: true } }, eligibility: { select: { applicant: { select: { name: true, email: true } } } } },
+      }),
+      db.committeeContribution.groupBy({ by: ['mahallId'], where: { mahallId, confirmedAt: { not: null } }, _sum: { amountPaise: true } }),
+      db.committeeAllocation.groupBy({ by: ['mahallId'], where: { mahallId }, _sum: { amountPaise: true } }),
+      db.committeeAllocation.groupBy({ by: ['mahallId'], where: { mahallId, confirmedAt: { not: null } }, _sum: { amountPaise: true } }),
+    ], { isolationLevel: 'RepeatableRead' });
+    const totals = (rows: typeof collections) => new Map(rows.map(({ mahallId: id, _sum }) => [id, _sum.amountPaise ?? 0]));
+    const collected = totals(collections), allocated = totals(reserved), paid = totals(distributed);
+    return { eligible, entries, mahalls: mahalls.map((mahall) => ({
+      ...mahall,
+      availablePaise: (collected.get(mahall.id) ?? 0) - (allocated.get(mahall.id) ?? 0),
+      distributedPaise: paid.get(mahall.id) ?? 0,
+    })) };
+  }
+
+  @Post('committee-allocations')
+  async createAllocation(@Req() request: Request, @Body('caseId') caseId: unknown, @Body('amountPaise') amountPaise: unknown) {
+    const reviewer = await this.reviewer(request);
+    if (typeof caseId !== 'string' || !this.isInteger(amountPaise, 1, 2147483647)) {
+      throw new BadRequestException('Choose an eligible recipient and enter a positive amount');
+    }
+    try {
+      return await this.prisma.client.$transaction(async (db) => {
+        const entry = await db.eligibilityCase.findFirst({
+          where: { id: caseId, status: 'APPROVED', applicantId: { not: reviewer.id } },
+          select: { reviewingMahallId: true },
+        });
+        const mahallId = entry?.reviewingMahallId;
+        if (!mahallId || (reviewer.role === 'MAHALL_ADMIN' && reviewer.mahallId !== mahallId)) {
+          throw new ConflictException('This recipient is unavailable for committee allocation');
+        }
+        const collections = await db.committeeContribution.aggregate({ where: { mahallId, confirmedAt: { not: null } }, _sum: { amountPaise: true } });
+        const allocations = await db.committeeAllocation.aggregate({ where: { mahallId }, _sum: { amountPaise: true } });
+        if (amountPaise > (collections._sum.amountPaise ?? 0) - (allocations._sum.amountPaise ?? 0)) {
+          throw new ConflictException('This Mahallu does not have enough available funds');
+        }
+        return db.committeeAllocation.create({ data: { mahallId, caseId, amountPaise }, select: { id: true } });
+      }, { isolationLevel: 'Serializable' });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034') {
+        throw new ConflictException('The ledger changed. Refresh and try again');
+      }
+      throw error;
+    }
   }
 
   @Post('mahalls/admins')

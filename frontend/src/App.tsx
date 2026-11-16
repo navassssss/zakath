@@ -8,6 +8,7 @@ import { ReviewDashboard } from './ReviewDashboard'
 import { Giving } from './Giving'
 import { ZakatCalculator } from './ZakatCalculator'
 import { CommitteeLedger } from './CommitteeLedger'
+import { CommitteeAllocations } from './CommitteeAllocations'
 
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
@@ -362,6 +363,8 @@ export default function App() {
     </div>}
     {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
     {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
+    {page === '/admin/collections' && token && canReview && <CommitteeAllocations token={token} admin />}
+    {page === '/help' && token && <CommitteeAllocations token={token} />}
     {isDirectoryPage(page) && token && canViewDirectory && <MahalluDirectory token={token} path={directoryPath} selectedId={page === directoryPath ? undefined : page.slice(directoryPath.length + 1)} />}
     {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
     {page === '/give' && token && (
