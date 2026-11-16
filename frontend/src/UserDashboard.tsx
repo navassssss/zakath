@@ -32,6 +32,18 @@ const currency = new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 0,
 })
 
+// Framer-style dual-layer text roll helper component
+function VxRollText({ text }: { text: string }) {
+  return (
+    <span className="vx-btn-roll">
+      <span className="vx-btn-roll-inner">
+        <span className="vx-btn-roll-text">{text}</span>
+        <span className="vx-btn-roll-text" aria-hidden="true">{text}</span>
+      </span>
+    </span>
+  )
+}
+
 export function UserDashboard({
   token,
   name,
@@ -124,7 +136,8 @@ export function UserDashboard({
             </span>
           </div>
           <Link className="btn-give" href="/give">
-            <span style={{ fontSize: '20px', lineHeight: 1, fontWeight: 400 }}>+</span> Give Zakat
+            <span style={{ fontSize: '20px', lineHeight: 1, fontWeight: 400, marginRight: '6px' }}>+</span>
+            <VxRollText text="Give Zakat" />
           </Link>
         </div>
       </div>
@@ -150,7 +163,7 @@ export function UserDashboard({
             </Link>
           </div>
           <div className="stat-label">Total Contributed</div>
-          <div className="stat-value">{contributedTotal}</div>
+          <div className="stat-value mono-num">{contributedTotal}</div>
           <div className="stat-sub">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="8" r="3" />
@@ -172,7 +185,7 @@ export function UserDashboard({
             </Link>
           </div>
           <div className="stat-label">Assistance Received</div>
-          <div className="stat-value">{receivedTotal}</div>
+          <div className="stat-value mono-num">{receivedTotal}</div>
           <div className="stat-sub">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
               <rect x="4" y="5" width="16" height="15" rx="2" />
@@ -195,7 +208,7 @@ export function UserDashboard({
             </Link>
           </div>
           <div className="stat-label">My Applications</div>
-          <div className="stat-value">{applicationCount}</div>
+          <div className="stat-value mono-num">{applicationCount}</div>
           <div className="stat-sub pill-approved">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="10" cy="8" r="3.2" />
@@ -515,7 +528,7 @@ export function UserDashboard({
             </div>
           </div>
           <Link className="btn-outline" href="/help">
-            View Application
+            <VxRollText text="View Application" />
           </Link>
         </section>
 
@@ -524,7 +537,7 @@ export function UserDashboard({
           <h4>Time is a Blessing</h4>
           <p>Fulfil your Zakat, support those in need.</p>
           <Link className="btn-white" href="/give">
-            Give Zakat <span>→</span>
+            <VxRollText text="Give Zakat" /> <span style={{ marginLeft: '6px' }}>→</span>
           </Link>
           <svg className="mosque" viewBox="0 0 160 130" fill="none" aria-hidden="true">
             <ellipse cx="105" cy="118" rx="58" ry="10" fill="#0A3D22" opacity=".45" />

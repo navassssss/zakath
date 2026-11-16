@@ -10,6 +10,18 @@ type Profile = {
   mahallName?: string | null
 }
 
+// Framer-style dual-layer text roll helper component
+function VxRollText({ text }: { text: string }) {
+  return (
+    <span className="vx-btn-roll">
+      <span className="vx-btn-roll-inner">
+        <span className="vx-btn-roll-text">{text}</span>
+        <span className="vx-btn-roll-text" aria-hidden="true">{text}</span>
+      </span>
+    </span>
+  )
+}
+
 export function DashboardSidebar({
   active,
   member,
@@ -42,13 +54,20 @@ export function DashboardSidebar({
         {member ? (
           <>
             <Link href="/dashboard" className={active === '/dashboard' ? 'active' : undefined} onClick={() => setOpen(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
                 <rect x="3" y="3" width="7" height="7" rx="1.5" />
                 <rect x="14" y="3" width="7" height="7" rx="1.5" />
                 <rect x="3" y="14" width="7" height="7" rx="1.5" />
                 <rect x="14" y="14" width="7" height="7" rx="1.5" />
               </svg>
               Dashboard
+            </Link>
+            <Link href="/" onClick={() => setOpen(false)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Landing Page
             </Link>
             <Link href="/give" className={active === '/give' ? 'active' : undefined} onClick={() => setOpen(false)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -107,13 +126,20 @@ export function DashboardSidebar({
         ) : (
           <>
             <Link href="/account" className={active === '/account' ? 'active' : undefined} onClick={() => setOpen(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
                 <rect x="3" y="3" width="7" height="7" rx="1.5" />
                 <rect x="14" y="3" width="7" height="7" rx="1.5" />
                 <rect x="3" y="14" width="7" height="7" rx="1.5" />
                 <rect x="14" y="14" width="7" height="7" rx="1.5" />
               </svg>
               Dashboard
+            </Link>
+            <Link href="/" onClick={() => setOpen(false)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Landing Page
             </Link>
             <Link href="/admin/review" className={active === '/admin/review' ? 'active' : undefined} onClick={() => setOpen(false)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -204,7 +230,7 @@ export function DashboardSidebar({
           your Zakat amount
         </p>
         <Link className="btn-calc" href="/calculate" onClick={() => setOpen(false)}>
-          Calculate Now <span>→</span>
+          <VxRollText text="Calculate Now" /> <span style={{ marginLeft: '4px' }}>→</span>
         </Link>
       </div>
     </aside>

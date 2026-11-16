@@ -23,7 +23,7 @@ const sessionKey = 'amanah-session'
 const returnKey = 'amanah-return'
 const directoryPath = '/admin/mahallus'
 const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
-const protectedPaths = ['/dashboard', '/onboarding', '/give', '/calculate', '/help', '/account', ...adminPaths]
+const protectedPaths = ['/dashboard', '/onboarding', '/give', '/help', '/account', ...adminPaths]
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances', 'Supporting information']
@@ -307,6 +307,21 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeKnowledgeTopic, setActiveKnowledgeTopic] = useState<string | null>(null)
 
+  useEffect(() => {
+    const isHome = page === '/'
+    const mainEl = document.getElementById('main')
+    const rootEl = document.getElementById('root')
+    if (isHome) {
+      document.body.removeAttribute('data-view')
+      if (mainEl) mainEl.style.display = 'block'
+      if (rootEl) rootEl.style.display = 'none'
+    } else {
+      document.body.setAttribute('data-view', 'app')
+      if (mainEl) mainEl.style.display = 'none'
+      if (rootEl) rootEl.style.display = 'block'
+    }
+  }, [page])
+
   function signOut() {
     sessionStorage.removeItem(sessionKey)
     sessionStorage.removeItem(returnKey)
@@ -322,8 +337,24 @@ export default function App() {
       page === '/' || isAuthPage ? null : (
         <header className="public-header">
           <div>
-            <Link className="wordmark" href="/">Amanah</Link>
-            <Link className="primary-link public-login" href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link>
+            <Link className="wordmark" href="/">
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: 'var(--green)', color: '#fff', fontSize: '14px', fontWeight: 800 }}>A</span>
+              AMANAH
+            </Link>
+            <div className="public-nav-links">
+              <Link className="public-nav-link" href="/">Home</Link>
+              <Link className="public-nav-link" href="/give">Give Zakat</Link>
+              <Link className="public-nav-link" href="/calculate">Calculator</Link>
+              <Link className="public-nav-link" href="/help">Assistance</Link>
+            </div>
+            <Link className="primary-link public-login" href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>
+              <span className="vx-btn-roll">
+                <span className="vx-btn-roll-inner">
+                  <span className="vx-btn-roll-text">{account ? 'My Dashboard' : 'Log in'}</span>
+                  <span className="vx-btn-roll-text" aria-hidden="true">{account ? 'My Dashboard' : 'Log in'}</span>
+                </span>
+              </span>
+            </Link>
           </div>
         </header>
       )
@@ -427,7 +458,7 @@ export default function App() {
         <Giving key={account?.email ?? 'guest'} token={token} />
       </>
     )}
-    {page === '/calculate' && token && !needsOnboarding && <ZakatCalculator token={token} />}
+    {page === '/calculate' && <ZakatCalculator token={token} />}
     {page !== '/' && !isAuthPage && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
     </main>
     <KnowledgeModal
