@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Calculator, HandHeart, House, LifeBuoy, UserRound } from 'lucide-react'
+import { Calculator, HandHeart, House, LifeBuoy, ShieldCheck, UserRound } from 'lucide-react'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -256,10 +256,18 @@ export default function App() {
   }, [account, destination, loading, page, requiresLogin])
 
   const accountPage = page === '/account' || page === '/help'
+  const publicLayout = page === '/' || page === '/login' || !account
 
   return (
-    <div className="app-shell">
-    <header className="site-header">
+    <div className={publicLayout ? 'public-shell' : 'app-shell'}>
+    {publicLayout ? (
+      <header className="public-header">
+        <div>
+          <a className="wordmark" href="/">Amanah</a>
+          <a className="primary-link public-login" href={account ? '/account' : '/login'}>{account ? 'My account' : 'Log in'}</a>
+        </div>
+      </header>
+    ) : <header className="site-header">
       <div className="site-header-inner">
         <a className="wordmark" href="/">Amanah</a>
         <nav className="site-nav" aria-label="Main navigation">
@@ -271,7 +279,7 @@ export default function App() {
           ))}
         </nav>
       </div>
-    </header>
+    </header>}
     <main id="main-content" className={page === '/' ? 'landing' : 'workspace'}>
     {page === '/' && (
       <>
@@ -283,10 +291,20 @@ export default function App() {
             <a className="action-link" href="/help">I need help</a>
           </div>
         </section>
-        <div className="landing-links">
-          <a href="/calculate"><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></a>
-          <a href="/help"><strong>Check your eligibility</strong><span>Submit your details or see your verification status.</span></a>
-        </div>
+        <section className="landing-overview">
+          <h2>How Amanah helps</h2>
+          <div className="landing-links">
+            <a href="/give"><HandHeart aria-hidden="true" /><strong>Give Zakat</strong><span>Find verified recipients by area or give through a Mahallu committee.</span></a>
+            <a href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></a>
+            <a href="/help"><LifeBuoy aria-hidden="true" /><strong>Get help</strong><span>Send your household details for verification and track your status.</span></a>
+          </div>
+        </section>
+        <section className="landing-privacy">
+          <ShieldCheck aria-hidden="true" size={32} />
+          <h2>Private by design.</h2>
+          <p>Only authorized reviewers see household details. Givers see the recipient’s area and level of need.</p>
+        </section>
+        <footer className="landing-footer">Amanah <a href={account ? '/account' : '/login'}>{account ? 'My account' : 'Log in'}</a></footer>
       </>
     )}
     {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
