@@ -32,6 +32,7 @@ model User {
   mahallId           String?
   mahall             Mahall?                 @relation(fields: [mahallId], references: [id], onDelete: Restrict)
   eligibilityCase    EligibilityCase?        @relation("EligibilityApplicant")
+  onboardingProfile  OnboardingProfile?
   eligibilityReviews EligibilityCase[]       @relation("EligibilityReviewer")
   zakatHandovers     ZakatHandover[]
   contributions      CommitteeContribution[]
@@ -39,6 +40,17 @@ model User {
   updatedAt          DateTime                @updatedAt
 
   @@index([mahallId])
+}
+
+model OnboardingProfile {
+  userId                String   @id
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locality              String
+  postalCode            String
+  householdSize         Int
+  monthlyIncomePaise    Int
+  monthlyExpensesPaise  Int
+  completedAt           DateTime @default(now())
 }
 
 model PendingEmailRegistration {

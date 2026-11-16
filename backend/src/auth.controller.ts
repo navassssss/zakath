@@ -89,7 +89,7 @@ export class AuthController {
       const user = await this.prisma.client.user.upsert({
         where: { googleId: profile.sub },
         create: { googleId: profile.sub, email: profile.email.toLowerCase(), name: profile.name, avatarUrl: profile.picture },
-        update: { name: profile.name, avatarUrl: profile.picture },
+        update: { avatarUrl: profile.picture },
         select: { id: true },
       });
       const token = await this.session(user.id);
@@ -197,8 +197,51 @@ export class AuthController {
 
   @Get('me')
   @Header('Cache-Control', 'no-store')
-  me(@Req() request: Request) {
-    return this.account(request);
+  async me(@Req() request: Request) {
+    const user = await this.account(request);
+    const onboardingProfile = user.role === 'USER'
+      ? await this.prisma.client.onboardingProfile.findUnique({
+        where: { userId: user.id },
+        select: { locality: true, postalCode: true, householdSize: true, monthlyIncomePaise: true, monthlyExpensesPaise: true },
+      })
+      : null;
+    return { ...user, onboardingProfile };
+  }
+
+  @Post('onboarding')
+  @Header('Cache-Control', 'no-store')
+  async onboarding(@Req() request: Request, @Body() body: unknown) {
+    const user = await this.account(request);
+    if (user.role !== 'USER') throw new ForbiddenException();
+    if (!body || typeof body !== 'object') throw new BadRequestException('Enter your profile details');
+    const { name, mahallId, locality, postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise } = body as Record<string, unknown>;
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 120 ||
+        typeof locality !== 'string' || !locality.trim() || locality.trim().length > 120 ||
+        typeof postalCode !== 'string' || !/^\d{6}$/.test(postalCode) ||
+        (mahallId !== null && (typeof mahallId !== 'string' || mahallId.length > 36)) ||
+        !this.isInteger(householdSize, 1, 100) ||
+        !this.isInteger(monthlyIncomePaise, 0, 2147483647) ||
+        !this.isInteger(monthlyExpensesPaise, 0, 2147483647)) {
+      throw new BadRequestException('Check your name, locality, PIN code, household size, and amounts');
+    }
+    try {
+      const data = { locality: locality.trim(), postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise };
+      const [account, onboardingProfile] = await this.prisma.client.$transaction([
+        this.prisma.client.user.update({
+          where: { id: user.id, role: 'USER', mahallId: user.mahallId },
+          data: { name: name.trim(), mahallId: user.mahallId ?? mahallId },
+          select: { id: true, name: true, email: true, role: true, mahallId: true },
+        }),
+        this.prisma.client.onboardingProfile.create({ data: { userId: user.id, ...data } }),
+      ]);
+      return { ...account, onboardingProfile };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') throw new BadRequestException('Select a registered Mahallu');
+        if (error.code === 'P2002' || error.code === 'P2025') throw new ConflictException('Your profile changed. Reload and try again');
+      }
+      throw error;
+    }
   }
 
   @Get('eligibility')

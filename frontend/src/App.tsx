@@ -5,6 +5,7 @@ import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, Shie
 import { MahalluDirectory } from './MahalluDirectory'
 import { AdminOverview } from './AdminOverview'
 import { UserDashboard } from './UserDashboard'
+import { Onboarding, type OnboardingProfile } from './Onboarding'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -14,12 +15,12 @@ import { CommitteeLedger } from './CommitteeLedger'
 import { CommitteeAllocations } from './CommitteeAllocations'
 
 type Mahall = { id: string; name: string; locality: string }
-type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
+type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN'; onboardingProfile?: OnboardingProfile | null }
 const sessionKey = 'amanah-session'
 const returnKey = 'amanah-return'
 const directoryPath = '/admin/mahallus'
 const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
-const protectedPaths = ['/dashboard', '/give', '/calculate', '/help', '/account', ...adminPaths]
+const protectedPaths = ['/dashboard', '/onboarding', '/give', '/calculate', '/help', '/account', ...adminPaths]
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
@@ -38,6 +39,7 @@ const adminPages = [
 const superAdminPages = [adminPages[0], [directoryPath, 'Mahallus', Building2] as const, ...adminPages.slice(1)]
 
 function Eligibility({ account }: { account: Account }) {
+  const profile = account.onboardingProfile
   const [mahalls, setMahalls] = useState<Mahall[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [attempt, setAttempt] = useState(0)
@@ -173,8 +175,8 @@ function Eligibility({ account }: { account: Account }) {
         <progress aria-label="Eligibility steps" value={step + 1} max={intakeSteps.length} />
         <h3 ref={heading} tabIndex={-1}>{intakeSteps[step]}</h3>
         <div hidden={step !== 0}>
-          <p><label>Locality<input name="locality" autoComplete="address-level2" required maxLength={120} /></label></p>
-          <p><label>PIN code<input name="postalCode" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{6}" required /></label></p>
+          <p><label>Locality<input name="locality" defaultValue={profile?.locality} autoComplete="address-level2" required maxLength={120} /></label></p>
+          <p><label>PIN code<input name="postalCode" defaultValue={profile?.postalCode} autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{6}" required /></label></p>
           <p><label>Home Mahallu (optional)
             <select name="mahall" value={account.mahallId ?? undefined} disabled={status !== 'ready' || Boolean(account.mahallId)}>
               <option value="">No home Mahallu</option>
@@ -189,13 +191,13 @@ function Eligibility({ account }: { account: Account }) {
         </div>
         <div hidden={step !== 1}>
           <p><label>How many people live in your household?
-            <input name="householdSize" type="number" inputMode="numeric" min="1" max="100" required={step >= 1} />
+            <input name="householdSize" defaultValue={profile?.householdSize} type="number" inputMode="numeric" min="1" max="100" required={step >= 1} />
           </label></p>
         </div>
         <div hidden={step !== 2}>
           <p>Enter 0 if there is no income or expense to report.</p>
-          <p><label>Monthly household income (₹)<input name="income" type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
-          <p><label>Monthly essential expenses (₹)<input name="expenses" type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
+          <p><label>Monthly household income (₹)<input name="income" defaultValue={profile ? profile.monthlyIncomePaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
+          <p><label>Monthly essential expenses (₹)<input name="expenses" defaultValue={profile ? profile.monthlyExpensesPaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
         </div>
         <div className="intake-actions">
           {step > 0 && <button type="button" disabled={saving} onClick={() => changeStep(step - 1)}>Back</button>}
@@ -265,6 +267,7 @@ export default function App() {
   const token = account ? sessionStorage.getItem(sessionKey) : null
   const requiresLogin = (protectedPaths.includes(page) || isDirectoryPage(page)) && !account
   const isAdmin = Boolean(account && account.role !== 'USER')
+  const needsOnboarding = account?.role === 'USER' && account.onboardingProfile === null
   const canReview = account?.role === 'SUPER_ADMIN' || (account?.role === 'MAHALL_ADMIN' && Boolean(account.mahallId))
   const nextPath = new URLSearchParams(search).get('next') ?? sessionStorage.getItem(returnKey)
   const destination = isAdmin
@@ -276,14 +279,18 @@ export default function App() {
     if (requiresLogin) {
       sessionStorage.setItem(returnKey, page)
       navigate('/login?next=' + encodeURIComponent(page), true)
+    } else if (needsOnboarding && page !== '/' && page !== '/onboarding') {
+      navigate('/onboarding', true)
+    } else if (page === '/onboarding' && account && !needsOnboarding) {
+      navigate(isAdmin ? '/account' : '/dashboard', true)
     } else if (page === '/login' && account) {
       sessionStorage.removeItem(returnKey)
       navigate(destination, true)
     }
-  }, [account, destination, loading, page, requiresLogin])
+  }, [account, destination, isAdmin, loading, needsOnboarding, page, requiresLogin])
 
-  const accountPage = page === '/account' || page === '/help'
-  const publicLayout = page === '/' || page === '/login' || !account
+  const accountPage = !needsOnboarding && (page === '/account' || page === '/help')
+  const publicLayout = page === '/' || page === '/login' || !account || needsOnboarding
   const canViewDirectory = account?.role === 'SUPER_ADMIN'
   const navigation = canViewDirectory ? superAdminPages : isAdmin ? adminPages : pages
 
@@ -376,17 +383,22 @@ export default function App() {
     {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
     {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
     {page === '/admin/collections' && token && canReview && <CommitteeAllocations token={token} admin />}
-    {page === '/dashboard' && token && account && <UserDashboard token={token} name={account.name} />}
-    {page === '/help' && token && <CommitteeAllocations token={token} />}
+    {page === '/onboarding' && token && account && needsOnboarding && <Onboarding token={token} name={account.name} mahallId={account.mahallId} onSaved={(saved) => {
+      setAccount({ ...account, ...saved })
+      sessionStorage.removeItem(returnKey)
+      navigate('/dashboard', true)
+    }} />}
+    {page === '/dashboard' && token && account && !needsOnboarding && <UserDashboard token={token} name={account.name} />}
+    {page === '/help' && token && !needsOnboarding && <CommitteeAllocations token={token} />}
     {isDirectoryPage(page) && token && canViewDirectory && <MahalluDirectory token={token} path={directoryPath} selectedId={page === directoryPath ? undefined : page.slice(directoryPath.length + 1)} />}
     {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><Link href="/account">Go to your account</Link></section>}
-    {page === '/give' && token && (
+    {page === '/give' && token && !needsOnboarding && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
         {token && <CommitteeLedger token={token} />}
       </>
     )}
-    {page === '/calculate' && token && <ZakatCalculator token={token} />}
+    {page === '/calculate' && token && !needsOnboarding && <ZakatCalculator token={token} />}
     {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
     </main>
     </div>
