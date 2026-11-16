@@ -4,6 +4,7 @@ import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
 import { Giving } from './Giving'
 import { ZakatCalculator } from './ZakatCalculator'
+import { CommitteeLedger } from './CommitteeLedger'
 
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
@@ -244,7 +245,13 @@ export default function App() {
         </>
       )}
     </div>}
-    {page === '/give' && <Giving key={account?.email ?? 'guest'} token={token} />}
+    {page === '/account' && token && account?.role !== 'USER' && <CommitteeLedger token={token} admin />}
+    {page === '/give' && (
+      <>
+        <Giving key={account?.email ?? 'guest'} token={token} />
+        {token && <CommitteeLedger token={token} />}
+      </>
+    )}
     {page === '/calculate' && <ZakatCalculator />}
     {!pages.some(([path]) => path === page) && <h1>Page not found</h1>}
     </main>

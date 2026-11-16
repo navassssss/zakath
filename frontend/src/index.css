@@ -48,6 +48,14 @@ button:disabled { cursor: default; opacity: .55; }
 .review-card { border: 1px solid var(--border); border-radius: .85rem; padding: 1rem; margin-block: 1rem; }
 .review-card h3 { margin-top: 0; }
 .review-card form + form { border-top: 1px solid var(--border); margin-top: 1rem; }
+.committee-fields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: .8rem; }
+.ledger-total { display: grid; gap: .1rem; padding: 1rem 1.25rem; background: var(--mint); border-radius: .65rem; }
+.ledger-total strong { font-size: 1.7rem; letter-spacing: -.04em; }
+.ledger-list { padding: 0; list-style: none; }
+.ledger-list li { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border); padding-block: .85rem; }
+.ledger-list li > div { display: grid; align-content: start; gap: .25rem; overflow-wrap: anywhere; }
+.ledger-list li > div:last-child { text-align: right; }
+.ledger-list span { color: var(--muted); font-size: .87rem; }
 
 @media (max-width: 620px) {
   .landing, .workspace { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
@@ -57,4 +65,5 @@ button:disabled { cursor: default; opacity: .55; }
   .hero-actions a { min-width: 0; flex: 0 1 10rem; }
   .landing-links { grid-template-columns: 1fr; }
   .landing-links a + a { border-left: 0; border-top: 1px solid var(--border); }
+  .committee-fields { grid-template-columns: 1fr; gap: 0; }
 }

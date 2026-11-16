@@ -436,6 +436,72 @@ export class AuthController {
     return { updated: true };
   }
 
+  @Post('contributions')
+  async recordContribution(
+    @Req() request: Request,
+    @Body('mahallId') mahallId: unknown,
+    @Body('amountPaise') amountPaise: unknown,
+  ) {
+    const giver = await this.account(request);
+    if (typeof mahallId !== 'string' || !this.isInteger(amountPaise, 1, 2147483647) ||
+        !await this.prisma.client.mahall.count({ where: { id: mahallId } })) {
+      throw new BadRequestException('Select a registered Mahallu and enter a positive amount');
+    }
+    return this.prisma.client.committeeContribution.create({
+      data: { giverId: giver.id, mahallId, amountPaise },
+      select: { id: true, confirmedAt: true },
+    });
+  }
+
+  @Get('contributions')
+  @Header('Cache-Control', 'no-store')
+  async contributions(@Req() request: Request) {
+    const user = await this.account(request);
+    return this.prisma.client.committeeContribution.findMany({
+      where: { giverId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: { id: true, amountPaise: true, confirmedAt: true, mahall: { select: { name: true } } },
+    });
+  }
+
+  @Get('committee-ledger')
+  @Header('Cache-Control', 'no-store')
+  async committeeLedger(@Req() request: Request) {
+    const reviewer = await this.reviewer(request);
+    const scope = reviewer.role === 'SUPER_ADMIN' ? {} : { mahallId: reviewer.mahallId! };
+    const [entries, confirmed] = await this.prisma.client.$transaction([
+      this.prisma.client.committeeContribution.findMany({
+        where: scope,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        select: {
+          id: true, amountPaise: true, confirmedAt: true, mahall: { select: { name: true } },
+          giver: { select: { name: true, email: true } },
+        },
+      }),
+      this.prisma.client.committeeContribution.aggregate({
+        where: { ...scope, confirmedAt: { not: null } },
+        _sum: { amountPaise: true },
+      }),
+    ]);
+    return { entries, confirmedPaise: confirmed._sum.amountPaise ?? 0 };
+  }
+
+  @Post('committee-ledger/:id/confirm')
+  async confirmContribution(@Req() request: Request, @Param('id') id: string) {
+    const reviewer = await this.reviewer(request);
+    const result = await this.prisma.client.committeeContribution.updateMany({
+      where: {
+        id, confirmedAt: null, giverId: { not: reviewer.id },
+        ...(reviewer.role === 'MAHALL_ADMIN' ? { mahallId: reviewer.mahallId! } : {}),
+      },
+      data: { confirmedAt: new Date() },
+    });
+    if (!result.count) throw new ConflictException('This pending contribution is unavailable to confirm');
+    return { updated: true };
+  }
+
   @Post('mahalls/admins')
   async assignMahallAdmin(@Req() request: Request, @Body('email') address: unknown, @Body('mahallId') mahallId: unknown) {
     if ((await this.reviewer(request)).role !== 'SUPER_ADMIN') throw new ForbiddenException();
