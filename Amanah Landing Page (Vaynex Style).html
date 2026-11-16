@@ -3,17 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amanah — Community Zakat Platform</title>
+  <title>Amanah — Community Zakat Platform (Vaynex Style)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* ==========================================================================
+       VAYNEX-INSPIRED DESIGN SYSTEM FOR AMANAH LANDING PAGE
+       ========================================================================== */
     :root {
       --vx-primary: #0e5c48;
       --vx-primary-hover: #0b4a3a;
       --vx-primary-glow: rgba(14, 92, 72, 0.25);
       --vx-dark: #0b2a22;
       --vx-dark-deep: #071f19;
+      --vx-dark-card: #0d352b;
       --vx-mint: #2a8f72;
       --vx-mint-light: #eef7f3;
       --vx-mint-border: #d4e7df;
@@ -21,18 +25,24 @@
       --vx-surface-alt: #f6faf8;
       --vx-surface-card: #ffffff;
       --vx-border: #e4eae8;
+      --vx-border-subtle: #edf3f0;
       --vx-text-primary: #0b2a22;
       --vx-text-secondary: #5f706a;
       --vx-text-muted: #8b9b95;
       --vx-gold: #c9a86a;
+      --vx-gold-light: #fdf8ed;
       
-      --vx-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --vx-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --vx-font-serif: 'Instrument Serif', Georgia, serif;
-      --vx-font-mono: 'Geist Mono', ui-monospace, monospace;
+      --vx-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: var(--vx-font-sans);
       color: var(--vx-text-primary);
@@ -40,244 +50,969 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      width: 100%;
     }
 
-    a { color: inherit; text-decoration: none; }
-    .vx-container { width: 100%; max-width: 1220px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.5rem); }
-    .vx-serif { font-family: var(--vx-font-serif); font-weight: 400; font-style: italic; }
-    .vx-mono { font-family: var(--vx-font-mono); }
+    .vx-container {
+      width: 100%;
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: clamp(1.25rem, 3vw, 2.5rem);
+      padding-right: clamp(1.25rem, 3vw, 2.5rem);
+    }
 
-    /* Nav */
-    .vx-nav-wrapper { position: sticky; top: 1rem; z-index: 100; padding: 0 clamp(1rem, 2vw, 2rem); margin-bottom: 1.5rem; }
+    .vx-serif {
+      font-family: var(--vx-font-serif);
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    .vx-mono {
+      font-family: var(--vx-font-mono);
+    }
+
+    /* Keyframes & Motion */
+    @keyframes vx-scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes vx-float-slow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(0.4deg); }
+    }
+
+    @keyframes vx-float-reverse {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(8px) rotate(-0.4deg); }
+    }
+
+    @keyframes vx-badge-blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+
+    @keyframes vx-glow-pulse {
+      0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    /* Appear-on-Scroll */
+    [data-vx-appear] {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    [data-vx-appear].is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    [data-vx-delay="50"] { transition-delay: 0.05s; }
+    [data-vx-delay="100"] { transition-delay: 0.1s; }
+    [data-vx-delay="150"] { transition-delay: 0.15s; }
+    [data-vx-delay="200"] { transition-delay: 0.2s; }
+    [data-vx-delay="250"] { transition-delay: 0.25s; }
+    [data-vx-delay="300"] { transition-delay: 0.3s; }
+    [data-vx-delay="350"] { transition-delay: 0.35s; }
+    [data-vx-delay="400"] { transition-delay: 0.4s; }
+
+    /* Buttons with Vaynex Dual-Layer Text Roll */
+    .vx-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 0.65rem 1.35rem;
+      border-radius: 9999px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid transparent;
+      line-height: 1;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .vx-btn-roll {
+      display: inline-flex;
+      position: relative;
+      overflow: hidden;
+      height: 1.25em;
+      vertical-align: middle;
+    }
+
+    .vx-btn-roll-inner {
+      display: inline-flex;
+      flex-direction: column;
+      transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .vx-btn:hover .vx-btn-roll-inner {
+      transform: translateY(-50%);
+    }
+
+    .vx-btn-roll-text {
+      display: block;
+      white-space: nowrap;
+      line-height: 1.25em;
+      height: 1.25em;
+    }
+
+    .vx-btn-ghost {
+      background: transparent;
+      color: var(--vx-text-primary);
+      border-color: transparent;
+    }
+
+    .vx-btn-ghost:hover {
+      background: var(--vx-surface-alt);
+      color: var(--vx-primary);
+    }
+
+    .vx-btn-primary {
+      background: var(--vx-primary);
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px var(--vx-primary-glow);
+    }
+
+    .vx-btn-primary:hover {
+      background: var(--vx-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(14, 92, 72, 0.35);
+    }
+
+    .vx-btn-secondary {
+      background: #ffffff;
+      color: var(--vx-dark) !important;
+      border-color: var(--vx-border);
+    }
+
+    .vx-btn-secondary:hover {
+      border-color: var(--vx-primary);
+      background: var(--vx-surface-alt);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(11, 42, 34, 0.08);
+    }
+
+    /* Navigation */
+    .vx-nav-wrapper {
+      position: sticky;
+      top: 1rem;
+      z-index: 100;
+      width: 100%;
+      padding: 0 clamp(1rem, 2vw, 2rem);
+      margin-bottom: 1.5rem;
+    }
+
     .vx-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(14, 92, 72, 0.12); border-radius: 9999px;
-      padding: 0.6rem 0.8rem 0.6rem 1.4rem; box-shadow: 0 4px 24px rgba(11, 42, 34, 0.05);
-      max-width: 1140px; margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(14, 92, 72, 0.12);
+      border-radius: 9999px;
+      padding: 0.6rem 0.8rem 0.6rem 1.4rem;
+      box-shadow: 0 4px 24px rgba(11, 42, 34, 0.05);
+      max-width: 1160px;
+      margin: 0 auto;
     }
-    .vx-brand { display: flex; align-items: center; gap: 0.75rem; }
+
+    .vx-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--vx-dark);
+    }
+
     .vx-brand-mark {
-      width: 2.25rem; height: 2.25rem; border-radius: 0.65rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.65rem;
       background: linear-gradient(135deg, var(--vx-primary) 0%, var(--vx-dark) 100%);
-      color: #fff; display: grid; place-items: center; font-family: var(--vx-font-serif); font-size: 1.4rem; font-weight: 700;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-family: var(--vx-font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
       box-shadow: 0 4px 12px rgba(14, 92, 72, 0.25);
     }
-    .vx-brand-name { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: var(--vx-dark); }
-    .vx-brand-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vx-mint); margin-top: 2px; }
-    .vx-nav-links { display: flex; align-items: center; gap: 1.75rem; list-style: none; }
-    .vx-nav-link { font-size: 0.88rem; font-weight: 600; color: var(--vx-text-secondary); transition: color 0.15s; }
-    .vx-nav-link:hover { color: var(--vx-primary); }
-    .vx-nav-actions { display: flex; align-items: center; gap: 0.75rem; }
 
-    .vx-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-      font-size: 0.88rem; font-weight: 700; padding: 0.65rem 1.25rem; border-radius: 9999px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; border: 1px solid transparent; line-height: 1;
+    .vx-brand-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--vx-dark);
     }
-    .vx-btn-ghost { background: transparent; color: var(--vx-text-primary); }
-    .vx-btn-ghost:hover { background: var(--vx-surface-alt); color: var(--vx-primary); }
-    .vx-btn-primary { background: var(--vx-primary); color: #ffffff !important; box-shadow: 0 4px 14px var(--vx-primary-glow); }
-    .vx-btn-primary:hover { background: var(--vx-primary-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(14, 92, 72, 0.35); }
-    .vx-btn-secondary { background: #ffffff; color: var(--vx-dark); border-color: var(--vx-border); }
-    .vx-btn-secondary:hover { border-color: var(--vx-primary); background: var(--vx-surface-alt); }
+
+    .vx-brand-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--vx-mint);
+      margin-top: 2px;
+      display: block;
+    }
+
+    .vx-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .vx-nav-link {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--vx-text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+
+    .vx-nav-link:hover {
+      color: var(--vx-primary);
+    }
 
     /* Hero */
-    .vx-hero { padding: 1.5rem 0 5rem; position: relative; }
-    .vx-hero-bg {
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100vw; height: 800px;
-      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
-      pointer-events: none; z-index: 0;
+    .vx-hero {
+      padding-top: 1.5rem;
+      padding-bottom: 5rem;
+      position: relative;
     }
-    .vx-badge-pill {
-      display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.9rem; border-radius: 9999px;
-      background: var(--vx-mint-light); border: 1px solid var(--vx-mint-border); color: var(--vx-primary);
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.5rem;
-    }
-    .vx-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--vx-mint); box-shadow: 0 0 8px var(--vx-mint); }
-    .vx-hero-title {
-      font-size: clamp(2.75rem, 6.2vw, 5.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.035em;
-      color: var(--vx-dark); max-width: 18ch; margin: 0 auto 1.5rem; text-align: center;
-    }
-    .vx-hero-title span.serif { font-family: var(--vx-font-serif); font-weight: 400; font-style: italic; color: var(--vx-primary); }
-    .vx-hero-sub {
-      font-size: clamp(1.05rem, 1.8vw, 1.25rem); color: var(--vx-text-secondary); max-width: 46ch;
-      margin: 0 auto 2.25rem; text-align: center; line-height: 1.6;
-    }
-    .vx-hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
 
-    /* Hero Frame */
-    .vx-hero-frame-wrap { position: relative; max-width: 1040px; margin: 0 auto; }
+    .vx-hero-bg {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 800px;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.09) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: vx-glow-pulse 8s ease-in-out infinite;
+    }
+
+    .vx-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.95rem;
+      border-radius: 9999px;
+      background: var(--vx-mint-light);
+      border: 1px solid var(--vx-mint-border);
+      color: var(--vx-primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .vx-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--vx-mint);
+      box-shadow: 0 0 8px var(--vx-mint);
+      animation: vx-badge-blink 2s ease-in-out infinite;
+    }
+
+    .vx-hero-title {
+      font-size: clamp(2.75rem, 6.2vw, 5.25rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: var(--vx-dark);
+      max-width: 18ch;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+    }
+
+    .vx-hero-title span.serif {
+      font-family: var(--vx-font-serif);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--vx-primary);
+    }
+
+    .vx-hero-sub {
+      font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+      color: var(--vx-text-secondary);
+      max-width: 46ch;
+      margin: 0 auto 2.25rem;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .vx-hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+    }
+
+    /* App Frame Mockup with 3D Depth */
+    .vx-hero-frame-wrap {
+      position: relative;
+      max-width: 1040px;
+      margin: 0 auto;
+      perspective: 1200px;
+    }
+
     .vx-hero-frame {
       background: linear-gradient(165deg, #0b2a22 0%, #081d17 60%, #061712 100%);
-      border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: clamp(1.25rem, 3vw, 2.5rem); color: #ffffff;
-      box-shadow: 0 30px 80px rgba(7, 31, 25, 0.35); position: relative; overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: clamp(1.25rem, 3vw, 2.5rem);
+      color: #ffffff;
+      box-shadow: 0 30px 80px rgba(7, 31, 25, 0.45);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
     }
-    .vx-app-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 1.75rem; }
-    .vx-app-status { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: #a3c2b8; }
-    .vx-app-badge { background: rgba(42, 143, 114, 0.2); border: 1px solid rgba(42, 143, 114, 0.4); color: #72e0b9; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 9999px; text-transform: uppercase; }
-    .vx-app-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr); gap: 1.5rem; }
 
-    .vx-fund-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 1.6rem; }
-    .vx-fund-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; }
-    .vx-fund-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8dafa4; }
-    .vx-fund-change { color: #38ef7d; font-size: 0.8rem; font-weight: 700; }
-    .vx-fund-amount { font-size: clamp(2rem, 3.8vw, 3rem); font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin: 0.25rem 0 1.25rem; line-height: 1; }
-    .vx-fund-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 1.25rem; }
+    .vx-hero-frame:hover {
+      box-shadow: 0 35px 90px rgba(7, 31, 25, 0.55), 0 0 40px rgba(42, 143, 114, 0.18);
+    }
+
+    .vx-app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 1.75rem;
+    }
+
+    .vx-app-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    .vx-fund-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 20px;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .vx-fund-amount {
+      font-size: clamp(2rem, 3.8vw, 3rem);
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0.25rem 0 1rem;
+    }
+
+    .vx-fund-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
     .vx-action-pill {
-      display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.65rem 0.25rem;
-      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
-      font-size: 0.72rem; font-weight: 600; color: #d1e2dc; transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.75rem 0.35rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #d1e2dc;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
     }
-    .vx-action-pill:hover { background: rgba(42, 143, 114, 0.25); border-color: rgba(42, 143, 114, 0.5); color: #fff; }
 
-    .vx-feed-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 1.4rem; }
-    .vx-feed-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-    .vx-feed-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8dafa4; }
-    .vx-feed-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .vx-action-pill:hover,
+    .vx-action-pill.active {
+      background: rgba(42, 143, 114, 0.3);
+      border-color: #2a8f72;
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(42, 143, 114, 0.3);
+    }
+
+    .vx-action-pill.active {
+      background: linear-gradient(135deg, rgba(42, 143, 114, 0.45) 0%, rgba(14, 92, 72, 0.6) 100%);
+      border-color: #38ef7d;
+    }
+
+    .vx-feed-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 20px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
     .vx-feed-item {
-      display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.85rem;
-      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; gap: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0.95rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      gap: 0.75rem;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
     }
-    .vx-feed-name { font-size: 0.85rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .vx-feed-meta { font-size: 0.72rem; color: #8dafa4; display: flex; align-items: center; gap: 0.4rem; margin-top: 2px; }
-    .vx-feed-asnaf { background: rgba(201, 168, 106, 0.18); color: #e5c387; padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 0.68rem; }
-    .vx-feed-amount { font-size: 0.88rem; font-weight: 700; color: #38ef7d; }
 
-    /* Chips */
-    .vx-floating-chip {
-      position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px);
-      border: 1px solid var(--vx-border); padding: 0.75rem 1.15rem; border-radius: 16px;
-      box-shadow: 0 12px 32px rgba(11, 42, 34, 0.12); display: flex; align-items: center; gap: 0.75rem; z-index: 10;
+    .vx-feed-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(42, 143, 114, 0.5);
+      transform: translateX(4px);
     }
-    .vx-chip-icon { width: 2.25rem; height: 2.25rem; border-radius: 10px; background: var(--vx-mint-light); color: var(--vx-primary); display: grid; place-items: center; font-weight: 700; }
-    .vx-chip-text strong { display: block; font-size: 0.85rem; font-weight: 800; line-height: 1.1; color: var(--vx-dark); }
-    .vx-chip-text span { font-size: 0.74rem; color: var(--vx-text-secondary); }
-    .vx-chip-top { top: -24px; right: 24px; }
-    .vx-chip-bottom { bottom: -24px; left: 24px; }
+
+    .vx-feed-give-btn {
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(42, 143, 114, 0.3);
+      border: 1px solid rgba(42, 143, 114, 0.6);
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .vx-feed-give-btn:hover {
+      background: #2a8f72;
+      border-color: #38ef7d;
+    }
+
+    /* Floating Chips */
+    .vx-floating-chip {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--vx-border);
+      padding: 0.75rem 1.15rem;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(11, 42, 34, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 10;
+      color: var(--vx-dark);
+    }
+
+    .vx-chip-top {
+      top: -24px;
+      right: 24px;
+      animation: vx-float-slow 5s ease-in-out infinite;
+    }
+
+    .vx-chip-bottom {
+      bottom: -24px;
+      left: 24px;
+      animation: vx-float-reverse 6s ease-in-out infinite;
+    }
 
     /* Marquee */
     .vx-ticker {
-      background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); border-bottom: 1px solid var(--vx-border);
-      padding: 1.1rem 0; overflow: hidden; white-space: nowrap; display: flex; user-select: none;
+      background: var(--vx-surface-alt);
+      border-top: 1px solid var(--vx-border);
+      border-bottom: 1px solid var(--vx-border);
+      padding: 1.1rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+      display: flex;
+      user-select: none;
     }
-    .vx-ticker-track { display: inline-flex; gap: 2.5rem; animation: vx-scroll 28s linear infinite; }
-    .vx-ticker-item { display: inline-flex; align-items: center; gap: 0.75rem; font-family: var(--vx-font-mono); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vx-primary); }
-    .vx-ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--vx-mint); }
-    @keyframes vx-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-    /* Stats */
-    .vx-stats-section { padding: 6rem 0; background: var(--vx-canvas); }
-    .vx-section-kicker { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--vx-mint); margin-bottom: 0.6rem; display: block; }
-    .vx-section-title { font-size: clamp(2rem, 3.8vw, 3.25rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; color: var(--vx-dark); margin: 0 0 1rem; }
-    .vx-section-sub { font-size: 1.1rem; color: var(--vx-text-secondary); max-width: 55ch; margin: 0 0 3.5rem; line-height: 1.6; }
-    .vx-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
-    .vx-stat-card {
-      background: var(--vx-surface-card); border: 1px solid var(--vx-border); border-radius: 22px; padding: 1.75rem;
-      transition: all 0.25s; display: flex; flex-direction: column; justify-content: space-between; min-height: 220px;
+    .vx-ticker:hover .vx-ticker-track {
+      animation-play-state: paused;
     }
-    .vx-stat-card:hover { transform: translateY(-4px); border-color: rgba(14, 92, 72, 0.3); box-shadow: 0 16px 36px rgba(11, 42, 34, 0.06); }
-    .vx-stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-    .vx-stat-idx { font-family: var(--vx-font-mono); font-size: 0.85rem; font-weight: 700; color: var(--vx-text-muted); }
-    .vx-stat-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vx-mint); background: var(--vx-mint-light); padding: 0.2rem 0.55rem; border-radius: 9999px; }
-    .vx-stat-value { font-family: var(--vx-font-mono); font-size: clamp(2.4rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -0.04em; color: var(--vx-dark); line-height: 1; margin-bottom: 0.6rem; }
-    .vx-stat-label { font-size: 1.05rem; font-weight: 800; color: var(--vx-dark); margin-bottom: 0.35rem; }
-    .vx-stat-desc { font-size: 0.85rem; color: var(--vx-text-secondary); line-height: 1.5; }
+
+    .vx-ticker-track {
+      display: inline-flex;
+      gap: 2.5rem;
+      animation: vx-scroll 32s linear infinite;
+    }
+
+    .vx-ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--vx-font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--vx-primary);
+    }
+
+    .vx-ticker-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--vx-mint);
+    }
+
+    /* Sections general */
+    .vx-section-kicker {
+      display: inline-block;
+      font-family: var(--vx-font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--vx-mint);
+      margin-bottom: 0.75rem;
+    }
+
+    .vx-section-title {
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      color: var(--vx-dark);
+      max-width: 22ch;
+      margin-bottom: 1rem;
+    }
+
+    .vx-section-sub {
+      font-size: 1.15rem;
+      color: var(--vx-text-secondary);
+      max-width: 48ch;
+      margin-bottom: 3.5rem;
+      line-height: 1.6;
+    }
+
+    /* Stats Grid */
+    .vx-stats-section {
+      padding: 6.5rem 0;
+      background: #ffffff;
+    }
+
+    .vx-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .vx-stat-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 20px;
+      padding: 2rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 250px;
+      box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .vx-stat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+      border-color: rgba(42, 143, 114, 0.4);
+    }
+
+    .vx-stat-value {
+      font-size: clamp(2.4rem, 4vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--vx-dark);
+      margin-bottom: 0.5rem;
+    }
 
     /* Workflow */
-    .vx-workflow-section { padding: 6rem 0; background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); border-bottom: 1px solid var(--vx-border); }
-    .vx-workflow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
-    .vx-workflow-card {
-      background: #ffffff; border: 1px solid var(--vx-border); border-radius: 24px; padding: 2.25rem 2rem;
-      transition: all 0.25s; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px;
+    .vx-workflow-section {
+      padding: 6.5rem 0;
+      background-color: var(--vx-surface-alt);
+      border-top: 1px solid var(--vx-border);
+      border-bottom: 1px solid var(--vx-border);
     }
-    .vx-workflow-card:hover { transform: translateY(-4px); border-color: rgba(14, 92, 72, 0.3); box-shadow: 0 20px 40px rgba(11, 42, 34, 0.08); }
-    .vx-workflow-icon { width: 3.25rem; height: 3.25rem; border-radius: 16px; background: var(--vx-mint-light); color: var(--vx-primary); display: grid; place-items: center; margin-bottom: 1.75rem; font-size: 1.4rem; }
-    .vx-workflow-card h3 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: var(--vx-dark); margin: 0 0 0.75rem; }
-    .vx-workflow-card p { font-size: 0.95rem; color: var(--vx-text-secondary); line-height: 1.6; margin: 0 0 1.5rem; }
-    .vx-workflow-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 700; color: var(--vx-primary); margin-top: auto; }
 
-    /* Calculator Box */
-    .vx-calc-section { padding: 6rem 0; background: var(--vx-canvas); }
+    .vx-workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .vx-workflow-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 24px;
+      padding: 2.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 6px 24px rgba(11, 42, 34, 0.04);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .vx-workflow-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 45px -15px rgba(14, 92, 72, 0.18);
+      border-color: rgba(42, 143, 114, 0.5);
+    }
+
+    /* Tabs Section */
+    .vx-impact-section {
+      padding: 6.5rem 0;
+      background: var(--vx-canvas);
+    }
+
+    .vx-tab-bar {
+      display: inline-flex;
+      background: var(--vx-surface-alt);
+      padding: 0.35rem;
+      border-radius: 9999px;
+      border: 1px solid var(--vx-border);
+      margin-bottom: 2.5rem;
+      gap: 0.25rem;
+    }
+
+    .vx-tab-btn {
+      padding: 0.6rem 1.4rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: var(--vx-text-secondary);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .vx-tab-btn.active {
+      background: #ffffff;
+      color: var(--vx-dark);
+      box-shadow: 0 4px 14px rgba(11, 42, 34, 0.08);
+    }
+
+    .vx-tab-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(11, 42, 34, 0.04);
+    }
+
+    .vx-progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: var(--vx-surface-alt);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0.5rem 0 1.25rem;
+    }
+
+    .vx-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--vx-primary) 0%, var(--vx-mint) 100%);
+      border-radius: 9999px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Calculator */
+    .vx-calc-section {
+      padding: 6.5rem 0;
+    }
+
     .vx-calc-box {
-      background: linear-gradient(135deg, #0b2a22 0%, #0d382e 100%); border-radius: 28px; padding: clamp(2rem, 5vw, 3.5rem);
-      color: #ffffff; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 3rem; align-items: center;
-      box-shadow: 0 24px 60px rgba(7, 31, 25, 0.25); border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, var(--vx-dark-deep) 0%, #0d352b 100%);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: clamp(2rem, 4vw, 3.5rem);
+      color: #ffffff;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 3rem;
+      box-shadow: 0 25px 60px rgba(7, 31, 25, 0.3);
     }
-    .vx-calc-copy h2 { font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: #ffffff; margin: 0 0 1rem; }
-    .vx-calc-copy p { font-size: 1.05rem; color: #a8c4bb; line-height: 1.6; margin: 0 0 2rem; }
-    .vx-nisab-pill {
-      display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(201, 168, 106, 0.15);
-      border: 1px solid rgba(201, 168, 106, 0.35); color: #f3d79e; padding: 0.5rem 1rem; border-radius: 9999px;
-      font-size: 0.82rem; font-weight: 700; margin-bottom: 1.5rem;
+
+    .vx-calc-widget {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2rem;
     }
-    .vx-calc-widget { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 1.75rem; backdrop-filter: blur(12px); }
-    .vx-calc-input-group { margin-bottom: 1.1rem; }
-    .vx-calc-input-group label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8dafa4; margin-bottom: 0.4rem; }
+
     .vx-calc-input {
-      width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px; padding: 0.75rem 1rem; color: #ffffff; font-family: var(--vx-font-mono); font-size: 1.05rem;
-      font-weight: 600; outline: none; transition: border-color 0.15s;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #ffffff;
+      font-family: var(--vx-font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+      margin-top: 0.35rem;
     }
-    .vx-calc-input:focus { border-color: #38ef7d; background: rgba(255, 255, 255, 0.1); }
-    .vx-calc-result-box { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; }
-    .vx-calc-due-val { font-family: var(--vx-font-mono); font-size: 1.75rem; font-weight: 800; color: #38ef7d; }
+
+    .vx-quick-presets {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .vx-preset-btn {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #d1e2dc;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .vx-preset-btn:hover {
+      background: rgba(42, 143, 114, 0.4);
+      color: #ffffff;
+    }
+
+    .vx-calc-result-box {
+      background: rgba(42, 143, 114, 0.2);
+      border: 1px solid rgba(42, 143, 114, 0.4);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+
+    /* Copilot */
+    .vx-copilot-section {
+      padding: 6.5rem 0;
+      background: var(--vx-surface-alt);
+      border-top: 1px solid var(--vx-border);
+      border-bottom: 1px solid var(--vx-border);
+    }
+
+    .vx-copilot-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 28px;
+      padding: clamp(2rem, 4vw, 3rem);
+      box-shadow: 0 15px 50px rgba(11, 42, 34, 0.05);
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr);
+      gap: 3rem;
+    }
+
+    .vx-prompt-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin: 1.5rem 0;
+    }
+
+    .vx-prompt-chip {
+      padding: 0.75rem 1rem;
+      background: var(--vx-surface-alt);
+      border: 1px solid var(--vx-border);
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--vx-dark);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s ease;
+    }
+
+    .vx-prompt-chip:hover,
+    .vx-prompt-chip.active {
+      background: var(--vx-mint-light);
+      border-color: var(--vx-mint);
+      color: var(--vx-primary);
+    }
+
+    .vx-chat-box {
+      background: var(--vx-dark-deep);
+      border-radius: 20px;
+      padding: 1.75rem;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .vx-chat-bubble-user {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.85rem 1.15rem;
+      border-radius: 16px 16px 4px 16px;
+      align-self: flex-end;
+      font-size: 0.88rem;
+      max-width: 85%;
+    }
+
+    .vx-chat-bubble-ai {
+      background: rgba(42, 143, 114, 0.25);
+      border: 1px solid rgba(42, 143, 114, 0.4);
+      padding: 1.15rem 1.35rem;
+      border-radius: 16px 16px 16px 4px;
+      align-self: flex-start;
+      font-size: 0.9rem;
+      max-width: 95%;
+      line-height: 1.6;
+    }
 
     /* Asnaf */
-    .vx-asnaf-section { padding: 6rem 0; background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); }
-    .vx-asnaf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 3rem; }
-    .vx-asnaf-card { background: #ffffff; border: 1px solid var(--vx-border); border-radius: 18px; padding: 1.5rem; transition: all 0.2s; }
-    .vx-asnaf-card:hover { border-color: var(--vx-primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(11, 42, 34, 0.05); }
-    .vx-asnaf-tag { font-family: var(--vx-font-serif); font-size: 1.25rem; color: var(--vx-primary); font-style: italic; margin-bottom: 0.35rem; display: block; }
-    .vx-asnaf-name { font-size: 1.05rem; font-weight: 800; color: var(--vx-dark); margin-bottom: 0.5rem; }
-    .vx-asnaf-desc { font-size: 0.85rem; color: var(--vx-text-secondary); line-height: 1.5; }
-
-    /* Roles */
-    .vx-roles-section { padding: 6rem 0; background: var(--vx-canvas); }
-    .vx-roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
-    .vx-role-card {
-      background: #ffffff; border: 1px solid var(--vx-border); border-radius: 24px; padding: 2.25rem;
-      display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;
+    .vx-asnaf-section {
+      padding: 6.5rem 0;
     }
-    .vx-role-card.featured { border: 2px solid var(--vx-primary); box-shadow: 0 16px 40px rgba(14, 92, 72, 0.1); position: relative; }
-    .vx-role-badge {
-      position: absolute; top: -12px; right: 24px; background: var(--vx-primary); color: #fff;
-      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px;
+
+    .vx-asnaf-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
     }
-    .vx-role-header h3 { font-size: 1.45rem; font-weight: 800; color: var(--vx-dark); margin: 0 0 0.5rem; }
-    .vx-role-header p { font-size: 0.92rem; color: var(--vx-text-secondary); margin: 0 0 1.5rem; }
-    .vx-role-features { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
-    .vx-role-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; color: var(--vx-text-primary); }
 
-    /* CTA & Footer */
-    .vx-cta-section { padding: 7rem 0; background: linear-gradient(180deg, var(--vx-canvas) 0%, #f1f7f4 100%); text-align: center; }
-    .vx-cta-title { font-size: clamp(2.5rem, 5vw, 4.25rem); font-weight: 800; letter-spacing: -0.03em; color: var(--vx-dark); max-width: 18ch; margin: 0 auto 1.25rem; line-height: 1.1; }
-    .vx-cta-sub { font-size: 1.15rem; color: var(--vx-text-secondary); max-width: 48ch; margin: 0 auto 2.5rem; line-height: 1.6; }
+    .vx-asnaf-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 20px;
+      padding: 1.85rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      cursor: pointer;
+      transition: all 0.35s ease;
+    }
 
-    .vx-footer { background: var(--vx-dark-deep); color: #ffffff; padding: 5rem 0 2.5rem; }
-    .vx-footer-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr)); gap: 2.5rem; margin-bottom: 4rem; }
-    .vx-footer-brand h4 { font-size: 1.35rem; font-weight: 800; margin: 0 0 0.75rem; }
-    .vx-footer-brand p { color: #8dafa4; font-size: 0.88rem; line-height: 1.6; max-width: 32ch; }
-    .vx-footer-col h5 { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #8dafa4; margin: 0 0 1.25rem; }
-    .vx-footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
-    .vx-footer-col a { font-size: 0.88rem; color: #d1e2dc; transition: color 0.15s; }
-    .vx-footer-col a:hover { color: #38ef7d; }
-    .vx-footer-bottom { padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; color: #72968b; }
+    .vx-asnaf-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+      border-color: rgba(42, 143, 114, 0.5);
+    }
+
+    .vx-asnaf-card.selected {
+      border-color: var(--vx-mint);
+      box-shadow: 0 0 0 2px var(--vx-mint), 0 20px 40px -15px rgba(14, 92, 72, 0.2);
+      background: var(--vx-mint-light);
+    }
+
+    .vx-asnaf-drawer {
+      background: var(--vx-surface-alt);
+      border: 1px solid var(--vx-border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+
+    /* Trust & Roles */
+    .vx-trust-section {
+      padding: 6.5rem 0;
+      background: var(--vx-surface-alt);
+      border-top: 1px solid var(--vx-border);
+      border-bottom: 1px solid var(--vx-border);
+    }
+
+    .vx-trust-grid, .vx-roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .vx-trust-card, .vx-role-card {
+      background: #ffffff;
+      border: 1px solid var(--vx-border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
+      transition: all 0.35s ease;
+    }
+
+    .vx-trust-card:hover, .vx-role-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+      border-color: rgba(42, 143, 114, 0.4);
+    }
+
+    /* Footer */
+    .vx-footer {
+      background: var(--vx-dark-deep);
+      color: #ffffff;
+      padding: 5rem 0 2.5rem;
+    }
+
+    .vx-footer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 4rem;
+    }
+
+    /* Modal */
+    .vx-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 31, 25, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .vx-modal-backdrop.open {
+      display: flex;
+    }
+
+    .vx-modal-card {
+      background: #ffffff;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 520px;
+      padding: 2rem;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    }
 
     @media (max-width: 1024px) {
-      .vx-app-grid, .vx-calc-box { grid-template-columns: 1fr; }
-      .vx-stats-grid, .vx-asnaf-grid, .vx-footer-grid { grid-template-columns: repeat(2, 1fr); }
+      .vx-app-grid, .vx-calc-box, .vx-copilot-card { grid-template-columns: 1fr; }
+      .vx-stats-grid, .vx-asnaf-grid { grid-template-columns: repeat(2, 1fr); }
+      .vx-footer-grid { grid-template-columns: repeat(2, 1fr); }
     }
+
     @media (max-width: 768px) {
       .vx-nav-links, .vx-floating-chip { display: none; }
-      .vx-stats-grid, .vx-workflow-grid, .vx-asnaf-grid, .vx-roles-grid, .vx-footer-grid { grid-template-columns: 1fr; }
+      .vx-stats-grid, .vx-workflow-grid, .vx-asnaf-grid { grid-template-columns: 1fr; }
+      .vx-footer-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- 1. FLOATING PILL NAVIGATION -->
   <div class="vx-nav-wrapper">
     <header class="vx-nav">
       <a class="vx-brand" href="#">
@@ -287,145 +1022,246 @@
           <span class="vx-brand-tag">Community Zakat</span>
         </div>
       </a>
-      <ul class="vx-nav-links">
-        <li><a class="vx-nav-link" href="#how-it-works">How It Works</a></li>
-        <li><a class="vx-nav-link" href="#calculator">Nisab Calculator</a></li>
-        <li><a class="vx-nav-link" href="#asnaf">8 Asnaf Categories</a></li>
-        <li><a class="vx-nav-link" href="#governance">Shariah Governance</a></li>
-        <li><a class="vx-nav-link" href="#roles">Community Roles</a></li>
-      </ul>
-      <div class="vx-nav-actions">
-        <a class="vx-btn vx-btn-ghost" href="#roles">Log In</a>
-        <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Zakat ↗</a>
+
+      <nav>
+        <ul class="vx-nav-links">
+          <li><a class="vx-nav-link" href="#how-it-works">How It Works</a></li>
+          <li><a class="vx-nav-link" href="#impact">Live Ledger</a></li>
+          <li><a class="vx-nav-link" href="#calculator">Nisab Calculator</a></li>
+          <li><a class="vx-nav-link" href="#copilot">Shariah AI</a></li>
+          <li><a class="vx-nav-link" href="#asnaf">8 Asnaf</a></li>
+          <li><a class="vx-nav-link" href="#governance">Governance</a></li>
+        </ul>
+      </nav>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <a class="vx-btn vx-btn-ghost" href="#">
+          <span class="vx-btn-roll">
+            <span class="vx-btn-roll-inner">
+              <span class="vx-btn-roll-text">Log In</span>
+              <span class="vx-btn-roll-text" aria-hidden="true">Log In</span>
+            </span>
+          </span>
+        </a>
+        <a class="vx-btn vx-btn-primary" href="#impact">
+          <span class="vx-btn-roll">
+            <span class="vx-btn-roll-inner">
+              <span class="vx-btn-roll-text">Give Zakat</span>
+              <span class="vx-btn-roll-text" aria-hidden="true">Give Zakat</span>
+            </span>
+          </span>
+          →
+        </a>
       </div>
     </header>
   </div>
 
-  <!-- Hero Section -->
+  <!-- 2. HERO SECTION -->
   <section class="vx-hero">
     <div class="vx-hero-bg"></div>
     <div class="vx-container">
       <div style="text-align: center;">
-        <div class="vx-badge-pill">
+        <div class="vx-badge-pill" data-vx-appear>
           <span class="vx-badge-dot"></span>
           <span>Transparent · Mahallu-Verified · Shariah-Compliant</span>
         </div>
       </div>
 
-      <h1 class="vx-hero-title">
+      <h1 class="vx-hero-title" data-vx-appear data-vx-delay="100">
         Your Zakat, <span class="serif">Direct &amp; Dignified</span> by Design.
       </h1>
 
-      <p class="vx-hero-sub">
+      <p class="vx-hero-sub" data-vx-appear data-vx-delay="200">
         Amanah connects conscientious Zakat givers directly with verified, local households in need—with zero intermediary cuts, complete anonymity, and verified Mahallu governance.
       </p>
 
-      <div class="vx-hero-actions">
-        <a class="vx-btn vx-btn-primary" style="padding: 0.85rem 1.85rem; font-size: 1rem;" href="#how-it-works">
-          Find Verified Households →
+      <div class="vx-hero-actions" data-vx-appear data-vx-delay="300">
+        <a class="vx-btn vx-btn-primary" style="padding: 0.9rem 2rem; font-size: 1.02rem;" href="#impact">
+          <span class="vx-btn-roll">
+            <span class="vx-btn-roll-inner">
+              <span class="vx-btn-roll-text">Find Verified Households</span>
+              <span class="vx-btn-roll-text" aria-hidden="true">Find Verified Households</span>
+            </span>
+          </span>
+          →
         </a>
-        <a class="vx-btn vx-btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1rem;" href="#calculator">
-          Calculate Your Zakat
+        <a class="vx-btn vx-btn-secondary" style="padding: 0.9rem 1.85rem; font-size: 1.02rem;" href="#calculator">
+          <span class="vx-btn-roll">
+            <span class="vx-btn-roll-inner">
+              <span class="vx-btn-roll-text">Calculate Your Zakat</span>
+              <span class="vx-btn-roll-text" aria-hidden="true">Calculate Your Zakat</span>
+            </span>
+          </span>
         </a>
       </div>
 
-      <!-- App Frame Mockup -->
-      <div class="vx-hero-frame-wrap">
+      <!-- App Mockup Frame with Interactive Mode Switcher -->
+      <div class="vx-hero-frame-wrap" data-vx-appear data-vx-delay="400">
         <div class="vx-floating-chip vx-chip-top">
-          <div class="vx-chip-icon">✓</div>
-          <div class="vx-chip-text">
+          <div style="width: 2rem; height: 2rem; border-radius: 8px; background: #eef7f3; color: #0e5c48; display: grid; place-items: center; font-weight: 800;">✓</div>
+          <div>
             <strong>100% Direct Giving</strong>
-            <span>Zero administrative deduction</span>
+            <span style="font-size: 0.74rem; color: #5f706a;">Zero administrative deductions</span>
           </div>
         </div>
 
         <div class="vx-floating-chip vx-chip-bottom">
-          <div class="vx-chip-icon">⚖</div>
-          <div class="vx-chip-text">
+          <div style="width: 2rem; height: 2rem; border-radius: 8px; background: #fdf8ed; color: #c9a86a; display: grid; place-items: center; font-weight: 800;">⚖</div>
+          <div>
             <strong>Current Gold Nisab</strong>
-            <span class="vx-mono">₹5,81,400 (85g Gold Threshold)</span>
+            <span class="vx-mono" style="font-size: 0.74rem; color: #5f706a;">₹5,81,400 (85g Gold Threshold)</span>
           </div>
         </div>
 
         <div class="vx-hero-frame">
           <div class="vx-app-header">
-            <div class="vx-app-status">
-              <span class="vx-mono" style="font-weight: 700;">9:41 AM</span>
+            <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: #a3c2b8;">
+              <span class="vx-mono" style="font-weight: 700; color: #38ef7d;">LIVE RAIL</span>
               <span>·</span>
-              <span style="color:#72e0b9;">📍</span>
               <span style="font-weight: 600;">Kozhikode South Mahallu #104</span>
             </div>
-            <div class="vx-app-badge">Audited Mahallu</div>
+            <div style="background: rgba(42, 143, 114, 0.2); border: 1px solid rgba(42, 143, 114, 0.4); color: #72e0b9; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 9999px;">
+              Audited Mahallu
+            </div>
           </div>
 
           <div class="vx-app-grid">
+            <!-- Left: Fund Details & Mode Switcher -->
             <div class="vx-fund-card">
-              <div class="vx-fund-header">
-                <span class="vx-fund-label">Total Verified Mahallu Fund</span>
-                <span class="vx-fund-change vx-mono">+14.2% this quarter</span>
-              </div>
-              <div class="vx-fund-amount vx-mono">₹48,25,000</div>
-              <div style="font-size: 0.82rem; color: #8dafa4; margin-bottom: 1.25rem;">
-                100% allocated to 14 verified local families under Asnaf supervision.
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">
+                  <span>Total Verified Mahallu Fund</span>
+                  <span class="vx-mono" style="color: #38ef7d;">+14.2% this quarter</span>
+                </div>
+                <div class="vx-fund-amount vx-mono">₹48,25,000</div>
+                <div style="font-size: 0.84rem; color: #8dafa4; line-height: 1.5;">
+                  100% allocated to 14 verified local families under strict Asnaf supervision.
+                </div>
               </div>
 
-              <div class="vx-fund-actions">
-                <a class="vx-action-pill" href="#how-it-works">
-                  <span>🤲</span>
-                  <span>Give Direct</span>
-                </a>
-                <a class="vx-action-pill" href="#calculator">
-                  <span>🧮</span>
-                  <span>Calculate</span>
-                </a>
-                <a class="vx-action-pill" href="#roles">
-                  <span>🔒</span>
-                  <span>Request</span>
-                </a>
-                <a class="vx-action-pill" href="#governance">
-                  <span>📜</span>
-                  <span>Shariah Audit</span>
-                </a>
+              <div>
+                <div style="font-size: 0.72rem; color: #8dafa4; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700;">
+                  Choose Action Mode:
+                </div>
+                <div class="vx-fund-actions">
+                  <button type="button" class="vx-action-pill active" id="btn-mode-give" onclick="switchHeroMode('give')">
+                    <span>❤️</span>
+                    <span>Give Direct</span>
+                  </button>
+                  <button type="button" class="vx-action-pill" id="btn-mode-calc" onclick="switchHeroMode('calc')">
+                    <span>🧮</span>
+                    <span>Quick Nisab</span>
+                  </button>
+                  <button type="button" class="vx-action-pill" id="btn-mode-request" onclick="switchHeroMode('request')">
+                    <span>🔒</span>
+                    <span>Apply Aid</span>
+                  </button>
+                  <button type="button" class="vx-action-pill" id="btn-mode-audit" onclick="switchHeroMode('audit')">
+                    <span>🛡️</span>
+                    <span>Audit Seal</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="vx-feed-card">
-              <div class="vx-feed-head">
-                <span class="vx-feed-title">Live Verified Allocations</span>
-                <span class="vx-mono" style="font-size: 0.72rem; color: #72e0b9;">LIVE LEDGER</span>
+            <!-- Right: Dynamic View -->
+            <div class="vx-feed-card" id="hero-feed-container">
+              <!-- Mode: Give Direct -->
+              <div id="pane-mode-give">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Live Verified Allocations</span>
+                  <span class="vx-mono" style="font-size: 0.72rem; color: #38ef7d;">CLICK TO GIVE</span>
+                </div>
+                <div class="vx-feed-item" onclick="openHandshakeModal('Widowed Mother with 3 Schoolchildren', 'Al-Fuqara', 15000)">
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff;">Widowed Mother with 3 Schoolchildren</div>
+                    <div style="font-size: 0.72rem; color: #8dafa4;"><span style="background: rgba(201, 168, 106, 0.18); color: #e5c387; padding: 1px 6px; border-radius: 4px;">Al-Fuqara</span> · Mahallu Verified</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="vx-mono" style="color: #38ef7d; font-weight: 700;">₹15,000</div>
+                    <button type="button" class="vx-feed-give-btn">Give</button>
+                  </div>
+                </div>
+
+                <div class="vx-feed-item" onclick="openHandshakeModal('Elderly Patient Dialysis Support', 'Al-Masakeen', 8500)">
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff;">Elderly Patient Dialysis Support</div>
+                    <div style="font-size: 0.72rem; color: #8dafa4;"><span style="background: rgba(201, 168, 106, 0.18); color: #e5c387; padding: 1px 6px; border-radius: 4px;">Al-Masakeen</span> · Direct Hospital Rail</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="vx-mono" style="color: #38ef7d; font-weight: 700;">₹8,500</div>
+                    <button type="button" class="vx-feed-give-btn">Give</button>
+                  </div>
+                </div>
+
+                <div class="vx-feed-item" onclick="openHandshakeModal('Distressed Artisan Flood Debt Relief', 'Al-Gharimun', 25000)">
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff;">Distressed Artisan Debt Relief</div>
+                    <div style="font-size: 0.72rem; color: #8dafa4;"><span style="background: rgba(201, 168, 106, 0.18); color: #e5c387; padding: 1px 6px; border-radius: 4px;">Al-Gharimun</span> · Committee Approved</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="vx-mono" style="color: #38ef7d; font-weight: 700;">₹25,000</div>
+                    <button type="button" class="vx-feed-give-btn">Give</button>
+                  </div>
+                </div>
               </div>
-              <div class="vx-feed-list">
-                <div class="vx-feed-item">
-                  <div class="vx-feed-info">
-                    <div class="vx-feed-name">Widowed Mother with 3 Schoolchildren</div>
-                    <div class="vx-feed-meta">
-                      <span class="vx-feed-asnaf">Al-Fuqara</span>
-                      <span>· Mahallu Verified</span>
-                    </div>
-                  </div>
-                  <div class="vx-feed-amount vx-mono">₹15,000</div>
-                </div>
 
-                <div class="vx-feed-item">
-                  <div class="vx-feed-info">
-                    <div class="vx-feed-name">Elderly Patient Dialysis Support</div>
-                    <div class="vx-feed-meta">
-                      <span class="vx-feed-asnaf">Al-Masakeen</span>
-                      <span>· Direct Hospital Rail</span>
-                    </div>
-                  </div>
-                  <div class="vx-feed-amount vx-mono">₹8,500</div>
+              <!-- Mode: Quick Nisab -->
+              <div id="pane-mode-calc" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Quick Gold Estimator</span>
+                  <span class="vx-mono" style="font-size: 0.72rem; color: #72e0b9;">85g GOLD BENCHMARK</span>
                 </div>
-
-                <div class="vx-feed-item">
-                  <div class="vx-feed-info">
-                    <div class="vx-feed-name">Distressed Artisan Debt Relief</div>
-                    <div class="vx-feed-meta">
-                      <span class="vx-feed-asnaf">Al-Gharimun</span>
-                      <span>· Committee Approved</span>
-                    </div>
+                <div style="margin-bottom: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #a3c2b8;">
+                    <span>Gold (grams):</span>
+                    <span id="hero-gold-val" class="vx-mono" style="color: #ffffff; font-weight: 700;">30g</span>
                   </div>
-                  <div class="vx-feed-amount vx-mono">₹25,000</div>
+                  <input type="range" min="0" max="150" value="30" id="hero-gold-slider" oninput="updateHeroCalc()" style="width: 100%; accent-color: #38ef7d;">
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #a3c2b8;">
+                    <span>Liquid Cash:</span>
+                    <span id="hero-cash-val" class="vx-mono" style="color: #ffffff; font-weight: 700;">₹3,50,000</span>
+                  </div>
+                  <input type="range" min="0" max="1000000" step="25000" value="350000" id="hero-cash-slider" oninput="updateHeroCalc()" style="width: 100%; accent-color: #38ef7d;">
+                </div>
+                <div style="background: rgba(42, 143, 114, 0.25); border: 1px solid rgba(42,143,114,0.4); border-radius: 12px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div id="hero-calc-status" style="font-size: 0.75rem; color: #a3c2b8;">Estimated Zakat (2.5%)</div>
+                    <div id="hero-calc-total" style="font-size: 0.72rem; color: #72e0b9;">Total: ₹5,55,200</div>
+                  </div>
+                  <div id="hero-calc-due" class="vx-mono" style="font-size: 1.25rem; font-weight: 800; color: #38ef7d;">₹13,880</div>
+                </div>
+              </div>
+
+              <!-- Mode: Apply Aid -->
+              <div id="pane-mode-request" style="display: none; font-size: 0.82rem; color: #c2dbd2;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Confidential Household Aid</span>
+                  <span class="vx-mono" style="font-size: 0.72rem; color: #72e0b9;">100% PRIVATE</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem;">
+                  <strong style="color: #ffffff; display: block;">Zero Public Exposure:</strong>
+                  No photos or humiliating campaigns. Cases are reviewed exclusively by registered local committee elders.
+                </div>
+                <div style="background: rgba(255,255,255,0.04); padding: 0.75rem; border-radius: 10px;">
+                  <strong style="color: #ffffff; display: block;">Direct Pharmacy &amp; Clinic Rails:</strong>
+                  Disbursements are routed directly to accredited clinics or in sealed monthly envelopes.
+                </div>
+              </div>
+
+              <!-- Mode: Audit Seal -->
+              <div id="pane-mode-audit" style="display: none; font-size: 0.82rem; color: #c2dbd2;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Shariah Audit Seal</span>
+                  <span class="vx-mono" style="font-size: 0.72rem; color: #38ef7d;">CERTIFIED</span>
+                </div>
+                <div style="margin-bottom: 0.4rem; color: #ffffff;">✓ Fatwa Board Resolution #418/2025</div>
+                <div style="margin-bottom: 0.4rem; color: #ffffff;">✓ Strict Tamleek (Ownership Transfer) Enforced</div>
+                <div style="margin-bottom: 0.4rem; color: #ffffff;">✓ 0.00% Administrative Cut / Direct Handshake</div>
+                <div style="background: rgba(42, 143, 114, 0.2); padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.75rem; color: #72e0b9; margin-top: 0.5rem;">
+                  "Every rupee given directly satisfies the strict Quranic mandate of Surah At-Tawbah (9:60)."
                 </div>
               </div>
             </div>
@@ -435,8 +1271,8 @@
     </div>
   </section>
 
-  <!-- Marquee Ticker -->
-  <div class="vx-ticker">
+  <!-- 3. MARQUEE TICKER -->
+  <div class="vx-ticker" aria-hidden="true">
     <div class="vx-ticker-track">
       <span class="vx-ticker-item">VERIFIED LOCAL HOUSEHOLDS <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">ZERO PLATFORM COMMISSIONS <span class="vx-ticker-dot"></span></span>
@@ -446,420 +1282,701 @@
       <span class="vx-ticker-item">PRESERVED RECIPIENT DIGNITY <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">NO EXPOSING PHOTOGRAPHS <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">REAL-TIME GOLD NISAB <span class="vx-ticker-dot"></span></span>
+      <!-- Loop repeat -->
       <span class="vx-ticker-item">VERIFIED LOCAL HOUSEHOLDS <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">ZERO PLATFORM COMMISSIONS <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">SCHOLAR-AUDITED GOVERNANCE <span class="vx-ticker-dot"></span></span>
       <span class="vx-ticker-item">IMMUTABLE MAHALLU LEDGER <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">100% DIRECT TO BENEFICIARY <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">PRESERVED RECIPIENT DIGNITY <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">NO EXPOSING PHOTOGRAPHS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">REAL-TIME GOLD NISAB <span class="vx-ticker-dot"></span></span>
     </div>
   </div>
 
-  <!-- Stats Grid -->
+  <!-- 4. BY THE NUMBERS -->
   <section class="vx-stats-section" id="metrics">
     <div class="vx-container">
-      <span class="vx-section-kicker">BY THE NUMBERS</span>
-      <h2 class="vx-section-title">Built for Transparency, Integrity, and Ground Reality.</h2>
-      <p class="vx-section-sub">
+      <span class="vx-section-kicker" data-vx-appear>BY THE NUMBERS</span>
+      <h2 class="vx-section-title" data-vx-appear data-vx-delay="100">Built for Transparency, Integrity, and Ground Reality.</h2>
+      <p class="vx-section-sub" data-vx-appear data-vx-delay="200">
         From verified household identification to scholar-audited allocations, Amanah brings absolute certainty to your religious obligations.
       </p>
 
       <div class="vx-stats-grid">
-        <div class="vx-stat-card">
-          <div class="vx-stat-top">
-            <span class="vx-stat-idx">01</span>
-            <span class="vx-stat-status"><span class="vx-badge-dot"></span> LIVE RAIL</span>
+        <div class="vx-stat-card" data-vx-appear data-vx-delay="100">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <span class="vx-mono" style="font-size: 0.85rem; color: #8b9b95;">01</span>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #0e5c48; background: #eef7f3; padding: 0.2rem 0.55rem; border-radius: 9999px;">LIVE RAIL</span>
           </div>
           <div>
             <div class="vx-stat-value">100%</div>
-            <div class="vx-stat-label">Direct Distribution</div>
-            <p class="vx-stat-desc">Zero platform fees or intermediary commission deducted from your contribution.</p>
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Direct Distribution</div>
+            <p style="font-size: 0.85rem; color: #5f706a; margin: 0;">Zero platform fees or intermediary commission deducted from your contribution.</p>
           </div>
         </div>
 
-        <div class="vx-stat-card">
-          <div class="vx-stat-top">
-            <span class="vx-stat-idx">02</span>
-            <span class="vx-stat-status"><span class="vx-badge-dot"></span> VERIFIED</span>
+        <div class="vx-stat-card" data-vx-appear data-vx-delay="200">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <span class="vx-mono" style="font-size: 0.85rem; color: #8b9b95;">02</span>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #0e5c48; background: #eef7f3; padding: 0.2rem 0.55rem; border-radius: 9999px;">VERIFIED</span>
           </div>
           <div>
             <div class="vx-stat-value">1,420+</div>
-            <div class="vx-stat-label">Verified Households</div>
-            <p class="vx-stat-desc">Families physically assessed across income, living conditions, and emergency healthcare.</p>
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Verified Households</div>
+            <p style="font-size: 0.85rem; color: #5f706a; margin: 0;">Families physically assessed across income, living conditions, and emergency healthcare.</p>
           </div>
         </div>
 
-        <div class="vx-stat-card">
-          <div class="vx-stat-top">
-            <span class="vx-stat-idx">03</span>
-            <span class="vx-stat-status"><span class="vx-badge-dot"></span> ACTIVE</span>
+        <div class="vx-stat-card" data-vx-appear data-vx-delay="300">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <span class="vx-mono" style="font-size: 0.85rem; color: #8b9b95;">03</span>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #0e5c48; background: #eef7f3; padding: 0.2rem 0.55rem; border-radius: 9999px;">ACTIVE</span>
           </div>
           <div>
             <div class="vx-stat-value">85+</div>
-            <div class="vx-stat-label">Registered Mahallus</div>
-            <p class="vx-stat-desc">Local mosque committees and elders collaborating on a unified community ledger.</p>
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Registered Mahallus</div>
+            <p style="font-size: 0.85rem; color: #5f706a; margin: 0;">Local mosque committees and elders collaborating on a unified community ledger.</p>
           </div>
         </div>
 
-        <div class="vx-stat-card">
-          <div class="vx-stat-top">
-            <span class="vx-stat-idx">04</span>
-            <span class="vx-stat-status"><span class="vx-badge-dot"></span> SHARIAH</span>
+        <div class="vx-stat-card" data-vx-appear data-vx-delay="400">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <span class="vx-mono" style="font-size: 0.85rem; color: #8b9b95;">04</span>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #0e5c48; background: #eef7f3; padding: 0.2rem 0.55rem; border-radius: 9999px;">SHARIAH</span>
           </div>
           <div>
             <div class="vx-stat-value">100%</div>
-            <div class="vx-stat-label">Quranic Compliance</div>
-            <p class="vx-stat-desc">Every rupee strictly classified under the 8 Quranic Asnaf categories (Surah At-Tawbah 9:60).</p>
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Quranic Compliance</div>
+            <p style="font-size: 0.85rem; color: #5f706a; margin: 0;">Every rupee strictly classified under the 8 Quranic Asnaf categories (Surah At-Tawbah 9:60).</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 3-Pillar Workflow -->
+  <!-- 5. ONE CONNECTED WORKFLOW -->
   <section class="vx-workflow-section" id="how-it-works">
     <div class="vx-container">
-      <span class="vx-section-kicker">ONE CONNECTED WORKFLOW</span>
-      <h2 class="vx-section-title">Everything You Need. Nothing You Don’t.</h2>
-      <p class="vx-section-sub">
+      <span class="vx-section-kicker" data-vx-appear>ONE CONNECTED WORKFLOW</span>
+      <h2 class="vx-section-title" data-vx-appear data-vx-delay="100">Everything You Need. Nothing You Don’t.</h2>
+      <p class="vx-section-sub" data-vx-appear data-vx-delay="200">
         Whether giving, receiving, or administering community funds, Amanah eliminates ambiguity with ground-truth verification.
       </p>
 
       <div class="vx-workflow-grid">
-        <div class="vx-workflow-card">
+        <div class="vx-workflow-card" data-vx-appear data-vx-delay="150">
           <div>
-            <div class="vx-workflow-icon">🕌</div>
-            <h3>Ground-Level Mahallu Verification</h3>
-            <p>
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🏛️</div>
+            <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.85rem;">Ground-Level Mahallu Verification</h3>
+            <p style="color: #5f706a; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.75rem;">
               No unchecked digital forms. Local Mahallu elders and administrators physically verify household income, family size, medical records, and living conditions before cases are admitted.
             </p>
           </div>
-          <a class="vx-workflow-link" href="#calculator">View verified listings ↗</a>
+          <a class="vx-workflow-link" href="#impact" style="font-weight: 700; color: #0e5c48; text-decoration: none;">View verified listings →</a>
         </div>
 
-        <div class="vx-workflow-card">
+        <div class="vx-workflow-card" data-vx-appear data-vx-delay="250">
           <div>
-            <div class="vx-workflow-icon">🛡</div>
-            <h3>Anonymized &amp; Dignified Giving</h3>
-            <p>
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🛡️</div>
+            <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.85rem;">Anonymized &amp; Dignified Giving</h3>
+            <p style="color: #5f706a; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.75rem;">
               Recipients never face the humiliation of public fundraising or exposed photos. Givers search by locality or PIN code and review anonymized, quantified need profiles.
             </p>
           </div>
-          <a class="vx-workflow-link" href="#roles">Learn about recipient privacy ↗</a>
+          <a class="vx-workflow-link" href="#" style="font-weight: 700; color: #0e5c48; text-decoration: none;">Learn about recipient privacy →</a>
         </div>
 
-        <div class="vx-workflow-card">
+        <div class="vx-workflow-card" data-vx-appear data-vx-delay="350">
           <div>
-            <div class="vx-workflow-icon">💳</div>
-            <h3>Dual Contribution Rails</h3>
-            <p>
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🤝</div>
+            <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.85rem;">Dual Contribution Rails</h3>
+            <p style="color: #5f706a; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.75rem;">
               Choose instant online platform transfers with digital receipts, or hand over cash in-person with a double-handshake digital receipt confirmed by the recipient.
             </p>
           </div>
-          <a class="vx-workflow-link" href="#calculator">Calculate your obligation ↗</a>
+          <a class="vx-workflow-link" href="#calculator" style="font-weight: 700; color: #0e5c48; text-decoration: none;">Calculate your obligation →</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Interactive Nisab Calculator -->
+  <!-- 6. INTERACTIVE 3-TAB IMPACT SECTION -->
+  <section class="vx-impact-section" id="impact">
+    <div class="vx-container">
+      <div style="text-align: center;">
+        <span class="vx-section-kicker" data-vx-appear>REAL-TIME COMMUNITY LEDGER</span>
+        <h2 class="vx-section-title" style="max-width: 24ch; margin: 0 auto 1rem;" data-vx-appear data-vx-delay="100">
+          See Exactly Where Every Paisa Goes.
+        </h2>
+        <p class="vx-section-sub" style="margin: 0 auto 2.5rem;" data-vx-appear data-vx-delay="200">
+          Toggle between Quranic category allocations, active emergency relief portfolios, and Mahallu network metrics.
+        </p>
+
+        <div class="vx-tab-bar" data-vx-appear data-vx-delay="250">
+          <button type="button" class="vx-tab-btn active" id="tab-btn-breakdown" onclick="switchImpactTab('breakdown')">Asnaf Breakdown</button>
+          <button type="button" class="vx-tab-btn" id="tab-btn-portfolio" onclick="switchImpactTab('portfolio')">Relief Portfolio</button>
+          <button type="button" class="vx-tab-btn" id="tab-btn-network" onclick="switchImpactTab('network')">Mahallu Network</button>
+        </div>
+      </div>
+
+      <!-- Tab Content 1: Breakdown -->
+      <div class="vx-tab-card" id="pane-impact-breakdown" data-vx-appear>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) ; gap: 2rem;">
+          <div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem;">
+              <span>Al-Fuqara (The Impoverished)</span>
+              <span class="vx-mono" style="color: #0e5c48;">₹16,40,500 (34%)</span>
+            </div>
+            <div class="vx-progress-bar-wrap">
+              <div class="vx-progress-fill" style="width: 34%;"></div>
+            </div>
+            <p style="font-size: 0.82rem; color: #5f706a;">Basic sustenance and emergency shelter for households under 50% basic poverty line.</p>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem;">
+              <span>Al-Masakeen (The Destitute)</span>
+              <span class="vx-mono" style="color: #0e5c48;">₹13,51,000 (28%)</span>
+            </div>
+            <div class="vx-progress-bar-wrap">
+              <div class="vx-progress-fill" style="width: 28%;"></div>
+            </div>
+            <p style="font-size: 0.82rem; color: #5f706a;">Dialysis, surgery copays, and chronic medicine supplies for struggling low-wage earners.</p>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem;">
+              <span>Al-Gharimun (Debt Burdened)</span>
+              <span class="vx-mono" style="color: #0e5c48;">₹8,68,500 (18%)</span>
+            </div>
+            <div class="vx-progress-bar-wrap">
+              <div class="vx-progress-fill" style="width: 18%;"></div>
+            </div>
+            <p style="font-size: 0.82rem; color: #5f706a;">Direct hospital and essential livelihood debt clearances audited by Shura committees.</p>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem;">
+              <span>Fi Sabilillah &amp; Education</span>
+              <span class="vx-mono" style="color: #0e5c48;">₹5,79,000 (12%)</span>
+            </div>
+            <div class="vx-progress-bar-wrap">
+              <div class="vx-progress-fill" style="width: 12%;"></div>
+            </div>
+            <p style="font-size: 0.82rem; color: #5f706a;">Orphan scholarship programs, school kits, and community learning resources.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Portfolio -->
+      <div class="vx-tab-card" id="pane-impact-portfolio" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+          <div style="background: #f6faf8; padding: 1.5rem; border-radius: 16px; border: 1px solid #e4eae8;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span class="vx-badge-pill" style="margin: 0; padding: 0.2rem 0.6rem;">HEALTHCARE RAIL</span>
+              <span class="vx-mono" style="font-weight: 700; color: #0e5c48;">84% Funded</span>
+            </div>
+            <h4 style="margin: 0.5rem 0; font-size: 1.15rem; font-weight: 800;">Kozhikode Dialysis Subsidy</h4>
+            <div class="vx-progress-bar-wrap"><div class="vx-progress-fill" style="width: 84%;"></div></div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #5f706a;">
+              <span>₹4,20,000 Raised</span>
+              <span class="vx-mono">Goal: ₹5,00,000</span>
+            </div>
+          </div>
+
+          <div style="background: #f6faf8; padding: 1.5rem; border-radius: 16px; border: 1px solid #e4eae8;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span class="vx-badge-pill" style="margin: 0; padding: 0.2rem 0.6rem;">WIDOWED SUPPORT</span>
+              <span class="vx-mono" style="font-weight: 700; color: #0e5c48;">86% Funded</span>
+            </div>
+            <h4 style="margin: 0.5rem 0; font-size: 1.15rem; font-weight: 800;">Malappuram Livelihood Grants</h4>
+            <div class="vx-progress-bar-wrap"><div class="vx-progress-fill" style="width: 86%;"></div></div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #5f706a;">
+              <span>₹8,60,000 Raised</span>
+              <span class="vx-mono">Goal: ₹10,00,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Network -->
+      <div class="vx-tab-card" id="pane-impact-network" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+          <div style="border: 1px solid #e4eae8; padding: 1.5rem; border-radius: 16px;">
+            <div style="font-size: 0.78rem; color: #8b9b95; font-weight: 700;">MAHALLU #104</div>
+            <h4 style="margin: 0.25rem 0 0.5rem; font-size: 1.1rem; font-weight: 800;">Kozhikode South</h4>
+            <div style="font-size: 0.85rem; color: #0e5c48; font-weight: 700;">14 Households Active</div>
+            <div style="font-size: 0.8rem; color: #5f706a; margin-top: 0.5rem;">Average turnaround: <strong>4.2 hours</strong></div>
+          </div>
+          <div style="border: 1px solid #e4eae8; padding: 1.5rem; border-radius: 16px;">
+            <div style="font-size: 0.78rem; color: #8b9b95; font-weight: 700;">MAHALLU #028</div>
+            <h4 style="margin: 0.25rem 0 0.5rem; font-size: 1.1rem; font-weight: 800;">Malappuram Central</h4>
+            <div style="font-size: 0.85rem; color: #0e5c48; font-weight: 700;">22 Households Active</div>
+            <div style="font-size: 0.8rem; color: #5f706a; margin-top: 0.5rem;">Average turnaround: <strong>3.8 hours</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. INTERACTIVE NISAB CALCULATOR -->
   <section class="vx-calc-section" id="calculator">
     <div class="vx-container">
-      <div class="vx-calc-box">
-        <div class="vx-calc-copy">
-          <div class="vx-nisab-pill">
+      <div class="vx-calc-box" data-vx-appear>
+        <div>
+          <div class="vx-badge-pill" style="margin-bottom: 1.5rem;">
             <span>✨</span>
             <span>Nisab Standard: 85g Gold (₹6,840/g)</span>
           </div>
-          <h2>Calculate Your Zakat with Certainty.</h2>
-          <p>
-            Zakat is due at 2.5% on qualifying wealth held for one full lunar year (Hawl) exceeding the Nisab threshold of ₹5,81,400. Test your estimated contribution right now.
+          <h2 style="font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 800; margin-bottom: 1.25rem;">
+            Calculate Your Zakat with Certainty.
+          </h2>
+          <p style="color: #8dafa4; font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
+            Zakat is due at 2.5% on qualifying wealth held for one full lunar year exceeding the Nisab threshold of ₹5,81,400.
           </p>
-          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-            <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Direct Zakat →</a>
+
+          <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #8dafa4; margin-bottom: 0.4rem;">
+              <span>Wealth vs Nisab:</span>
+              <span id="main-meter-pct" class="vx-mono" style="color: #38ef7d; font-weight: 700;">100% of Nisab</span>
+            </div>
+            <div class="vx-progress-bar-wrap" style="background: rgba(255,255,255,0.1); height: 10px;">
+              <div id="main-meter-fill" class="vx-progress-fill" style="width: 100%;"></div>
+            </div>
+            <div id="main-meter-text" style="font-size: 0.75rem; color: #8dafa4;">
+              ✓ Nisab threshold reached. Zakat of 2.5% is obligatory upon Hawl completion.
+            </div>
           </div>
         </div>
 
         <div class="vx-calc-widget">
-          <div class="vx-calc-input-group">
-            <label>Cash &amp; Bank Balances (₹)</label>
-            <input type="number" id="calcCash" class="vx-calc-input" value="450000" oninput="calculateLive()">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Cash &amp; Bank Balances (₹)</label>
+            <input type="number" id="calc-cash" class="vx-calc-input" value="450000" oninput="runMainCalc()">
+            <div class="vx-quick-presets">
+              <button type="button" class="vx-preset-btn" onclick="addCash(50000)">+₹50k</button>
+              <button type="button" class="vx-preset-btn" onclick="addCash(100000)">+₹1 Lakh</button>
+              <button type="button" class="vx-preset-btn" onclick="clearCash()">Clear</button>
+            </div>
           </div>
 
-          <div class="vx-calc-input-group">
-            <label>Gold Holdings (Grams)</label>
-            <input type="number" id="calcGold" class="vx-calc-input" value="25" oninput="calculateLive()">
+          <div style="margin-top: 1.25rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Gold Holdings (Grams)</label>
+            <input type="number" id="calc-gold" class="vx-calc-input" value="25" oninput="runMainCalc()">
+            <div class="vx-quick-presets">
+              <button type="button" class="vx-preset-btn" onclick="addGold(10)">+10g</button>
+              <button type="button" class="vx-preset-btn" onclick="addGold(25)">+25g</button>
+              <button type="button" class="vx-preset-btn" onclick="setGold(85)">85g (Nisab)</button>
+            </div>
           </div>
 
-          <div class="vx-calc-input-group">
-            <label>Business Inventory / Stock (₹)</label>
-            <input type="number" id="calcStock" class="vx-calc-input" value="120000" oninput="calculateLive()">
+          <div style="margin-top: 1.25rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #8dafa4;">Business Stock / Inventory (₹)</label>
+            <input type="number" id="calc-stock" class="vx-calc-input" value="120000" oninput="runMainCalc()">
           </div>
 
           <div class="vx-calc-result-box">
             <div>
-              <div class="vx-calc-due-label" id="dueLabel">Total Zakat Due (2.5%)</div>
-              <div style="font-size: 0.75rem; color: #8dafa4;" id="totalWealthLabel">Total Wealth: ₹7,41,000</div>
+              <div id="calc-result-status" style="font-size: 0.85rem; font-weight: 700; color: #ffffff;">Total Zakat Due (2.5%)</div>
+              <div id="calc-result-total" style="font-size: 0.75rem; color: #8dafa4;">Total Wealth: ₹7,41,000</div>
             </div>
-            <div class="vx-calc-due-val" id="dueVal">₹18,525</div>
+            <div id="calc-result-val" class="vx-mono" style="font-size: 1.75rem; font-weight: 800; color: #38ef7d;">₹18,525</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 8 Quranic Asnaf -->
+  <!-- 8. AMANAH INTELLIGENCE: SHARIAH COPILOT -->
+  <section class="vx-copilot-section" id="copilot">
+    <div class="vx-container">
+      <div class="vx-copilot-card" data-vx-appear>
+        <div>
+          <span class="vx-section-kicker">AMANAH INTELLIGENCE</span>
+          <h2 style="font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 800; color: #0b2a22; margin: 0.5rem 0 1rem;">
+            Scholar-Verified Shariah Copilot.
+          </h2>
+          <p style="color: #5f706a; font-size: 0.98rem; line-height: 1.6; margin-bottom: 1.5rem;">
+            Instant answers to common Zakat, Nisab, Hawl, and Asnaf dilemmas—referenced against classical Islamic jurisprudence and contemporary Fiqh resolutions.
+          </p>
+
+          <div class="vx-prompt-chips">
+            <button type="button" class="vx-prompt-chip active" onclick="setCopilotQuestion(0)">
+              Can Zakat be given to close relatives?
+            </button>
+            <button type="button" class="vx-prompt-chip" onclick="setCopilotQuestion(1)">
+              Is Zakat due on personal residential property?
+            </button>
+            <button type="button" class="vx-prompt-chip" onclick="setCopilotQuestion(2)">
+              How is Nisab calculated on mixed gold, cash, and trade assets?
+            </button>
+            <button type="button" class="vx-prompt-chip" onclick="setCopilotQuestion(3)">
+              Can Zakat settle emergency medical debts for neighbors?
+            </button>
+          </div>
+        </div>
+
+        <div class="vx-chat-box">
+          <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+            <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(42, 143, 114, 0.4); display: grid; place-items: center;">✨</div>
+            <div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: #ffffff;">Amanah Shariah Advisor</div>
+              <div style="font-size: 0.7rem; color: #72e0b9;">Referenced across 4 Classical Schools</div>
+            </div>
+          </div>
+
+          <div class="vx-chat-bubble-user" id="copilot-bubble-q">
+            Can Zakat be given to close relatives?
+          </div>
+
+          <div class="vx-chat-bubble-ai" id="copilot-bubble-a">
+            Yes, according to classical jurisprudence (Hanafi, Shafi'i, Maliki, Hanbali), Zakat can be given to needy relatives such as siblings, aunts, uncles, and cousins—provided they are not your direct dependents (parents, grandparents, children, or spouse). In fact, the Prophet (ﷺ) stated that giving to needy relatives doubles the spiritual reward: one for charity and one for upholding kinship ties (Sunan at-Tirmidhi 658).
+            <div style="display: inline-block; font-size: 0.72rem; font-family: var(--vx-font-mono); color: #72e0b9; background: rgba(42, 143, 114, 0.3); padding: 2px 8px; border-radius: 4px; margin-top: 0.75rem;">
+              Surah At-Tawbah 9:60 · Tirmidhi 658 · Shafi'i Kitab al-Umm
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. THE 8 QURANIC ASNAF CATEGORIES -->
   <section class="vx-asnaf-section" id="asnaf">
     <div class="vx-container">
-      <span class="vx-section-kicker">SHARIAH TAXONOMY</span>
-      <h2 class="vx-section-title">Strictly Mapped to the 8 Quranic Asnaf.</h2>
-      <p class="vx-section-sub">
-        Every assistance case admitted onto Amanah is rigorously categorized according to the criteria defined in Surah At-Tawbah (9:60).
-      </p>
+      <div style="text-align: center;">
+        <span class="vx-section-kicker" data-vx-appear>SHARIAH TAXONOMY</span>
+        <h2 class="vx-section-title" style="max-width: 24ch; margin: 0 auto 1rem;" data-vx-appear data-vx-delay="100">
+          Strictly Mapped to the 8 Quranic Asnaf.
+        </h2>
+        <p class="vx-section-sub" style="margin: 0 auto 3rem;" data-vx-appear data-vx-delay="200">
+          Click any category below to view specific Shariah thresholds, local verification criteria, and case guidelines defined in Surah At-Tawbah (9:60).
+        </p>
+      </div>
 
       <div class="vx-asnaf-grid">
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Al-Fuqara</span>
-          <div class="vx-asnaf-name">The Impoverished</div>
+        <div class="vx-asnaf-card selected" onclick="selectAsnafCard(0)" id="asnaf-card-0" data-vx-appear data-vx-delay="100">
+          <div>
+            <div class="vx-asnaf-tag">Category 01</div>
+            <div class="vx-asnaf-name">Al-Fuqara</div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: #0e5c48; margin-bottom: 0.5rem;">The Impoverished</div>
+          </div>
           <p class="vx-asnaf-desc">Individuals without any source of income or property to meet essential sustenance.</p>
         </div>
 
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Al-Masakeen</span>
-          <div class="vx-asnaf-name">The Destitute</div>
+        <div class="vx-asnaf-card" onclick="selectAsnafCard(1)" id="asnaf-card-1" data-vx-appear data-vx-delay="200">
+          <div>
+            <div class="vx-asnaf-tag">Category 02</div>
+            <div class="vx-asnaf-name">Al-Masakeen</div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: #0e5c48; margin-bottom: 0.5rem;">The Destitute</div>
+          </div>
           <p class="vx-asnaf-desc">Households with partial income insufficient to meet essential food, shelter, or critical medical care.</p>
         </div>
 
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Al-Gharimun</span>
-          <div class="vx-asnaf-name">The Debt-Burdened</div>
-          <p class="vx-asnaf-desc">Those facing catastrophic, genuine debts contracted for medical emergencies or necessary survival.</p>
+        <div class="vx-asnaf-card" onclick="selectAsnafCard(2)" id="asnaf-card-2" data-vx-appear data-vx-delay="300">
+          <div>
+            <div class="vx-asnaf-tag">Category 03</div>
+            <div class="vx-asnaf-name">Al-Gharimun</div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: #0e5c48; margin-bottom: 0.5rem;">The Debt-Burdened</div>
+          </div>
+          <p class="vx-asnaf-desc">Those facing catastrophic, genuine debts contracted for medical emergencies or survival.</p>
         </div>
 
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Ibnus-Sabeel</span>
-          <div class="vx-asnaf-name">The Wayfarer</div>
+        <div class="vx-asnaf-card" onclick="selectAsnafCard(3)" id="asnaf-card-3" data-vx-appear data-vx-delay="400">
+          <div>
+            <div class="vx-asnaf-tag">Category 04</div>
+            <div class="vx-asnaf-name">Ibnus-Sabeel</div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: #0e5c48; margin-bottom: 0.5rem;">The Wayfarer</div>
+          </div>
           <p class="vx-asnaf-desc">Stranded students or travelers temporarily cut off from their family and financial support.</p>
         </div>
-
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Fi-Sabilillah</span>
-          <div class="vx-asnaf-name">In the Cause of Allah</div>
-          <p class="vx-asnaf-desc">Education, orphan care, and community welfare initiatives approved under Islamic scholarship.</p>
-        </div>
-
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Ar-Riqaab</span>
-          <div class="vx-asnaf-name">Empowerment</div>
-          <p class="vx-asnaf-desc">Liberating struggling breadwinners from coercive predatory lending and bonded traps.</p>
-        </div>
-
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Amilina Alayha</span>
-          <div class="vx-asnaf-name">Zakat Administrators</div>
-          <p class="vx-asnaf-desc">Honoring ground workers who collect and audit distributions (Amanah platform charges 0%).</p>
-        </div>
-
-        <div class="vx-asnaf-card">
-          <span class="vx-asnaf-tag">Mu'allafat al-Qulub</span>
-          <div class="vx-asnaf-name">Reconciling Hearts</div>
-          <p class="vx-asnaf-desc">Providing solidarity, communal harmony, and emergency relief to vulnerable new converts.</p>
-        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Governance & Privacy -->
-  <section class="vx-trust-section" id="governance">
-    <div class="vx-container">
-      <span class="vx-section-kicker">ETHICAL &amp; CONFIDENTIAL</span>
-      <h2 class="vx-section-title">Dignity and Protection for Every Household.</h2>
-      <p class="vx-section-sub">
-        Amanah enforces zero-compromise security so recipients are honored and givers have complete peace of mind.
-      </p>
-
-      <div class="vx-trust-grid">
-        <div class="vx-trust-card">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🔒</div>
-          <h4>Quarantined Identity Documents</h4>
-          <p>Applicant medical records, identity cards, and family details are visible only to assigned Mahallu verifiers—never published online.</p>
-        </div>
-
-        <div class="vx-trust-card">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">✍</div>
-          <h4>Dual-Signature Approvals</h4>
-          <p>Disbursements require dual-key authorization from the Mahallu committee president and Imam to prevent favoritism.</p>
-        </div>
-
-        <div class="vx-trust-card">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🤝</div>
-          <h4>Double-Handshake Receipts</h4>
-          <p>Direct cash or bank disbursements are closed only after digital or SMS verification from the recipient household.</p>
-        </div>
-
-        <div class="vx-trust-card">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📖</div>
-          <h4>Immutable Community Ledger</h4>
-          <p>Every rupee contributed, allocated, and disbursed is permanently recorded in an auditable financial trail.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Role Pathways -->
-  <section class="vx-roles-section" id="roles">
-    <div class="vx-container">
-      <span class="vx-section-kicker">COMMUNITY ROLES</span>
-      <h2 class="vx-section-title">Built for Everyone in Your Mahallu.</h2>
-      <p class="vx-section-sub">
-        Whether fulfilling your obligation, seeking emergency assistance, or governing your masjid's Baitulmal.
-      </p>
-
-      <div class="vx-roles-grid">
-        <div class="vx-role-card featured">
-          <div class="vx-role-badge">MOST POPULAR</div>
-          <div class="vx-role-header">
-            <h3>For Zakat Givers</h3>
-            <p>Calculate with certainty and give directly to verified households in your PIN code.</p>
-            <ul class="vx-role-features">
-              <li>✓ Instant accurate Nisab calculation</li>
-              <li>✓ Search verified households by locality</li>
-              <li>✓ 100% direct transfer with zero fees</li>
-              <li>✓ Receive instant shariah-compliant receipts</li>
-            </ul>
+      <!-- Asnaf Detail Drawer -->
+      <div class="vx-asnaf-drawer" id="asnaf-detail-drawer" data-vx-appear>
+        <span class="vx-badge-pill" style="margin-bottom: 0.5rem;" id="drawer-tag">CATEGORY 01 OF 08 · SURAH AT-TAWBAH 9:60</span>
+        <h3 style="font-size: 1.45rem; font-weight: 800; color: #0b2a22; margin-bottom: 0.5rem;" id="drawer-title">Al-Fuqara (The Impoverished)</h3>
+        <p style="color: #5f706a; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;" id="drawer-desc">
+          Individuals and households whose total income and assets do not reach even 50% of basic life sustenance (food, shelter, basic clothing).
+        </p>
+        <div style="background: #ffffff; padding: 1.25rem; border-radius: 12px; border: 1px solid #e4eae8;">
+          <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: #0e5c48; margin-bottom: 0.5rem;">
+            Mandatory Physical Verification Checklist:
           </div>
-          <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Zakat Directly →</a>
-        </div>
-
-        <div class="vx-role-card">
-          <div class="vx-role-header">
-            <h3>For Deserving Families</h3>
-            <p>Request support with complete dignity, confidentiality, and prompt committee review.</p>
-            <ul class="vx-role-features">
-              <li>✓ Zero public exposure or photos</li>
-              <li>✓ Assigned to your local Mahallu</li>
-              <li>✓ Track case review progress in real time</li>
-              <li>✓ Receive direct cash or pharmacy transfers</li>
-            </ul>
+          <div id="drawer-checklist" style="font-size: 0.85rem; color: #0b2a22; line-height: 1.6;">
+            ✓ Verified zero regular income or breadwinner disability<br>
+            ✓ Physical residence inspection by Mahallu committee<br>
+            ✓ Government BPL/AAY ration tier cross-reference<br>
+            ✓ Zero financial support from legal heirs
           </div>
-          <a class="vx-btn vx-btn-secondary" href="#governance">Request Assistance →</a>
-        </div>
-
-        <div class="vx-role-card">
-          <div class="vx-role-header">
-            <h3>For Mahallu Masjids</h3>
-            <p>Digitize your community Baitulmal, eliminate duplications, and manage verified rosters.</p>
-            <ul class="vx-role-features">
-              <li>✓ Unified Mahallu member directory</li>
-              <li>✓ Eligibility review &amp; delegation workflow</li>
-              <li>✓ Committee collection &amp; disbursement ledger</li>
-              <li>✓ Eradicate poverty through local coordination</li>
-            </ul>
-          </div>
-          <a class="vx-btn vx-btn-secondary" href="#roles">Mahallu Committee Access →</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="vx-cta-section">
-    <div class="vx-container">
-      <div class="vx-badge-pill">
-        <span class="vx-badge-dot"></span>
-        <span>START TODAY</span>
-      </div>
-      <h2 class="vx-cta-title">
-        Bring <span class="serif">Barakah</span> to Your Wealth and Dignity to Your Community.
-      </h2>
-      <p class="vx-cta-sub">
-        Join thousands of givers and dozens of Mahallus using Amanah to fulfill Zakat as it was intended: direct, transparent, and transformative.
-      </p>
-
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a class="vx-btn vx-btn-primary" style="padding: 0.9rem 2rem; font-size: 1rem;" href="#how-it-works">
-          Find Verified Households →
-        </a>
-        <a class="vx-btn vx-btn-secondary" style="padding: 0.9rem 1.8rem; font-size: 1rem;" href="#calculator">
-          Calculate Nisab
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
+  <!-- 10. FOOTER -->
   <footer class="vx-footer">
     <div class="vx-container">
       <div class="vx-footer-grid">
-        <div class="vx-footer-brand">
-          <h4>AMANAH</h4>
-          <p>
+        <div>
+          <h4 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.75rem;">🏛️ AMANAH</h4>
+          <p style="color: #8dafa4; font-size: 0.88rem; line-height: 1.6; max-width: 32ch;">
             A community-driven Zakat management platform connecting Zakat givers, eligible recipients, and local Mahallus through a transparent, verified system.
           </p>
-          <div style="font-size: 0.8rem; color: #8dafa4;">
-            Dedicated to poverty alleviation, recipient dignity, and absolute Shariah compliance.
-          </div>
         </div>
-
-        <div class="vx-footer-col">
-          <h5>Platform</h5>
-          <ul>
-            <li><a href="#how-it-works">Give Zakat</a></li>
-            <li><a href="#calculator">Zakat Calculator</a></li>
-            <li><a href="#roles">Request Support</a></li>
-            <li><a href="#metrics">Community Ledger</a></li>
-          </ul>
+        <div>
+          <h5 style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #8dafa4; margin-bottom: 1.25rem;">Platform</h5>
+          <p style="font-size: 0.88rem; color: #d1e2dc; line-height: 1.8;">Give Zakat<br>Zakat Calculator<br>Request Support<br>Community Ledger</p>
         </div>
-
-        <div class="vx-footer-col">
-          <h5>Governance</h5>
-          <ul>
-            <li><a href="#asnaf">8 Quranic Asnaf</a></li>
-            <li><a href="#governance">Shariah Verification</a></li>
-            <li><a href="#how-it-works">Mahallu Inspection</a></li>
-            <li><a href="#metrics">Direct Rail Audit</a></li>
-          </ul>
-        </div>
-
-        <div class="vx-footer-col">
-          <h5>Community</h5>
-          <ul>
-            <li><a href="#roles">Mahallu Directory</a></li>
-            <li><a href="#roles">Committee Access</a></li>
-            <li><a href="#calculator">Nisab Standards</a></li>
-            <li><a href="#governance">Eligibility Guide</a></li>
-          </ul>
-        </div>
-
-        <div class="vx-footer-col">
-          <h5>Account</h5>
-          <ul>
-            <li><a href="#roles">Sign In</a></li>
-            <li><a href="#roles">Register Mahallu</a></li>
-            <li><a href="#roles">My Profile</a></li>
-          </ul>
+        <div>
+          <h5 style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #8dafa4; margin-bottom: 1.25rem;">Governance</h5>
+          <p style="font-size: 0.88rem; color: #d1e2dc; line-height: 1.8;">8 Quranic Asnaf<br>Shariah Verification<br>Mahallu Inspection<br>Direct Rail Audit</p>
         </div>
       </div>
-
-      <div class="vx-footer-bottom">
-        <div>© 2026 AMANAH Zakat Platform. All rights reserved.</div>
-        <div>Built for the Ummah · Zero Administrative Cut · Direct Community Impact</div>
+      <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 2rem; font-size: 0.82rem; color: #72968b;">
+        © 2026 AMANAH Zakat Platform. All rights reserved. Zero Administrative Cut.
       </div>
     </div>
   </footer>
 
+  <!-- 11. DIRECT HANDSHAKE MODAL -->
+  <div class="vx-modal-backdrop" id="handshake-modal" onclick="closeHandshakeModal()">
+    <div class="vx-modal-card" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+        <div>
+          <span class="vx-badge-pill" style="margin-bottom: 0.4rem; padding: 0.2rem 0.6rem;">DIRECT GIVING RAIL · 0% FEES</span>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: #0b2a22; margin: 0;">Direct Zakat Handshake</h3>
+        </div>
+        <button type="button" onclick="closeHandshakeModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div id="modal-step-input">
+        <div style="background: #f6faf8; padding: 1rem; border-radius: 12px; border: 1px solid #e4eae8; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.78rem; color: #8b9b95; text-transform: uppercase; font-weight: 700;">Beneficiary Case:</div>
+          <div id="modal-case-name" style="font-size: 0.95rem; font-weight: 800; color: #0b2a22; margin: 0.2rem 0;">Widowed Mother with 3 Schoolchildren</div>
+          <div id="modal-case-asnaf" style="font-size: 0.78rem; color: #0e5c48; font-weight: 600;">Al-Fuqara · Kozhikode South Mahallu #104</div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #0b2a22; margin-bottom: 0.4rem;">Contribution Amount (₹):</label>
+          <input type="number" id="modal-amount-input" value="5000" style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid #d4e7df; font-size: 1.1rem; font-family: monospace; font-weight: 700; outline: none;">
+        </div>
+
+        <div style="border-top: 1px solid #e4eae8; padding-top: 1rem; margin-bottom: 1.5rem; font-size: 0.82rem; color: #5f706a;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span>Platform Administrative Cut:</span>
+            <strong style="color: #0e5c48;">₹0.00 (0.00%)</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Tamleek Handshake Protocol:</span>
+            <span style="color: #0e5c48; font-weight: 600;">Recipient SMS Receipt + Mahallu Signoff</span>
+          </div>
+        </div>
+
+        <button type="button" class="vx-btn vx-btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeHandshake()">
+          <span class="vx-btn-roll">
+            <span class="vx-btn-roll-inner">
+              <span class="vx-btn-roll-text">Confirm Direct Contribution</span>
+              <span class="vx-btn-roll-text" aria-hidden="true">Confirm Direct Contribution</span>
+            </span>
+          </span>
+          →
+        </button>
+      </div>
+
+      <div id="modal-step-success" style="display: none; text-align: center; padding: 1.5rem 0;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #eef7f3; border: 2px solid #2a8f72; color: #0e5c48; display: grid; place-items: center; margin: 0 auto 1.25rem; font-size: 2rem;">✓</div>
+        <h4 style="font-size: 1.35rem; font-weight: 800; color: #0b2a22; margin-bottom: 0.5rem;">Direct Handshake Initiated!</h4>
+        <p style="color: #5f706a; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;">
+          Funds queued for immediate direct settlement with zero commission deductions.
+        </p>
+        <div style="display: inline-block; background: #f6faf8; border: 1px solid #e4eae8; padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.75rem; font-family: monospace; color: #0e5c48; font-weight: 700;">
+          HASH: AMN-2026-KZK-9921 · 0.00% FEES
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function calculateLive() {
-      const cash = Number(document.getElementById('calcCash').value) || 0;
-      const gold = Number(document.getElementById('calcGold').value) || 0;
-      const stock = Number(document.getElementById('calcStock').value) || 0;
-      const goldRate = 6840;
-      const nisab = 85 * goldRate;
-      const total = cash + (gold * goldRate) + stock;
+    // 1. Appear on Scroll Observer
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-vx-appear]').forEach(el => observer.observe(el));
+
+    // 2. Hero Mode Switcher
+    function switchHeroMode(mode) {
+      ['give', 'calc', 'request', 'audit'].forEach(m => {
+        const btn = document.getElementById('btn-mode-' + m);
+        const pane = document.getElementById('pane-mode-' + m);
+        if (btn) btn.classList.toggle('active', m === mode);
+        if (pane) pane.style.display = (m === mode) ? 'block' : 'none';
+      });
+    }
+
+    // 3. Hero Quick Calc
+    function updateHeroCalc() {
+      const gold = Number(document.getElementById('hero-gold-slider').value);
+      const cash = Number(document.getElementById('hero-cash-slider').value);
+      document.getElementById('hero-gold-val').innerText = gold + 'g';
+      document.getElementById('hero-cash-val').innerText = '₹' + cash.toLocaleString();
+      const goldVal = gold * 6840;
+      const total = cash + goldVal;
+      const isEligible = total >= 581400;
+      const due = isEligible ? Math.round(total * 0.025) : 0;
+      document.getElementById('hero-calc-total').innerText = 'Total: ₹' + total.toLocaleString();
+      document.getElementById('hero-calc-due').innerText = '₹' + due.toLocaleString();
+      document.getElementById('hero-calc-status').innerText = isEligible ? 'Estimated Zakat (2.5%)' : 'Net Wealth Below Nisab';
+    }
+
+    // 4. Impact Tab Switcher
+    function switchImpactTab(tab) {
+      ['breakdown', 'portfolio', 'network'].forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        const pane = document.getElementById('pane-impact-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
+      });
+    }
+
+    // 5. Main Calculator
+    function runMainCalc() {
+      const cash = Number(document.getElementById('calc-cash').value) || 0;
+      const gold = Number(document.getElementById('calc-gold').value) || 0;
+      const stock = Number(document.getElementById('calc-stock').value) || 0;
+      const total = cash + (gold * 6840) + stock;
+      const nisab = 581400;
       const isEligible = total >= nisab;
       const due = isEligible ? Math.round(total * 0.025) : 0;
+      const pct = Math.min(100, Math.round((total / nisab) * 100));
 
-      document.getElementById('totalWealthLabel').innerText = 'Total Wealth: ₹' + total.toLocaleString();
-      document.getElementById('dueVal').innerText = isEligible ? '₹' + due.toLocaleString() : '₹0';
-      document.getElementById('dueLabel').innerText = isEligible ? 'Total Zakat Due (2.5%)' : 'Net Wealth Below Nisab';
+      document.getElementById('main-meter-pct').innerText = pct + '% of Nisab';
+      document.getElementById('main-meter-fill').style.width = pct + '%';
+      document.getElementById('calc-result-total').innerText = 'Total Wealth: ₹' + total.toLocaleString();
+      document.getElementById('calc-result-val').innerText = isEligible ? '₹' + due.toLocaleString() : '₹0';
+      document.getElementById('calc-result-status').innerText = isEligible ? 'Total Zakat Due (2.5%)' : 'Net Wealth Below Nisab';
+      document.getElementById('main-meter-text').innerText = isEligible
+        ? '✓ Nisab threshold reached. Zakat of 2.5% is obligatory upon Hawl completion.'
+        : 'ℹ Below Nisab threshold (₹5,81,400). No Zakat due, voluntary Sadaqah recommended.';
+    }
+
+    function addCash(val) {
+      const el = document.getElementById('calc-cash');
+      el.value = (Number(el.value) || 0) + val;
+      runMainCalc();
+    }
+    function clearCash() {
+      document.getElementById('calc-cash').value = 0;
+      runMainCalc();
+    }
+    function addGold(val) {
+      const el = document.getElementById('calc-gold');
+      el.value = (Number(el.value) || 0) + val;
+      runMainCalc();
+    }
+    function setGold(val) {
+      document.getElementById('calc-gold').value = val;
+      runMainCalc();
+    }
+
+    // 6. Copilot Questions
+    const copilotData = [
+      {
+        q: 'Can Zakat be given to close relatives?',
+        a: "Yes, according to classical jurisprudence (Hanafi, Shafi'i, Maliki, Hanbali), Zakat can be given to needy relatives such as siblings, aunts, uncles, and cousins—provided they are not your direct dependents (parents, grandparents, children, or spouse). In fact, the Prophet (ﷺ) stated that giving to needy relatives doubles the spiritual reward: one for charity and one for upholding kinship ties (Sunan at-Tirmidhi 658).",
+        cite: "Surah At-Tawbah 9:60 · Tirmidhi 658 · Shafi'i Kitab al-Umm"
+      },
+      {
+        q: 'Is Zakat due on personal residential property?',
+        a: "No. Zakat is not due on assets used for personal living, including your primary residence, personal vehicle, household furniture, clothing, and primary tools of trade. Zakat only applies to wealth classified as growing or liquid wealth (Amwal Namiyah)—such as cash balances, physical gold, silver, tradable business stock, and liquid investments held for one full lunar year.",
+        cite: "AAOIFI Shariah Standard No. 35 · Fiqh Academy Resolution #42"
+      },
+      {
+        q: 'How is Nisab calculated on mixed gold, cash, and trade assets?',
+        a: "When you possess multiple qualifying asset types (e.g., cash, gold ornaments above personal use, and trade inventory), their cumulative monetary value is combined. If the total equals or exceeds the value of 85 grams of 24k gold (or 595 grams of silver depending on school) and has remained above threshold for one lunar year (Hawl), 2.5% is due on the full amount.",
+        cite: "Nisab Benchmark: 85g Gold (₹5,81,400) · Contemporary Consensus"
+      },
+      {
+        q: 'Can Zakat settle emergency medical debts for neighbors?',
+        a: "Yes, directly under the Quranic category of Al-Gharimun (The Debt-Burdened, Surah At-Tawbah 9:60). Needy individuals who contracted debts for essential life necessities, emergency surgical procedures, or survival qualify directly. Amanah enables direct hospital payment rails to eliminate fraud while honoring recipient dignity.",
+        cite: "Surah At-Tawbah 9:60 · Kuwait Zakat House Guidelines"
+      }
+    ];
+
+    function setCopilotQuestion(idx) {
+      document.querySelectorAll('.vx-prompt-chip').forEach((c, i) => {
+        c.classList.toggle('active', i === idx);
+      });
+      const data = copilotData[idx];
+      document.getElementById('copilot-bubble-q').innerText = data.q;
+      document.getElementById('copilot-bubble-a').innerHTML = data.a + '<div style="display: inline-block; font-size: 0.72rem; font-family: var(--vx-font-mono); color: #72e0b9; background: rgba(42, 143, 114, 0.3); padding: 2px 8px; border-radius: 4px; margin-top: 0.75rem;">' + data.cite + '</div>';
+    }
+
+    // 7. Asnaf Selection
+    const asnafData = [
+      {
+        tag: 'CATEGORY 01 OF 08 · SURAH AT-TAWBAH 9:60',
+        title: 'Al-Fuqara (The Impoverished)',
+        desc: 'Individuals and households whose total income and assets do not reach even 50% of basic life sustenance (food, shelter, basic clothing).',
+        checklist: '✓ Verified zero regular income or breadwinner disability<br>✓ Physical residence inspection by Mahallu committee<br>✓ Government BPL/AAY ration tier cross-reference<br>✓ Zero financial support from legal heirs'
+      },
+      {
+        tag: 'CATEGORY 02 OF 08 · SURAH AT-TAWBAH 9:60',
+        title: 'Al-Masakeen (The Destitute)',
+        desc: 'Households with partial income or low wages that fall short of covering critical recurring living and medical expenses.',
+        checklist: '✓ Monthly wage slips or day-labor register check<br>✓ High-cost recurring medical bills (dialysis, chemotherapy)<br>✓ Rent agreement and overdue utility notices verification<br>✓ Quarterly re-assessment by local Baitulmal elders'
+      },
+      {
+        tag: 'CATEGORY 03 OF 08 · SURAH AT-TAWBAH 9:60',
+        title: 'Al-Gharimun (The Debt-Burdened)',
+        desc: 'Individuals burdened by genuine debts contracted for permissible necessities—such as emergency hospitalization, catastrophic loss, or basic survival.',
+        checklist: '✓ Creditor verification & hospital billing audit<br>✓ Exclusion of speculative, luxury, or interest-accruing debts<br>✓ Direct settlement paid directly to creditor/hospital rail<br>✓ Committee dual-signature before disbursement'
+      },
+      {
+        tag: 'CATEGORY 04 OF 08 · SURAH AT-TAWBAH 9:60',
+        title: 'Ibnus-Sabeel (The Wayfarer)',
+        desc: 'Stranded travelers or migrant students who are cut off from their family resources, regardless of their financial standing back home.',
+        checklist: '✓ Proof of travel or enrolled institutional study<br>✓ Immediate stranded necessity verification<br>✓ Direct ticket, hostel, or emergency subsistence grant<br>✓ Emergency one-time disbursement within 2 hours'
+      }
+    ];
+
+    function selectAsnafCard(idx) {
+      document.querySelectorAll('.vx-asnaf-card').forEach((c, i) => {
+        c.classList.toggle('selected', i === idx);
+      });
+      const data = asnafData[idx];
+      if (data) {
+        document.getElementById('drawer-tag').innerText = data.tag;
+        document.getElementById('drawer-title').innerText = data.title;
+        document.getElementById('drawer-desc').innerText = data.desc;
+        document.getElementById('drawer-checklist').innerHTML = data.checklist;
+      }
+    }
+
+    // 8. Handshake Modal
+    function openHandshakeModal(name, asnaf, target) {
+      document.getElementById('modal-case-name').innerText = name;
+      document.getElementById('modal-case-asnaf').innerText = asnaf + ' · Kozhikode South Mahallu #104';
+      document.getElementById('modal-amount-input').value = Math.min(target, 5000);
+      document.getElementById('modal-step-input').style.display = 'block';
+      document.getElementById('modal-step-success').style.display = 'none';
+      document.getElementById('handshake-modal').classList.add('open');
+    }
+
+    function closeHandshakeModal() {
+      document.getElementById('handshake-modal').classList.remove('open');
+    }
+
+    function executeHandshake() {
+      document.getElementById('modal-step-input').style.display = 'none';
+      document.getElementById('modal-step-success').style.display = 'block';
+      setTimeout(() => {
+        closeHandshakeModal();
+      }, 2500);
     }
   </script>
 </body>

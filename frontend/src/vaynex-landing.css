@@ -1,6 +1,8 @@
 /* ==========================================================================
    VAYNEX-INSPIRED DESIGN SYSTEM FOR AMANAH LANDING PAGE
    Aesthetic: Clean Emerald & Obsidian FinTech, Editorial Serif, Geist Mono Data
+   Motion: Framer-grade Spring Physics, Dual Text Roll, Appear-on-Scroll,
+           Interactive Tabs & Modals, Ambient Floating Levitation
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -67,6 +69,167 @@
 }
 
 /* ==========================================================================
+   ANIMATIONS, KEYFRAMES & SPRING PHYSICS (VAYNEX ENGINE)
+   ========================================================================== */
+
+/* Infinite continuous marquee scroll */
+@keyframes vx-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Floating ambient levitation for trust chips */
+@keyframes vx-float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.4deg);
+  }
+}
+
+@keyframes vx-float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(-0.4deg);
+  }
+}
+
+/* Live indicator pulsing dot */
+@keyframes vx-badge-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
+}
+
+/* Hero background glow pulse */
+@keyframes vx-glow-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+  }
+}
+
+/* Appear-on-Scroll with Spring Curve (0.8s bounce 0.12) */
+[data-vx-appear] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+[data-vx-appear].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-vx-delay="50"] { transition-delay: 0.05s; }
+[data-vx-delay="100"] { transition-delay: 0.1s; }
+[data-vx-delay="150"] { transition-delay: 0.15s; }
+[data-vx-delay="200"] { transition-delay: 0.2s; }
+[data-vx-delay="250"] { transition-delay: 0.25s; }
+[data-vx-delay="300"] { transition-delay: 0.3s; }
+[data-vx-delay="350"] { transition-delay: 0.35s; }
+[data-vx-delay="400"] { transition-delay: 0.4s; }
+[data-vx-delay="500"] { transition-delay: 0.5s; }
+
+/* ==========================================================================
+   BUTTONS WITH VAYNEX DUAL-LAYER TEXT ROLL ANIMATION
+   ========================================================================== */
+.vx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.65rem 1.35rem;
+  border-radius: 9999px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Framer-style Text Roll wrapper */
+.vx-btn-roll {
+  display: inline-flex;
+  position: relative;
+  overflow: hidden;
+  height: 1.25em;
+  vertical-align: middle;
+}
+
+.vx-btn-roll-inner {
+  display: inline-flex;
+  flex-direction: column;
+  transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.vx-btn:hover .vx-btn-roll-inner {
+  transform: translateY(-50%);
+}
+
+.vx-btn-roll-text {
+  display: block;
+  white-space: nowrap;
+  line-height: 1.25em;
+  height: 1.25em;
+}
+
+.vx-btn-ghost {
+  background: transparent;
+  color: var(--vx-text-primary);
+  border-color: transparent;
+}
+
+.vx-btn-ghost:hover {
+  background: var(--vx-surface-alt);
+  color: var(--vx-primary);
+}
+
+.vx-btn-primary {
+  background: var(--vx-primary);
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px var(--vx-primary-glow);
+}
+
+.vx-btn-primary:hover {
+  background: var(--vx-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(14, 92, 72, 0.35);
+}
+
+.vx-btn-secondary {
+  background: #ffffff;
+  color: var(--vx-dark) !important;
+  border-color: var(--vx-border);
+}
+
+.vx-btn-secondary:hover {
+  border-color: var(--vx-primary);
+  background: var(--vx-surface-alt);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(11, 42, 34, 0.08);
+}
+
+/* ==========================================================================
    1. NAVIGATION BAR (Floating Pill Glass)
    ========================================================================== */
 .vx-nav-wrapper {
@@ -113,6 +276,11 @@
   font-size: 1.4rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(14, 92, 72, 0.25);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-brand:hover .vx-brand-mark {
+  transform: scale(1.05) rotate(-3deg);
 }
 
 .vx-brand-text {
@@ -151,67 +319,37 @@
   font-weight: 600;
   color: var(--vx-text-secondary);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
+  position: relative;
+  padding: 0.2rem 0;
 }
 
 .vx-nav-link:hover {
   color: var(--vx-primary);
 }
 
+.vx-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--vx-mint);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
 .vx-nav-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.vx-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  text-decoration: none;
-  padding: 0.6rem 1.25rem;
-  border-radius: 9999px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-  border: 1px solid transparent;
-  line-height: 1;
-}
-
-.vx-btn-ghost {
-  background: transparent;
-  color: var(--vx-text-primary);
-  border-color: transparent;
-}
-
-.vx-btn-ghost:hover {
-  background: var(--vx-surface-alt);
-  color: var(--vx-primary);
-}
-
-.vx-btn-primary {
-  background: var(--vx-primary);
-  color: #ffffff !important;
-  box-shadow: 0 4px 14px var(--vx-primary-glow);
-}
-
-.vx-btn-primary:hover {
-  background: var(--vx-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(14, 92, 72, 0.35);
-}
-
-.vx-btn-secondary {
-  background: #ffffff;
-  color: var(--vx-dark) !important;
-  border-color: var(--vx-border);
-}
-
-.vx-btn-secondary:hover {
-  border-color: var(--vx-primary);
-  background: var(--vx-surface-alt);
 }
 
 /* ==========================================================================
@@ -230,16 +368,17 @@
   transform: translateX(-50%);
   width: 100vw;
   height: 800px;
-  background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.09) 0%, rgba(255, 255, 255, 0) 70%);
   pointer-events: none;
   z-index: 0;
+  animation: vx-glow-pulse 8s ease-in-out infinite;
 }
 
 .vx-badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.9rem;
+  padding: 0.35rem 0.95rem;
   border-radius: 9999px;
   background: var(--vx-mint-light);
   border: 1px solid var(--vx-mint-border);
@@ -249,6 +388,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(42, 143, 114, 0.1);
 }
 
 .vx-badge-dot {
@@ -257,6 +397,7 @@
   border-radius: 50%;
   background: var(--vx-mint);
   box-shadow: 0 0 8px var(--vx-mint);
+  animation: vx-badge-blink 2s ease-in-out infinite;
 }
 
 .vx-hero-title {
@@ -281,7 +422,7 @@
 .vx-hero-sub {
   font-size: clamp(1.05rem, 1.8vw, 1.25rem);
   color: var(--vx-text-secondary);
-  max-width: 44ch;
+  max-width: 46ch;
   margin: 0 auto 2.25rem;
   text-align: center;
   line-height: 1.6;
@@ -296,11 +437,12 @@
   margin-bottom: 4rem;
 }
 
-/* Hero App Frame Mockup (Vaynex-Style Multi-Layered UI Frame) */
+/* Hero App Frame Mockup (Vaynex Multi-Layered UI Frame with 3D Depth) */
 .vx-hero-frame-wrap {
   position: relative;
   max-width: 1040px;
   margin: 0 auto;
+  perspective: 1200px;
 }
 
 .vx-hero-frame {
@@ -309,9 +451,14 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   padding: clamp(1.25rem, 3vw, 2.5rem);
   color: #ffffff;
-  box-shadow: 0 30px 80px rgba(7, 31, 25, 0.35), 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 30px 80px rgba(7, 31, 25, 0.45), 0 10px 30px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-hero-frame:hover {
+  box-shadow: 0 35px 90px rgba(7, 31, 25, 0.55), 0 0 40px rgba(42, 143, 114, 0.18);
 }
 
 .vx-hero-frame::before {
@@ -322,7 +469,7 @@
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(42, 143, 114, 0.22) 0%, rgba(14, 92, 72, 0) 70%);
+  background: radial-gradient(circle, rgba(42, 143, 114, 0.24) 0%, rgba(14, 92, 72, 0) 70%);
   pointer-events: none;
 }
 
@@ -353,11 +500,14 @@
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .vx-app-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -367,6 +517,9 @@
   border-radius: 20px;
   padding: 1.6rem;
   backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .vx-fund-header {
@@ -402,6 +555,7 @@
   line-height: 1;
 }
 
+/* Interactive Hero Action Mode Pills */
 .vx-fund-actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -413,22 +567,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.25rem;
+  gap: 0.4rem;
+  padding: 0.75rem 0.35rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 0.72rem;
   font-weight: 600;
   color: #d1e2dc;
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  outline: none;
+  width: 100%;
 }
 
-.vx-action-pill:hover {
-  background: rgba(42, 143, 114, 0.25);
-  border-color: rgba(42, 143, 114, 0.5);
+.vx-action-pill:hover,
+.vx-action-pill.active {
+  background: rgba(42, 143, 114, 0.3);
+  border-color: #2a8f72;
   color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(42, 143, 114, 0.3);
+}
+
+.vx-action-pill.active {
+  background: linear-gradient(135deg, rgba(42, 143, 114, 0.45) 0%, rgba(14, 92, 72, 0.6) 100%);
+  border-color: #38ef7d;
 }
 
 /* Recipient Feed List inside Frame */
@@ -437,6 +602,9 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 20px;
   padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .vx-feed-head {
@@ -464,11 +632,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 0.85rem;
+  padding: 0.8rem 0.95rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   gap: 0.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.vx-feed-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(42, 143, 114, 0.5);
+  transform: translateX(4px);
 }
 
 .vx-feed-info {
@@ -504,12 +680,36 @@
   font-size: 0.68rem;
 }
 
+.vx-feed-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .vx-feed-amount {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #38ef7d;
   text-align: right;
   white-space: nowrap;
+}
+
+.vx-feed-give-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(42, 143, 114, 0.3);
+  border: 1px solid rgba(42, 143, 114, 0.6);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vx-feed-give-btn:hover {
+  background: #2a8f72;
+  border-color: #38ef7d;
+  transform: scale(1.05);
 }
 
 /* Floating Badges outside frame */
@@ -554,15 +754,17 @@
 .vx-chip-top {
   top: -24px;
   right: 24px;
+  animation: vx-float-slow 5s ease-in-out infinite;
 }
 
 .vx-chip-bottom {
   bottom: -24px;
   left: 24px;
+  animation: vx-float-reverse 6s ease-in-out infinite;
 }
 
 /* ==========================================================================
-   3. MARQUEE TICKER (Infinite Smooth Scroll)
+   3. MARQUEE TICKER (Infinite Smooth Scroll with Pause on Hover)
    ========================================================================== */
 .vx-ticker {
   background: var(--vx-surface-alt);
@@ -575,10 +777,15 @@
   user-select: none;
 }
 
+.vx-ticker:hover .vx-ticker-track {
+  animation-play-state: paused;
+}
+
 .vx-ticker-track {
   display: inline-flex;
   gap: 2.5rem;
-  animation: vx-scroll 28s linear infinite;
+  animation: vx-scroll 32s linear infinite;
+  will-change: transform;
 }
 
 .vx-ticker-item {
@@ -600,76 +807,76 @@
   background: var(--vx-mint);
 }
 
-@keyframes vx-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
 /* ==========================================================================
-   4. "BY THE NUMBERS" STATS GRID (Vaynex Style 4-Cards)
+   4. "BY THE NUMBERS" METRICS SECTION
    ========================================================================== */
 .vx-stats-section {
-  padding: 6rem 0;
-  background: var(--vx-canvas);
+  padding: 6.5rem 0;
+  background-color: var(--vx-canvas);
+  position: relative;
 }
 
 .vx-section-kicker {
-  font-size: 0.75rem;
-  font-weight: 800;
+  display: inline-block;
+  font-family: var(--vx-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--vx-mint);
-  margin-bottom: 0.6rem;
-  display: block;
+  margin-bottom: 0.75rem;
 }
 
 .vx-section-title {
-  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  font-size: clamp(2rem, 4vw, 3.25rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.1;
+  line-height: 1.12;
   color: var(--vx-dark);
-  margin: 0 0 1rem;
+  max-width: 22ch;
+  margin-bottom: 1rem;
 }
 
 .vx-section-sub {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--vx-text-secondary);
-  max-width: 55ch;
-  margin: 0 0 3.5rem;
+  max-width: 48ch;
+  margin-bottom: 3.5rem;
   line-height: 1.6;
 }
 
 .vx-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .vx-stat-card {
-  background: var(--vx-surface-card);
+  background: #ffffff;
   border: 1px solid var(--vx-border);
-  border-radius: 22px;
-  padding: 1.75rem;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  border-radius: 20px;
+  padding: 2rem 1.6rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 220px;
+  min-height: 250px;
+  box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vx-stat-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(14, 92, 72, 0.3);
-  box-shadow: 0 16px 36px rgba(11, 42, 34, 0.06);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+  border-color: rgba(42, 143, 114, 0.4);
 }
 
 .vx-stat-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .vx-stat-idx {
@@ -683,31 +890,31 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--vx-mint);
+  color: var(--vx-primary);
   background: var(--vx-mint-light);
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
+  border: 1px solid var(--vx-mint-border);
 }
 
 .vx-stat-value {
-  font-family: var(--vx-font-mono);
-  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-size: clamp(2.4rem, 4vw, 3.5rem);
   font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--vx-dark);
   line-height: 1;
-  margin-bottom: 0.6rem;
+  letter-spacing: -0.03em;
+  color: var(--vx-dark);
+  margin-bottom: 0.5rem;
 }
 
 .vx-stat-label {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--vx-dark);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .vx-stat-desc {
@@ -718,11 +925,11 @@
 }
 
 /* ==========================================================================
-   5. "ONE FINANCIAL VIEW" / 3-PILLAR WORKFLOW
+   5. "ONE WORKFLOW" (Vaynex 3-Pillar Section)
    ========================================================================== */
 .vx-workflow-section {
-  padding: 6rem 0;
-  background: var(--vx-surface-alt);
+  padding: 6.5rem 0;
+  background-color: var(--vx-surface-alt);
   border-top: 1px solid var(--vx-border);
   border-bottom: 1px solid var(--vx-border);
 }
@@ -730,37 +937,44 @@
 .vx-workflow-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-top: 3rem;
+  gap: 2rem;
 }
 
 .vx-workflow-card {
   background: #ffffff;
   border: 1px solid var(--vx-border);
   border-radius: 24px;
-  padding: 2.25rem 2rem;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 2.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 320px;
+  box-shadow: 0 6px 24px rgba(11, 42, 34, 0.04);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vx-workflow-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(14, 92, 72, 0.3);
-  box-shadow: 0 20px 40px rgba(11, 42, 34, 0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px -15px rgba(14, 92, 72, 0.18);
+  border-color: rgba(42, 143, 114, 0.5);
 }
 
 .vx-workflow-icon {
   width: 3.25rem;
   height: 3.25rem;
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--vx-mint-light);
   color: var(--vx-primary);
   display: grid;
   place-items: center;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--vx-mint-border);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-workflow-card:hover .vx-workflow-icon {
+  transform: scale(1.08) rotate(-4deg);
 }
 
 .vx-workflow-card h3 {
@@ -768,14 +982,14 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--vx-dark);
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.85rem;
 }
 
 .vx-workflow-card p {
-  font-size: 0.95rem;
   color: var(--vx-text-secondary);
+  font-size: 0.95rem;
   line-height: 1.6;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.75rem;
 }
 
 .vx-workflow-link {
@@ -786,47 +1000,122 @@
   font-weight: 700;
   color: var(--vx-primary);
   text-decoration: none;
-  margin-top: auto;
+  transition: gap 0.2s ease, color 0.2s ease;
 }
 
 .vx-workflow-link:hover {
-  color: var(--vx-primary-hover);
-  text-decoration: underline;
+  gap: 0.65rem;
+  color: var(--vx-mint);
 }
 
 /* ==========================================================================
-   6. INTERACTIVE NISAB CALCULATOR PREVIEW
+   6. INTERACTIVE 3-TAB IMPACT SECTION (VAYNEX BREAKDOWN / PORTFOLIO / MARKETS)
    ========================================================================== */
-.vx-calc-section {
-  padding: 6rem 0;
+.vx-impact-section {
+  padding: 6.5rem 0;
   background: var(--vx-canvas);
 }
 
+.vx-tab-bar {
+  display: inline-flex;
+  background: var(--vx-surface-alt);
+  padding: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid var(--vx-border);
+  margin-bottom: 2.5rem;
+  gap: 0.25rem;
+}
+
+.vx-tab-btn {
+  padding: 0.6rem 1.4rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: var(--vx-text-secondary);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vx-tab-btn.active {
+  background: #ffffff;
+  color: var(--vx-dark);
+  box-shadow: 0 4px 14px rgba(11, 42, 34, 0.08);
+}
+
+.vx-tab-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px rgba(11, 42, 34, 0.04);
+}
+
+.vx-progress-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: var(--vx-surface-alt);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin: 0.5rem 0 1.25rem;
+}
+
+.vx-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vx-primary) 0%, var(--vx-mint) 100%);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   7. INTERACTIVE NISAB CALCULATOR WIDGET
+   ========================================================================== */
+.vx-calc-section {
+  padding: 6.5rem 0;
+  background-color: var(--vx-canvas);
+}
+
 .vx-calc-box {
-  background: linear-gradient(135deg, #0b2a22 0%, #0d382e 100%);
+  background: linear-gradient(135deg, var(--vx-dark-deep) 0%, #0d352b 100%);
   border-radius: 28px;
-  padding: clamp(2rem, 5vw, 3.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: clamp(2rem, 4vw, 3.5rem);
   color: #ffffff;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 3rem;
-  align-items: center;
-  box-shadow: 0 24px 60px rgba(7, 31, 25, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 60px rgba(7, 31, 25, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.vx-calc-box::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42, 143, 114, 0.25) 0%, rgba(14, 92, 72, 0) 70%);
+  pointer-events: none;
 }
 
 .vx-calc-copy h2 {
-  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
   font-weight: 800;
-  line-height: 1.1;
   letter-spacing: -0.03em;
-  color: #ffffff;
-  margin: 0 0 1rem;
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
 }
 
 .vx-calc-copy p {
+  color: #8dafa4;
   font-size: 1.05rem;
-  color: #a8c4bb;
   line-height: 1.6;
   margin: 0 0 2rem;
 }
@@ -834,14 +1123,14 @@
 .vx-nisab-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  background: rgba(201, 168, 106, 0.15);
-  border: 1px solid rgba(201, 168, 106, 0.35);
-  color: #f3d79e;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.82rem;
+  gap: 0.5rem;
+  background: rgba(42, 143, 114, 0.2);
+  border: 1px solid rgba(42, 143, 114, 0.4);
+  color: #72e0b9;
+  font-size: 0.78rem;
   font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
   margin-bottom: 1.5rem;
 }
 
@@ -849,55 +1138,100 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  padding: 1.75rem;
+  padding: 2rem;
   backdrop-filter: blur(12px);
 }
 
 .vx-calc-input-group {
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.25rem;
 }
 
 .vx-calc-input-group label {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: #8dafa4;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .vx-calc-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 0.75rem 1rem;
   color: #ffffff;
   font-family: var(--vx-font-mono);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.2s;
 }
 
 .vx-calc-input:focus {
   border-color: #38ef7d;
-  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(56, 239, 125, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.vx-quick-presets {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.vx-preset-btn {
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1e2dc;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.vx-preset-btn:hover {
+  background: rgba(42, 143, 114, 0.4);
+  border-color: #38ef7d;
+  color: #ffffff;
+}
+
+.vx-calc-meter-wrap {
+  margin: 1.5rem 0 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vx-calc-meter-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #8dafa4;
+  margin-bottom: 0.4rem;
 }
 
 .vx-calc-result-box {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(42, 143, 114, 0.2);
+  border: 1px solid rgba(42, 143, 114, 0.4);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 1.5rem;
 }
 
 .vx-calc-due-label {
   font-size: 0.85rem;
-  color: #8dafa4;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .vx-calc-due-val {
@@ -908,125 +1242,266 @@
 }
 
 /* ==========================================================================
-   7. 8 QURANIC ASNAF GRID
+   8. AMANAH INTELLIGENCE: SHARIAH & NISAB AI COPILOT (VAYNEX INTELLIGENCE)
+   ========================================================================== */
+.vx-copilot-section {
+  padding: 6.5rem 0;
+  background-color: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+  border-bottom: 1px solid var(--vx-border);
+}
+
+.vx-copilot-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 28px;
+  padding: clamp(2rem, 4vw, 3rem);
+  box-shadow: 0 15px 50px rgba(11, 42, 34, 0.05);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+.vx-prompt-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 1.75rem 0;
+}
+
+.vx-prompt-chip {
+  padding: 0.75rem 1rem;
+  background: var(--vx-surface-alt);
+  border: 1px solid var(--vx-border);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--vx-dark);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vx-prompt-chip:hover,
+.vx-prompt-chip.active {
+  background: var(--vx-mint-light);
+  border-color: var(--vx-mint);
+  color: var(--vx-primary);
+  transform: translateX(4px);
+}
+
+.vx-chat-box {
+  background: var(--vx-dark-deep);
+  border-radius: 20px;
+  padding: 1.75rem;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 20px 40px rgba(7, 31, 25, 0.25);
+}
+
+.vx-chat-bubble-user {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.85rem 1.15rem;
+  border-radius: 16px 16px 4px 16px;
+  align-self: flex-end;
+  font-size: 0.88rem;
+  max-width: 85%;
+  line-height: 1.5;
+}
+
+.vx-chat-bubble-ai {
+  background: rgba(42, 143, 114, 0.25);
+  border: 1px solid rgba(42, 143, 114, 0.4);
+  padding: 1.15rem 1.35rem;
+  border-radius: 16px 16px 16px 4px;
+  align-self: flex-start;
+  font-size: 0.9rem;
+  max-width: 95%;
+  line-height: 1.6;
+}
+
+.vx-chat-citation {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-family: var(--vx-font-mono);
+  color: #72e0b9;
+  background: rgba(42, 143, 114, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+}
+
+/* ==========================================================================
+   9. THE 8 QURANIC ASNAF CATEGORIES (Interactive Grid & Detail Drawer)
    ========================================================================== */
 .vx-asnaf-section {
-  padding: 6rem 0;
-  background: var(--vx-surface-alt);
-  border-top: 1px solid var(--vx-border);
+  padding: 6.5rem 0;
+  background-color: var(--vx-canvas);
 }
 
 .vx-asnaf-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-top: 3rem;
+  gap: 1.5rem;
 }
 
 .vx-asnaf-card {
   background: #ffffff;
   border: 1px solid var(--vx-border);
-  border-radius: 18px;
-  padding: 1.5rem;
-  transition: all 0.2s;
+  border-radius: 20px;
+  padding: 1.85rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
 }
 
 .vx-asnaf-card:hover {
-  border-color: var(--vx-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(11, 42, 34, 0.05);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+  border-color: rgba(42, 143, 114, 0.5);
+}
+
+.vx-asnaf-card.selected {
+  border-color: var(--vx-mint);
+  box-shadow: 0 0 0 2px var(--vx-mint), 0 20px 40px -15px rgba(14, 92, 72, 0.2);
+  background: var(--vx-mint-light);
 }
 
 .vx-asnaf-tag {
-  font-family: var(--vx-font-serif);
-  font-size: 1.25rem;
-  color: var(--vx-primary);
-  font-style: italic;
-  margin-bottom: 0.35rem;
-  display: block;
+  display: inline-block;
+  font-family: var(--vx-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--vx-mint);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
 }
 
 .vx-asnaf-name {
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--vx-dark);
   margin-bottom: 0.5rem;
 }
 
 .vx-asnaf-desc {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  color: var(--vx-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.vx-asnaf-drawer {
+  background: var(--vx-surface-alt);
+  border: 1px solid var(--vx-border);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-top: 2rem;
+  animation: vx-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   10. PRIVACY BY DESIGN & GOVERNANCE
+   ========================================================================== */
+.vx-trust-section {
+  padding: 6.5rem 0;
+  background-color: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+  border-bottom: 1px solid var(--vx-border);
+}
+
+.vx-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.vx-trust-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 20px;
+  padding: 2rem 1.6rem;
+  box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-trust-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -15px rgba(14, 92, 72, 0.16);
+  border-color: rgba(42, 143, 114, 0.4);
+}
+
+.vx-trust-card h4 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--vx-dark);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.vx-trust-card p {
+  font-size: 0.88rem;
   color: var(--vx-text-secondary);
   line-height: 1.5;
   margin: 0;
 }
 
 /* ==========================================================================
-   8. PRIVACY & SHARIAH GOVERNANCE
-   ========================================================================== */
-.vx-trust-section {
-  padding: 6rem 0;
-  background: var(--vx-canvas);
-}
-
-.vx-trust-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-top: 3rem;
-}
-
-.vx-trust-card {
-  background: var(--vx-surface-alt);
-  border: 1px solid var(--vx-border);
-  border-radius: 20px;
-  padding: 1.75rem;
-}
-
-.vx-trust-card h4 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--vx-dark);
-  margin: 1rem 0 0.5rem;
-}
-
-.vx-trust-card p {
-  font-size: 0.88rem;
-  color: var(--vx-text-secondary);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* ==========================================================================
-   9. ROLE PATHWAYS (GIVERS / RECIPIENTS / MAHALLUS)
+   11. ROLE PATHWAYS
    ========================================================================== */
 .vx-roles-section {
-  padding: 6rem 0;
-  background: var(--vx-surface-alt);
-  border-top: 1px solid var(--vx-border);
+  padding: 6.5rem 0;
+  background-color: var(--vx-canvas);
 }
 
 .vx-roles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-top: 3rem;
+  gap: 2rem;
 }
 
 .vx-role-card {
   background: #ffffff;
   border: 1px solid var(--vx-border);
   border-radius: 24px;
-  padding: 2.25rem;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.2s;
+  box-shadow: 0 6px 24px rgba(11, 42, 34, 0.04);
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vx-role-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px -15px rgba(14, 92, 72, 0.2);
+  border-color: rgba(42, 143, 114, 0.5);
 }
 
 .vx-role-card.featured {
-  border: 2px solid var(--vx-primary);
-  box-shadow: 0 16px 40px rgba(14, 92, 72, 0.1);
-  position: relative;
+  border-color: var(--vx-mint);
+  box-shadow: 0 12px 36px rgba(14, 92, 72, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, var(--vx-mint-light) 100%);
 }
 
 .vx-role-badge {
@@ -1034,68 +1509,80 @@
   top: -12px;
   right: 24px;
   background: var(--vx-primary);
-  color: #fff;
-  font-size: 0.72rem;
+  color: #ffffff;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(14, 92, 72, 0.3);
 }
 
 .vx-role-header h3 {
-  font-size: 1.45rem;
+  font-size: 1.5rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--vx-dark);
   margin: 0 0 0.5rem;
 }
 
 .vx-role-header p {
-  font-size: 0.92rem;
   color: var(--vx-text-secondary);
-  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.75rem;
 }
 
 .vx-role-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem;
+  margin: 0 0 2.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .vx-role-features li {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  font-size: 0.88rem;
-  color: var(--vx-text-primary);
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--vx-dark);
 }
 
 .vx-role-features li svg {
-  color: var(--vx-primary);
+  color: var(--vx-mint);
   flex-shrink: 0;
-  margin-top: 3px;
 }
 
 /* ==========================================================================
-   10. BOTTOM HERO CTA
+   12. FINAL CALL TO ACTION
    ========================================================================== */
 .vx-cta-section {
   padding: 7rem 0;
-  background: linear-gradient(180deg, var(--vx-canvas) 0%, #f1f7f4 100%);
+  background: linear-gradient(180deg, var(--vx-surface-alt) 0%, #eaf4f0 100%);
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .vx-cta-title {
-  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
+  line-height: 1.1;
   letter-spacing: -0.03em;
   color: var(--vx-dark);
-  max-width: 18ch;
-  margin: 0 auto 1.25rem;
-  line-height: 1.1;
+  max-width: 20ch;
+  margin: 0 auto 1.5rem;
+}
+
+.vx-cta-title span.serif {
+  font-family: var(--vx-font-serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--vx-primary);
 }
 
 .vx-cta-sub {
@@ -1107,7 +1594,7 @@
 }
 
 /* ==========================================================================
-   11. FOOTER
+   13. FOOTER
    ========================================================================== */
 .vx-footer {
   background: var(--vx-dark-deep);
@@ -1182,16 +1669,53 @@
   gap: 1rem;
 }
 
+/* ==========================================================================
+   14. INTERACTIVE DIRECT HANDSHAKE MODAL
+   ========================================================================== */
+.vx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 31, 25, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: vx-fade-in 0.25s ease-out;
+}
+
+.vx-modal-card {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  padding: 2rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: vx-scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes vx-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vx-scale-up {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  .vx-app-grid {
+  .vx-app-grid,
+  .vx-calc-box,
+  .vx-copilot-card {
     grid-template-columns: 1fr;
   }
   .vx-stats-grid, .vx-asnaf-grid, .vx-trust-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .vx-calc-box {
-    grid-template-columns: 1fr;
   }
   .vx-footer-grid {
     grid-template-columns: repeat(2, 1fr);
