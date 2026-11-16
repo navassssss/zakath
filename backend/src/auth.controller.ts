@@ -5,6 +5,7 @@ import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import type { Request, Response } from 'express';
 import { PrismaService } from './prisma.service.js';
+import { verificationMailer } from './verification-mail.js';
 
 const stateCookie = 'amanah_google_state';
 const deriveKey = promisify(scrypt);
@@ -109,8 +110,7 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   async registerEmail(@Body('email') address: unknown) {
     const email = this.normalizeEmail(address);
-    const { RESEND_API_KEY, AUTH_EMAIL_FROM } = process.env;
-    if (!RESEND_API_KEY || !AUTH_EMAIL_FROM) throw new ServiceUnavailableException('Email registration is not configured');
+    const sendVerification = verificationMailer();
     const { frontend } = this.config();
     const result = { message: 'If this address can be registered, you will receive an email with the next step.' };
     const database = this.prisma.client;
@@ -133,16 +133,7 @@ export class AuthController {
       }
     }
     try {
-      const delivery = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + RESEND_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: AUTH_EMAIL_FROM, to: [email], subject: 'Verify your Amanah email',
-          text: 'Open this link within 30 minutes to set your Amanah password: ' + frontend + '/#verify_email=' + token,
-        }),
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!delivery.ok) throw new Error('Email delivery failed');
+      await sendVerification(email, 'Open this link within 30 minutes to set your Amanah password: ' + frontend + '/#verify_email=' + token);
     } catch {
       await database.pendingEmailRegistration.deleteMany({ where: { email, tokenHash: hash } });
       throw new ServiceUnavailableException('Could not send verification email. Try again later');
