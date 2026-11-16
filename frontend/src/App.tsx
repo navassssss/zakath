@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Calculator, HandHeart, House, LifeBuoy, ShieldCheck, UserRound } from 'lucide-react'
+import { Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -11,7 +11,8 @@ type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
 const returnKey = 'amanah-return'
-const protectedPaths = ['/give', '/calculate', '/help', '/account']
+const adminPaths = ['/admin/review', '/admin/collections']
+const protectedPaths = ['/give', '/calculate', '/help', '/account', ...adminPaths]
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
 const pages = [
   ['/', 'Home', House],
@@ -19,6 +20,11 @@ const pages = [
   ['/calculate', 'Calculate', Calculator],
   ['/help', 'Get help', LifeBuoy],
   ['/account', 'Account', UserRound],
+] as const
+const adminPages = [
+  ['/account', 'Dashboard', House],
+  ['/admin/review', 'Review', ClipboardCheck],
+  ['/admin/collections', 'Collections', Wallet],
 ] as const
 
 function Eligibility({ account }: { account: Account }) {
@@ -241,8 +247,12 @@ export default function App() {
 
   const token = account ? sessionStorage.getItem(sessionKey) : null
   const requiresLogin = protectedPaths.includes(page) && !account
+  const isAdmin = Boolean(account && account.role !== 'USER')
+  const canReview = account?.role === 'SUPER_ADMIN' || (account?.role === 'MAHALL_ADMIN' && Boolean(account.mahallId))
   const nextPath = new URLSearchParams(location.search).get('next') ?? sessionStorage.getItem(returnKey)
-  const destination = nextPath && protectedPaths.includes(nextPath) ? nextPath : '/account'
+  const destination = isAdmin
+    ? nextPath && adminPaths.includes(nextPath) ? nextPath : '/account'
+    : nextPath && protectedPaths.includes(nextPath) && !adminPaths.includes(nextPath) ? nextPath : '/account'
 
   useEffect(() => {
     if (loading) return
@@ -257,6 +267,7 @@ export default function App() {
 
   const accountPage = page === '/account' || page === '/help'
   const publicLayout = page === '/' || page === '/login' || !account
+  const navigation = isAdmin ? adminPages : pages
 
   return (
     <div className={publicLayout ? 'public-shell' : 'app-shell'}>
@@ -271,7 +282,7 @@ export default function App() {
       <div className="site-header-inner">
         <a className="wordmark" href="/">Amanah</a>
         <nav className="site-nav" aria-label="Main navigation">
-          {pages.map(([path, title, Icon]) => (
+          {navigation.map(([path, title, Icon]) => (
             <a key={path} href={path === '/account' && !account ? '/login' : path} aria-current={page === path || (page === '/login' && path === '/account') ? 'page' : undefined}>
               <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
               <span>{path === '/account' && !account ? 'Log in' : title}</span>
@@ -320,7 +331,7 @@ export default function App() {
       )}
     </section>}
     {accountPage && account && <div className="panel account-panel">
-      <h1>{page === '/help' ? 'Get help with Zakat' : account ? 'Your account' : 'Welcome to Amanah'}</h1>
+      <h1>{page === '/help' ? 'Get help with Zakat' : account.role === 'SUPER_ADMIN' ? 'Super admin dashboard' : account.role === 'MAHALL_ADMIN' ? 'Mahallu dashboard' : 'Your account'}</h1>
       {account && (
         <>
           <p>Signed in as {account.name ?? account.email}</p>
@@ -329,15 +340,20 @@ export default function App() {
             sessionStorage.removeItem(returnKey)
             location.assign('/login')
           }}>Sign out</button>
-          {account.role !== 'USER' && page === '/account' && (
-            <ReviewDashboard token={token ?? ''} superAdmin={account.role === 'SUPER_ADMIN'} />
+          {isAdmin && page === '/account' && (
+            canReview ? <div className="admin-shortcuts">
+              <a href="/admin/review"><ClipboardCheck aria-hidden="true" /><strong>{account.role === 'SUPER_ADMIN' ? 'Mahallus and eligibility' : 'Eligibility review'}</strong><span>{account.role === 'SUPER_ADMIN' ? 'Manage Mahallus, assign admins, and review or delegate cases.' : 'Review cases assigned to your Mahallu.'}</span></a>
+              <a href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></a>
+            </div> : <p>A super admin needs to assign your Mahallu before you can review cases or collections.</p>
           )}
           {page === '/help' && <Eligibility account={account} />}
           {page === '/account' && account.role === 'USER' && <p><a href="/help">Check your eligibility</a></p>}
         </>
       )}
     </div>}
-    {page === '/account' && token && account?.role !== 'USER' && <CommitteeLedger token={token} admin />}
+    {page === '/admin/review' && token && canReview && <div className="panel"><ReviewDashboard token={token} superAdmin={account?.role === 'SUPER_ADMIN'} /></div>}
+    {page === '/admin/collections' && token && canReview && <CommitteeLedger token={token} admin />}
+    {adminPaths.includes(page) && account && !canReview && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><a href="/account">Go to your account</a></section>}
     {page === '/give' && token && (
       <>
         <Giving key={account?.email ?? 'guest'} token={token} />
@@ -345,7 +361,7 @@ export default function App() {
       </>
     )}
     {page === '/calculate' && token && <ZakatCalculator token={token} />}
-    {page !== '/login' && !pages.some(([path]) => path === page) && <h1>Page not found</h1>}
+    {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && <h1>Page not found</h1>}
     </main>
     </div>
   )
