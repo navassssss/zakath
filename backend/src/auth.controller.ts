@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, Header, Logger, Post, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, Param, Post, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
@@ -216,7 +216,7 @@ export class AuthController {
     const user = await this.account(request);
     const eligibility = await this.prisma.client.eligibilityCase.findUnique({
       where: { applicantId: user.id },
-      select: { status: true },
+      select: { status: true, additionalInformation: true },
     });
     return { eligibility };
   }
@@ -263,6 +263,102 @@ export class AuthController {
 
   private isInteger(value: unknown, min: number, max: number): value is number {
     return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
+  }
+
+  @Get('review')
+  @Header('Cache-Control', 'no-store')
+  async reviewQueue(@Req() request: Request) {
+    const reviewer = await this.reviewer(request);
+    return this.prisma.client.eligibilityCase.findMany({
+      where: reviewer.role === 'SUPER_ADMIN' ? {} : { reviewingMahallId: reviewer.mahallId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 100,
+      select: {
+        id: true, status: true, locality: true, postalCode: true, householdSize: true,
+        monthlyIncomePaise: true, monthlyExpensesPaise: true, additionalInformation: true,
+        applicant: { select: { name: true, email: true, mahallId: true } },
+        reviewingMahall: { select: { id: true, name: true } },
+      },
+    });
+  }
+
+  @Post('review/:id/assignment')
+  async assignReview(@Req() request: Request, @Param('id') id: string, @Body('mahallId') mahallId: unknown) {
+    const reviewer = await this.reviewer(request);
+    if (reviewer.role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    if (mahallId !== null && (typeof mahallId !== 'string' || !mahallId || mahallId.length > 36)) {
+      throw new BadRequestException('Choose a Mahallu or direct review');
+    }
+    if (mahallId && !await this.prisma.client.mahall.count({ where: { id: mahallId } })) {
+      throw new BadRequestException('Mahallu not found');
+    }
+    const changed = await this.prisma.client.eligibilityCase.updateMany({
+      where: { id, status: { in: ['PENDING', 'MORE_INFORMATION_REQUIRED'] }, applicant: { mahallId: null } },
+      data: { reviewingMahallId: mahallId },
+    });
+    if (!changed.count) throw new ConflictException('Only open unaffiliated cases can be reassigned');
+    return { updated: true };
+  }
+
+  @Post('review/:id/decision')
+  async decideReview(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body('status') status: unknown,
+    @Body('reason') reason: unknown,
+  ) {
+    const reviewer = await this.reviewer(request);
+    if (status !== 'APPROVED' && status !== 'REJECTED' && status !== 'MORE_INFORMATION_REQUIRED') {
+      throw new BadRequestException('Choose a valid decision');
+    }
+    if (typeof reason !== 'string' || !reason.trim() || reason.trim().length > 1000) {
+      throw new BadRequestException('Enter a review reason of up to 1,000 characters');
+    }
+    const changed = await this.prisma.client.eligibilityCase.updateMany({
+      where: {
+        id, applicantId: { not: reviewer.id }, status: { in: ['PENDING', 'MORE_INFORMATION_REQUIRED'] },
+        ...(reviewer.role === 'MAHALL_ADMIN' ? { reviewingMahallId: reviewer.mahallId } : {}),
+      },
+      data: { status, additionalInformation: reason.trim(), reviewedById: reviewer.id, reviewedAt: new Date() },
+    });
+    if (!changed.count) throw new ConflictException('This case is unavailable for review');
+    return { updated: true };
+  }
+
+  @Post('mahalls')
+  async createMahall(@Req() request: Request, @Body('name') name: unknown, @Body('locality') locality: unknown) {
+    if ((await this.reviewer(request)).role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 120 ||
+        typeof locality !== 'string' || !locality.trim() || locality.trim().length > 120) {
+      throw new BadRequestException('Enter a name and locality of up to 120 characters each');
+    }
+    return this.prisma.client.mahall.create({
+      data: { name: name.trim(), locality: locality.trim() },
+      select: { id: true, name: true, locality: true },
+    });
+  }
+
+  private async reviewer(request: Request) {
+    const user = await this.account(request);
+    if (user.role !== 'SUPER_ADMIN' && (user.role !== 'MAHALL_ADMIN' || !user.mahallId)) {
+      throw new ForbiddenException();
+    }
+    return user;
+  }
+
+  @Post('mahalls/admins')
+  async assignMahallAdmin(@Req() request: Request, @Body('email') address: unknown, @Body('mahallId') mahallId: unknown) {
+    if ((await this.reviewer(request)).role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    const email = this.normalizeEmail(address);
+    if (typeof mahallId !== 'string' || !await this.prisma.client.mahall.count({ where: { id: mahallId } })) {
+      throw new BadRequestException('Select a registered Mahallu');
+    }
+    const updated = await this.prisma.client.user.updateMany({
+      where: { email, role: { in: ['USER', 'MAHALL_ADMIN'] }, OR: [{ mahallId: null }, { mahallId }] },
+      data: { role: 'MAHALL_ADMIN', mahallId },
+    });
+    if (!updated.count) throw new ConflictException('The account must exist and belong to this Mahallu or be unaffiliated');
+    return { updated: true };
   }
 
   private async account(request: Request) {

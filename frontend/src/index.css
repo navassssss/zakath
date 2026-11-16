@@ -24,3 +24,7 @@ button[type="button"], .action-link { background: white; color: inherit; border-
 button:disabled { cursor: default; opacity: .55; }
 :focus-visible { outline: 2px solid oklch(0.55 0.12 165); outline-offset: 3px; }
 [role="alert"] { color: oklch(0.48 0.16 27); }
+.review-dashboard { margin-top: 2rem; }
+.review-card { border: 1px solid var(--border); border-radius: .85rem; padding: 1rem; margin-block: 1rem; }
+.review-card h3 { margin-top: 0; }
+.review-card form + form { border-top: 1px solid var(--border); margin-top: 1rem; }

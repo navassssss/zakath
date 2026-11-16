@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
+import { ReviewDashboard } from './ReviewDashboard'
 
 type Mahall = { id: string; name: string; locality: string }
-type Account = { email: string; name: string | null; mahallId: string | null }
+type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
 
 function Eligibility({ account }: { account: Account }) {
@@ -12,6 +13,7 @@ function Eligibility({ account }: { account: Account }) {
   const [attempt, setAttempt] = useState(0)
   const [caseStatus, setCaseStatus] = useState<string | null | undefined>(undefined)
   const [caseError, setCaseError] = useState('')
+  const [reviewNote, setReviewNote] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -25,6 +27,7 @@ function Eligibility({ account }: { account: Account }) {
         if (!response.ok) throw new Error()
         const result = await response.json()
         setCaseStatus(result.eligibility?.status ?? null)
+        setReviewNote(result.eligibility?.additionalInformation ?? '')
       } catch {
         if (!request.signal.aborted) setCaseError('Could not load your eligibility case. Reload or sign in again.')
       }
@@ -91,6 +94,7 @@ function Eligibility({ account }: { account: Account }) {
       {caseError && <p role="alert">{caseError}</p>}
       {caseStatus === undefined && !caseError && <p role="status">Loading your eligibility case…</p>}
       {caseStatus && <p role="status">Verification status: {caseStatus.toLowerCase().replaceAll('_', ' ')}</p>}
+      {reviewNote && <p>{reviewNote}</p>}
       {caseStatus === null && (
       <form onSubmit={(event) => void submit(event)}>
       <label htmlFor="mahall">Home Mahallu (optional)</label>
@@ -188,7 +192,9 @@ export default function App() {
             setAccount(null)
             setError('')
           }}>Sign out</button>
-          <Eligibility account={account} />
+          {account.role === 'USER'
+            ? <Eligibility account={account} />
+            : <ReviewDashboard token={sessionStorage.getItem(sessionKey) ?? ''} superAdmin={account.role === 'SUPER_ADMIN'} />}
         </>
       )}
     </div>
