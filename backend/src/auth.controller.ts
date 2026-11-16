@@ -372,6 +372,26 @@ export class AuthController {
     });
   }
 
+  @Get('admin/overview')
+  @Header('Cache-Control', 'no-store')
+  async adminOverview(@Req() request: Request) {
+    const admin = await this.reviewer(request);
+    const mahallId = admin.role === 'MAHALL_ADMIN' ? admin.mahallId! : undefined;
+    const scope = mahallId ? { mahallId } : {};
+    const reviewScope = mahallId ? { reviewingMahallId: mahallId } : {};
+    const db = this.prisma.client;
+    const [mahalls, members, cases, collections] = await db.$transaction([
+      db.mahall.count({ where: mahallId ? { id: mahallId } : {} }),
+      db.user.count({ where: mahallId ? scope : { mahallId: { not: null } } }),
+      db.eligibilityCase.groupBy({ by: ['status'], where: reviewScope, _count: true }),
+      db.committeeContribution.aggregate({
+        where: { ...scope, confirmedAt: { not: null } },
+        _sum: { amountPaise: true },
+      }),
+    ]);
+    return { mahalls, members, cases: Object.fromEntries(cases.map(({ status, _count }) => [status, _count])), confirmedPaise: collections._sum.amountPaise ?? 0 };
+  }
+
   @Get('mahalls/directory')
   @Header('Cache-Control', 'no-store')
   async mahallDirectory(@Req() request: Request) {

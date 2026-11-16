@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, ShieldCheck, UserRound, Wallet } from 'lucide-react'
 import { MahalluDirectory } from './MahalluDirectory'
+import { AdminOverview } from './AdminOverview'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -28,7 +29,7 @@ const adminPages = [
   ['/admin/review', 'Review', ClipboardCheck],
   ['/admin/collections', 'Collections', Wallet],
 ] as const
-const superAdminPages = [...adminPages, [directoryPath, 'Mahallus', Building2] as const]
+const superAdminPages = [adminPages[0], [directoryPath, 'Mahallus', Building2] as const, ...adminPages.slice(1)]
 
 function Eligibility({ account }: { account: Account }) {
   const [mahalls, setMahalls] = useState<Mahall[]>([])
@@ -334,7 +335,7 @@ export default function App() {
         </>
       )}
     </section>}
-    {accountPage && account && <div className="panel account-panel">
+    {accountPage && account && <div className={isAdmin && page === '/account' ? 'panel' : 'panel account-panel'}>
       <h1>{page === '/help' ? 'Get help with Zakat' : account.role === 'SUPER_ADMIN' ? 'Super admin dashboard' : account.role === 'MAHALL_ADMIN' ? 'Mahallu dashboard' : 'Your account'}</h1>
       {account && (
         <>
@@ -344,6 +345,7 @@ export default function App() {
             sessionStorage.removeItem(returnKey)
             location.assign('/login')
           }}>Sign out</button>
+          {page === '/account' && canReview && token && <AdminOverview token={token} />}
           {isAdmin && page === '/account' && (
             canReview ? <div className="admin-shortcuts">
               {canViewDirectory && <a href={directoryPath}><Building2 aria-hidden="true" /><strong>Mahallu directory</strong><span>View registered Mahallus, admins, and members.</span></a>}
