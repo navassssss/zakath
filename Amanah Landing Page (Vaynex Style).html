@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amanah — Community Zakat Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --vx-primary: #0e5c48;
+      --vx-primary-hover: #0b4a3a;
+      --vx-primary-glow: rgba(14, 92, 72, 0.25);
+      --vx-dark: #0b2a22;
+      --vx-dark-deep: #071f19;
+      --vx-mint: #2a8f72;
+      --vx-mint-light: #eef7f3;
+      --vx-mint-border: #d4e7df;
+      --vx-canvas: #ffffff;
+      --vx-surface-alt: #f6faf8;
+      --vx-surface-card: #ffffff;
+      --vx-border: #e4eae8;
+      --vx-text-primary: #0b2a22;
+      --vx-text-secondary: #5f706a;
+      --vx-text-muted: #8b9b95;
+      --vx-gold: #c9a86a;
+      
+      --vx-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --vx-font-serif: 'Instrument Serif', Georgia, serif;
+      --vx-font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--vx-font-sans);
+      color: var(--vx-text-primary);
+      background-color: var(--vx-canvas);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .vx-container { width: 100%; max-width: 1220px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.5rem); }
+    .vx-serif { font-family: var(--vx-font-serif); font-weight: 400; font-style: italic; }
+    .vx-mono { font-family: var(--vx-font-mono); }
+
+    /* Nav */
+    .vx-nav-wrapper { position: sticky; top: 1rem; z-index: 100; padding: 0 clamp(1rem, 2vw, 2rem); margin-bottom: 1.5rem; }
+    .vx-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(14, 92, 72, 0.12); border-radius: 9999px;
+      padding: 0.6rem 0.8rem 0.6rem 1.4rem; box-shadow: 0 4px 24px rgba(11, 42, 34, 0.05);
+      max-width: 1140px; margin: 0 auto;
+    }
+    .vx-brand { display: flex; align-items: center; gap: 0.75rem; }
+    .vx-brand-mark {
+      width: 2.25rem; height: 2.25rem; border-radius: 0.65rem;
+      background: linear-gradient(135deg, var(--vx-primary) 0%, var(--vx-dark) 100%);
+      color: #fff; display: grid; place-items: center; font-family: var(--vx-font-serif); font-size: 1.4rem; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(14, 92, 72, 0.25);
+    }
+    .vx-brand-name { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: var(--vx-dark); }
+    .vx-brand-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vx-mint); margin-top: 2px; }
+    .vx-nav-links { display: flex; align-items: center; gap: 1.75rem; list-style: none; }
+    .vx-nav-link { font-size: 0.88rem; font-weight: 600; color: var(--vx-text-secondary); transition: color 0.15s; }
+    .vx-nav-link:hover { color: var(--vx-primary); }
+    .vx-nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+    .vx-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      font-size: 0.88rem; font-weight: 700; padding: 0.65rem 1.25rem; border-radius: 9999px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; border: 1px solid transparent; line-height: 1;
+    }
+    .vx-btn-ghost { background: transparent; color: var(--vx-text-primary); }
+    .vx-btn-ghost:hover { background: var(--vx-surface-alt); color: var(--vx-primary); }
+    .vx-btn-primary { background: var(--vx-primary); color: #ffffff !important; box-shadow: 0 4px 14px var(--vx-primary-glow); }
+    .vx-btn-primary:hover { background: var(--vx-primary-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(14, 92, 72, 0.35); }
+    .vx-btn-secondary { background: #ffffff; color: var(--vx-dark); border-color: var(--vx-border); }
+    .vx-btn-secondary:hover { border-color: var(--vx-primary); background: var(--vx-surface-alt); }
+
+    /* Hero */
+    .vx-hero { padding: 1.5rem 0 5rem; position: relative; }
+    .vx-hero-bg {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100vw; height: 800px;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .vx-badge-pill {
+      display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.9rem; border-radius: 9999px;
+      background: var(--vx-mint-light); border: 1px solid var(--vx-mint-border); color: var(--vx-primary);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    .vx-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--vx-mint); box-shadow: 0 0 8px var(--vx-mint); }
+    .vx-hero-title {
+      font-size: clamp(2.75rem, 6.2vw, 5.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.035em;
+      color: var(--vx-dark); max-width: 18ch; margin: 0 auto 1.5rem; text-align: center;
+    }
+    .vx-hero-title span.serif { font-family: var(--vx-font-serif); font-weight: 400; font-style: italic; color: var(--vx-primary); }
+    .vx-hero-sub {
+      font-size: clamp(1.05rem, 1.8vw, 1.25rem); color: var(--vx-text-secondary); max-width: 46ch;
+      margin: 0 auto 2.25rem; text-align: center; line-height: 1.6;
+    }
+    .vx-hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+
+    /* Hero Frame */
+    .vx-hero-frame-wrap { position: relative; max-width: 1040px; margin: 0 auto; }
+    .vx-hero-frame {
+      background: linear-gradient(165deg, #0b2a22 0%, #081d17 60%, #061712 100%);
+      border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: clamp(1.25rem, 3vw, 2.5rem); color: #ffffff;
+      box-shadow: 0 30px 80px rgba(7, 31, 25, 0.35); position: relative; overflow: hidden;
+    }
+    .vx-app-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 1.75rem; }
+    .vx-app-status { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: #a3c2b8; }
+    .vx-app-badge { background: rgba(42, 143, 114, 0.2); border: 1px solid rgba(42, 143, 114, 0.4); color: #72e0b9; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 9999px; text-transform: uppercase; }
+    .vx-app-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr); gap: 1.5rem; }
+
+    .vx-fund-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 1.6rem; }
+    .vx-fund-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; }
+    .vx-fund-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8dafa4; }
+    .vx-fund-change { color: #38ef7d; font-size: 0.8rem; font-weight: 700; }
+    .vx-fund-amount { font-size: clamp(2rem, 3.8vw, 3rem); font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin: 0.25rem 0 1.25rem; line-height: 1; }
+    .vx-fund-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 1.25rem; }
+    .vx-action-pill {
+      display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.65rem 0.25rem;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+      font-size: 0.72rem; font-weight: 600; color: #d1e2dc; transition: all 0.15s;
+    }
+    .vx-action-pill:hover { background: rgba(42, 143, 114, 0.25); border-color: rgba(42, 143, 114, 0.5); color: #fff; }
+
+    .vx-feed-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; padding: 1.4rem; }
+    .vx-feed-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .vx-feed-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8dafa4; }
+    .vx-feed-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .vx-feed-item {
+      display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.85rem;
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; gap: 0.75rem;
+    }
+    .vx-feed-name { font-size: 0.85rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vx-feed-meta { font-size: 0.72rem; color: #8dafa4; display: flex; align-items: center; gap: 0.4rem; margin-top: 2px; }
+    .vx-feed-asnaf { background: rgba(201, 168, 106, 0.18); color: #e5c387; padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 0.68rem; }
+    .vx-feed-amount { font-size: 0.88rem; font-weight: 700; color: #38ef7d; }
+
+    /* Chips */
+    .vx-floating-chip {
+      position: absolute; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px);
+      border: 1px solid var(--vx-border); padding: 0.75rem 1.15rem; border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(11, 42, 34, 0.12); display: flex; align-items: center; gap: 0.75rem; z-index: 10;
+    }
+    .vx-chip-icon { width: 2.25rem; height: 2.25rem; border-radius: 10px; background: var(--vx-mint-light); color: var(--vx-primary); display: grid; place-items: center; font-weight: 700; }
+    .vx-chip-text strong { display: block; font-size: 0.85rem; font-weight: 800; line-height: 1.1; color: var(--vx-dark); }
+    .vx-chip-text span { font-size: 0.74rem; color: var(--vx-text-secondary); }
+    .vx-chip-top { top: -24px; right: 24px; }
+    .vx-chip-bottom { bottom: -24px; left: 24px; }
+
+    /* Marquee */
+    .vx-ticker {
+      background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); border-bottom: 1px solid var(--vx-border);
+      padding: 1.1rem 0; overflow: hidden; white-space: nowrap; display: flex; user-select: none;
+    }
+    .vx-ticker-track { display: inline-flex; gap: 2.5rem; animation: vx-scroll 28s linear infinite; }
+    .vx-ticker-item { display: inline-flex; align-items: center; gap: 0.75rem; font-family: var(--vx-font-mono); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vx-primary); }
+    .vx-ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--vx-mint); }
+    @keyframes vx-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* Stats */
+    .vx-stats-section { padding: 6rem 0; background: var(--vx-canvas); }
+    .vx-section-kicker { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--vx-mint); margin-bottom: 0.6rem; display: block; }
+    .vx-section-title { font-size: clamp(2rem, 3.8vw, 3.25rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; color: var(--vx-dark); margin: 0 0 1rem; }
+    .vx-section-sub { font-size: 1.1rem; color: var(--vx-text-secondary); max-width: 55ch; margin: 0 0 3.5rem; line-height: 1.6; }
+    .vx-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    .vx-stat-card {
+      background: var(--vx-surface-card); border: 1px solid var(--vx-border); border-radius: 22px; padding: 1.75rem;
+      transition: all 0.25s; display: flex; flex-direction: column; justify-content: space-between; min-height: 220px;
+    }
+    .vx-stat-card:hover { transform: translateY(-4px); border-color: rgba(14, 92, 72, 0.3); box-shadow: 0 16px 36px rgba(11, 42, 34, 0.06); }
+    .vx-stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .vx-stat-idx { font-family: var(--vx-font-mono); font-size: 0.85rem; font-weight: 700; color: var(--vx-text-muted); }
+    .vx-stat-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vx-mint); background: var(--vx-mint-light); padding: 0.2rem 0.55rem; border-radius: 9999px; }
+    .vx-stat-value { font-family: var(--vx-font-mono); font-size: clamp(2.4rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -0.04em; color: var(--vx-dark); line-height: 1; margin-bottom: 0.6rem; }
+    .vx-stat-label { font-size: 1.05rem; font-weight: 800; color: var(--vx-dark); margin-bottom: 0.35rem; }
+    .vx-stat-desc { font-size: 0.85rem; color: var(--vx-text-secondary); line-height: 1.5; }
+
+    /* Workflow */
+    .vx-workflow-section { padding: 6rem 0; background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); border-bottom: 1px solid var(--vx-border); }
+    .vx-workflow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .vx-workflow-card {
+      background: #ffffff; border: 1px solid var(--vx-border); border-radius: 24px; padding: 2.25rem 2rem;
+      transition: all 0.25s; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px;
+    }
+    .vx-workflow-card:hover { transform: translateY(-4px); border-color: rgba(14, 92, 72, 0.3); box-shadow: 0 20px 40px rgba(11, 42, 34, 0.08); }
+    .vx-workflow-icon { width: 3.25rem; height: 3.25rem; border-radius: 16px; background: var(--vx-mint-light); color: var(--vx-primary); display: grid; place-items: center; margin-bottom: 1.75rem; font-size: 1.4rem; }
+    .vx-workflow-card h3 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: var(--vx-dark); margin: 0 0 0.75rem; }
+    .vx-workflow-card p { font-size: 0.95rem; color: var(--vx-text-secondary); line-height: 1.6; margin: 0 0 1.5rem; }
+    .vx-workflow-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 700; color: var(--vx-primary); margin-top: auto; }
+
+    /* Calculator Box */
+    .vx-calc-section { padding: 6rem 0; background: var(--vx-canvas); }
+    .vx-calc-box {
+      background: linear-gradient(135deg, #0b2a22 0%, #0d382e 100%); border-radius: 28px; padding: clamp(2rem, 5vw, 3.5rem);
+      color: #ffffff; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 3rem; align-items: center;
+      box-shadow: 0 24px 60px rgba(7, 31, 25, 0.25); border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .vx-calc-copy h2 { font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: #ffffff; margin: 0 0 1rem; }
+    .vx-calc-copy p { font-size: 1.05rem; color: #a8c4bb; line-height: 1.6; margin: 0 0 2rem; }
+    .vx-nisab-pill {
+      display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(201, 168, 106, 0.15);
+      border: 1px solid rgba(201, 168, 106, 0.35); color: #f3d79e; padding: 0.5rem 1rem; border-radius: 9999px;
+      font-size: 0.82rem; font-weight: 700; margin-bottom: 1.5rem;
+    }
+    .vx-calc-widget { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 1.75rem; backdrop-filter: blur(12px); }
+    .vx-calc-input-group { margin-bottom: 1.1rem; }
+    .vx-calc-input-group label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8dafa4; margin-bottom: 0.4rem; }
+    .vx-calc-input {
+      width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px; padding: 0.75rem 1rem; color: #ffffff; font-family: var(--vx-font-mono); font-size: 1.05rem;
+      font-weight: 600; outline: none; transition: border-color 0.15s;
+    }
+    .vx-calc-input:focus { border-color: #38ef7d; background: rgba(255, 255, 255, 0.1); }
+    .vx-calc-result-box { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; }
+    .vx-calc-due-val { font-family: var(--vx-font-mono); font-size: 1.75rem; font-weight: 800; color: #38ef7d; }
+
+    /* Asnaf */
+    .vx-asnaf-section { padding: 6rem 0; background: var(--vx-surface-alt); border-top: 1px solid var(--vx-border); }
+    .vx-asnaf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-top: 3rem; }
+    .vx-asnaf-card { background: #ffffff; border: 1px solid var(--vx-border); border-radius: 18px; padding: 1.5rem; transition: all 0.2s; }
+    .vx-asnaf-card:hover { border-color: var(--vx-primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(11, 42, 34, 0.05); }
+    .vx-asnaf-tag { font-family: var(--vx-font-serif); font-size: 1.25rem; color: var(--vx-primary); font-style: italic; margin-bottom: 0.35rem; display: block; }
+    .vx-asnaf-name { font-size: 1.05rem; font-weight: 800; color: var(--vx-dark); margin-bottom: 0.5rem; }
+    .vx-asnaf-desc { font-size: 0.85rem; color: var(--vx-text-secondary); line-height: 1.5; }
+
+    /* Roles */
+    .vx-roles-section { padding: 6rem 0; background: var(--vx-canvas); }
+    .vx-roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .vx-role-card {
+      background: #ffffff; border: 1px solid var(--vx-border); border-radius: 24px; padding: 2.25rem;
+      display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;
+    }
+    .vx-role-card.featured { border: 2px solid var(--vx-primary); box-shadow: 0 16px 40px rgba(14, 92, 72, 0.1); position: relative; }
+    .vx-role-badge {
+      position: absolute; top: -12px; right: 24px; background: var(--vx-primary); color: #fff;
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 9999px;
+    }
+    .vx-role-header h3 { font-size: 1.45rem; font-weight: 800; color: var(--vx-dark); margin: 0 0 0.5rem; }
+    .vx-role-header p { font-size: 0.92rem; color: var(--vx-text-secondary); margin: 0 0 1.5rem; }
+    .vx-role-features { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+    .vx-role-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; color: var(--vx-text-primary); }
+
+    /* CTA & Footer */
+    .vx-cta-section { padding: 7rem 0; background: linear-gradient(180deg, var(--vx-canvas) 0%, #f1f7f4 100%); text-align: center; }
+    .vx-cta-title { font-size: clamp(2.5rem, 5vw, 4.25rem); font-weight: 800; letter-spacing: -0.03em; color: var(--vx-dark); max-width: 18ch; margin: 0 auto 1.25rem; line-height: 1.1; }
+    .vx-cta-sub { font-size: 1.15rem; color: var(--vx-text-secondary); max-width: 48ch; margin: 0 auto 2.5rem; line-height: 1.6; }
+
+    .vx-footer { background: var(--vx-dark-deep); color: #ffffff; padding: 5rem 0 2.5rem; }
+    .vx-footer-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr)); gap: 2.5rem; margin-bottom: 4rem; }
+    .vx-footer-brand h4 { font-size: 1.35rem; font-weight: 800; margin: 0 0 0.75rem; }
+    .vx-footer-brand p { color: #8dafa4; font-size: 0.88rem; line-height: 1.6; max-width: 32ch; }
+    .vx-footer-col h5 { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #8dafa4; margin: 0 0 1.25rem; }
+    .vx-footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+    .vx-footer-col a { font-size: 0.88rem; color: #d1e2dc; transition: color 0.15s; }
+    .vx-footer-col a:hover { color: #38ef7d; }
+    .vx-footer-bottom { padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; color: #72968b; }
+
+    @media (max-width: 1024px) {
+      .vx-app-grid, .vx-calc-box { grid-template-columns: 1fr; }
+      .vx-stats-grid, .vx-asnaf-grid, .vx-footer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .vx-nav-links, .vx-floating-chip { display: none; }
+      .vx-stats-grid, .vx-workflow-grid, .vx-asnaf-grid, .vx-roles-grid, .vx-footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <div class="vx-nav-wrapper">
+    <header class="vx-nav">
+      <a class="vx-brand" href="#">
+        <div class="vx-brand-mark">A</div>
+        <div class="vx-brand-text">
+          <span class="vx-brand-name">AMANAH</span>
+          <span class="vx-brand-tag">Community Zakat</span>
+        </div>
+      </a>
+      <ul class="vx-nav-links">
+        <li><a class="vx-nav-link" href="#how-it-works">How It Works</a></li>
+        <li><a class="vx-nav-link" href="#calculator">Nisab Calculator</a></li>
+        <li><a class="vx-nav-link" href="#asnaf">8 Asnaf Categories</a></li>
+        <li><a class="vx-nav-link" href="#governance">Shariah Governance</a></li>
+        <li><a class="vx-nav-link" href="#roles">Community Roles</a></li>
+      </ul>
+      <div class="vx-nav-actions">
+        <a class="vx-btn vx-btn-ghost" href="#roles">Log In</a>
+        <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Zakat ↗</a>
+      </div>
+    </header>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="vx-hero">
+    <div class="vx-hero-bg"></div>
+    <div class="vx-container">
+      <div style="text-align: center;">
+        <div class="vx-badge-pill">
+          <span class="vx-badge-dot"></span>
+          <span>Transparent · Mahallu-Verified · Shariah-Compliant</span>
+        </div>
+      </div>
+
+      <h1 class="vx-hero-title">
+        Your Zakat, <span class="serif">Direct &amp; Dignified</span> by Design.
+      </h1>
+
+      <p class="vx-hero-sub">
+        Amanah connects conscientious Zakat givers directly with verified, local households in need—with zero intermediary cuts, complete anonymity, and verified Mahallu governance.
+      </p>
+
+      <div class="vx-hero-actions">
+        <a class="vx-btn vx-btn-primary" style="padding: 0.85rem 1.85rem; font-size: 1rem;" href="#how-it-works">
+          Find Verified Households →
+        </a>
+        <a class="vx-btn vx-btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1rem;" href="#calculator">
+          Calculate Your Zakat
+        </a>
+      </div>
+
+      <!-- App Frame Mockup -->
+      <div class="vx-hero-frame-wrap">
+        <div class="vx-floating-chip vx-chip-top">
+          <div class="vx-chip-icon">✓</div>
+          <div class="vx-chip-text">
+            <strong>100% Direct Giving</strong>
+            <span>Zero administrative deduction</span>
+          </div>
+        </div>
+
+        <div class="vx-floating-chip vx-chip-bottom">
+          <div class="vx-chip-icon">⚖</div>
+          <div class="vx-chip-text">
+            <strong>Current Gold Nisab</strong>
+            <span class="vx-mono">₹5,81,400 (85g Gold Threshold)</span>
+          </div>
+        </div>
+
+        <div class="vx-hero-frame">
+          <div class="vx-app-header">
+            <div class="vx-app-status">
+              <span class="vx-mono" style="font-weight: 700;">9:41 AM</span>
+              <span>·</span>
+              <span style="color:#72e0b9;">📍</span>
+              <span style="font-weight: 600;">Kozhikode South Mahallu #104</span>
+            </div>
+            <div class="vx-app-badge">Audited Mahallu</div>
+          </div>
+
+          <div class="vx-app-grid">
+            <div class="vx-fund-card">
+              <div class="vx-fund-header">
+                <span class="vx-fund-label">Total Verified Mahallu Fund</span>
+                <span class="vx-fund-change vx-mono">+14.2% this quarter</span>
+              </div>
+              <div class="vx-fund-amount vx-mono">₹48,25,000</div>
+              <div style="font-size: 0.82rem; color: #8dafa4; margin-bottom: 1.25rem;">
+                100% allocated to 14 verified local families under Asnaf supervision.
+              </div>
+
+              <div class="vx-fund-actions">
+                <a class="vx-action-pill" href="#how-it-works">
+                  <span>🤲</span>
+                  <span>Give Direct</span>
+                </a>
+                <a class="vx-action-pill" href="#calculator">
+                  <span>🧮</span>
+                  <span>Calculate</span>
+                </a>
+                <a class="vx-action-pill" href="#roles">
+                  <span>🔒</span>
+                  <span>Request</span>
+                </a>
+                <a class="vx-action-pill" href="#governance">
+                  <span>📜</span>
+                  <span>Shariah Audit</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="vx-feed-card">
+              <div class="vx-feed-head">
+                <span class="vx-feed-title">Live Verified Allocations</span>
+                <span class="vx-mono" style="font-size: 0.72rem; color: #72e0b9;">LIVE LEDGER</span>
+              </div>
+              <div class="vx-feed-list">
+                <div class="vx-feed-item">
+                  <div class="vx-feed-info">
+                    <div class="vx-feed-name">Widowed Mother with 3 Schoolchildren</div>
+                    <div class="vx-feed-meta">
+                      <span class="vx-feed-asnaf">Al-Fuqara</span>
+                      <span>· Mahallu Verified</span>
+                    </div>
+                  </div>
+                  <div class="vx-feed-amount vx-mono">₹15,000</div>
+                </div>
+
+                <div class="vx-feed-item">
+                  <div class="vx-feed-info">
+                    <div class="vx-feed-name">Elderly Patient Dialysis Support</div>
+                    <div class="vx-feed-meta">
+                      <span class="vx-feed-asnaf">Al-Masakeen</span>
+                      <span>· Direct Hospital Rail</span>
+                    </div>
+                  </div>
+                  <div class="vx-feed-amount vx-mono">₹8,500</div>
+                </div>
+
+                <div class="vx-feed-item">
+                  <div class="vx-feed-info">
+                    <div class="vx-feed-name">Distressed Artisan Debt Relief</div>
+                    <div class="vx-feed-meta">
+                      <span class="vx-feed-asnaf">Al-Gharimun</span>
+                      <span>· Committee Approved</span>
+                    </div>
+                  </div>
+                  <div class="vx-feed-amount vx-mono">₹25,000</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee Ticker -->
+  <div class="vx-ticker">
+    <div class="vx-ticker-track">
+      <span class="vx-ticker-item">VERIFIED LOCAL HOUSEHOLDS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">ZERO PLATFORM COMMISSIONS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">SCHOLAR-AUDITED GOVERNANCE <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">IMMUTABLE MAHALLU LEDGER <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">100% DIRECT TO BENEFICIARY <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">PRESERVED RECIPIENT DIGNITY <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">NO EXPOSING PHOTOGRAPHS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">REAL-TIME GOLD NISAB <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">VERIFIED LOCAL HOUSEHOLDS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">ZERO PLATFORM COMMISSIONS <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">SCHOLAR-AUDITED GOVERNANCE <span class="vx-ticker-dot"></span></span>
+      <span class="vx-ticker-item">IMMUTABLE MAHALLU LEDGER <span class="vx-ticker-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <section class="vx-stats-section" id="metrics">
+    <div class="vx-container">
+      <span class="vx-section-kicker">BY THE NUMBERS</span>
+      <h2 class="vx-section-title">Built for Transparency, Integrity, and Ground Reality.</h2>
+      <p class="vx-section-sub">
+        From verified household identification to scholar-audited allocations, Amanah brings absolute certainty to your religious obligations.
+      </p>
+
+      <div class="vx-stats-grid">
+        <div class="vx-stat-card">
+          <div class="vx-stat-top">
+            <span class="vx-stat-idx">01</span>
+            <span class="vx-stat-status"><span class="vx-badge-dot"></span> LIVE RAIL</span>
+          </div>
+          <div>
+            <div class="vx-stat-value">100%</div>
+            <div class="vx-stat-label">Direct Distribution</div>
+            <p class="vx-stat-desc">Zero platform fees or intermediary commission deducted from your contribution.</p>
+          </div>
+        </div>
+
+        <div class="vx-stat-card">
+          <div class="vx-stat-top">
+            <span class="vx-stat-idx">02</span>
+            <span class="vx-stat-status"><span class="vx-badge-dot"></span> VERIFIED</span>
+          </div>
+          <div>
+            <div class="vx-stat-value">1,420+</div>
+            <div class="vx-stat-label">Verified Households</div>
+            <p class="vx-stat-desc">Families physically assessed across income, living conditions, and emergency healthcare.</p>
+          </div>
+        </div>
+
+        <div class="vx-stat-card">
+          <div class="vx-stat-top">
+            <span class="vx-stat-idx">03</span>
+            <span class="vx-stat-status"><span class="vx-badge-dot"></span> ACTIVE</span>
+          </div>
+          <div>
+            <div class="vx-stat-value">85+</div>
+            <div class="vx-stat-label">Registered Mahallus</div>
+            <p class="vx-stat-desc">Local mosque committees and elders collaborating on a unified community ledger.</p>
+          </div>
+        </div>
+
+        <div class="vx-stat-card">
+          <div class="vx-stat-top">
+            <span class="vx-stat-idx">04</span>
+            <span class="vx-stat-status"><span class="vx-badge-dot"></span> SHARIAH</span>
+          </div>
+          <div>
+            <div class="vx-stat-value">100%</div>
+            <div class="vx-stat-label">Quranic Compliance</div>
+            <p class="vx-stat-desc">Every rupee strictly classified under the 8 Quranic Asnaf categories (Surah At-Tawbah 9:60).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3-Pillar Workflow -->
+  <section class="vx-workflow-section" id="how-it-works">
+    <div class="vx-container">
+      <span class="vx-section-kicker">ONE CONNECTED WORKFLOW</span>
+      <h2 class="vx-section-title">Everything You Need. Nothing You Don’t.</h2>
+      <p class="vx-section-sub">
+        Whether giving, receiving, or administering community funds, Amanah eliminates ambiguity with ground-truth verification.
+      </p>
+
+      <div class="vx-workflow-grid">
+        <div class="vx-workflow-card">
+          <div>
+            <div class="vx-workflow-icon">🕌</div>
+            <h3>Ground-Level Mahallu Verification</h3>
+            <p>
+              No unchecked digital forms. Local Mahallu elders and administrators physically verify household income, family size, medical records, and living conditions before cases are admitted.
+            </p>
+          </div>
+          <a class="vx-workflow-link" href="#calculator">View verified listings ↗</a>
+        </div>
+
+        <div class="vx-workflow-card">
+          <div>
+            <div class="vx-workflow-icon">🛡</div>
+            <h3>Anonymized &amp; Dignified Giving</h3>
+            <p>
+              Recipients never face the humiliation of public fundraising or exposed photos. Givers search by locality or PIN code and review anonymized, quantified need profiles.
+            </p>
+          </div>
+          <a class="vx-workflow-link" href="#roles">Learn about recipient privacy ↗</a>
+        </div>
+
+        <div class="vx-workflow-card">
+          <div>
+            <div class="vx-workflow-icon">💳</div>
+            <h3>Dual Contribution Rails</h3>
+            <p>
+              Choose instant online platform transfers with digital receipts, or hand over cash in-person with a double-handshake digital receipt confirmed by the recipient.
+            </p>
+          </div>
+          <a class="vx-workflow-link" href="#calculator">Calculate your obligation ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Nisab Calculator -->
+  <section class="vx-calc-section" id="calculator">
+    <div class="vx-container">
+      <div class="vx-calc-box">
+        <div class="vx-calc-copy">
+          <div class="vx-nisab-pill">
+            <span>✨</span>
+            <span>Nisab Standard: 85g Gold (₹6,840/g)</span>
+          </div>
+          <h2>Calculate Your Zakat with Certainty.</h2>
+          <p>
+            Zakat is due at 2.5% on qualifying wealth held for one full lunar year (Hawl) exceeding the Nisab threshold of ₹5,81,400. Test your estimated contribution right now.
+          </p>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Direct Zakat →</a>
+          </div>
+        </div>
+
+        <div class="vx-calc-widget">
+          <div class="vx-calc-input-group">
+            <label>Cash &amp; Bank Balances (₹)</label>
+            <input type="number" id="calcCash" class="vx-calc-input" value="450000" oninput="calculateLive()">
+          </div>
+
+          <div class="vx-calc-input-group">
+            <label>Gold Holdings (Grams)</label>
+            <input type="number" id="calcGold" class="vx-calc-input" value="25" oninput="calculateLive()">
+          </div>
+
+          <div class="vx-calc-input-group">
+            <label>Business Inventory / Stock (₹)</label>
+            <input type="number" id="calcStock" class="vx-calc-input" value="120000" oninput="calculateLive()">
+          </div>
+
+          <div class="vx-calc-result-box">
+            <div>
+              <div class="vx-calc-due-label" id="dueLabel">Total Zakat Due (2.5%)</div>
+              <div style="font-size: 0.75rem; color: #8dafa4;" id="totalWealthLabel">Total Wealth: ₹7,41,000</div>
+            </div>
+            <div class="vx-calc-due-val" id="dueVal">₹18,525</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 Quranic Asnaf -->
+  <section class="vx-asnaf-section" id="asnaf">
+    <div class="vx-container">
+      <span class="vx-section-kicker">SHARIAH TAXONOMY</span>
+      <h2 class="vx-section-title">Strictly Mapped to the 8 Quranic Asnaf.</h2>
+      <p class="vx-section-sub">
+        Every assistance case admitted onto Amanah is rigorously categorized according to the criteria defined in Surah At-Tawbah (9:60).
+      </p>
+
+      <div class="vx-asnaf-grid">
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Al-Fuqara</span>
+          <div class="vx-asnaf-name">The Impoverished</div>
+          <p class="vx-asnaf-desc">Individuals without any source of income or property to meet essential sustenance.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Al-Masakeen</span>
+          <div class="vx-asnaf-name">The Destitute</div>
+          <p class="vx-asnaf-desc">Households with partial income insufficient to meet essential food, shelter, or critical medical care.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Al-Gharimun</span>
+          <div class="vx-asnaf-name">The Debt-Burdened</div>
+          <p class="vx-asnaf-desc">Those facing catastrophic, genuine debts contracted for medical emergencies or necessary survival.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Ibnus-Sabeel</span>
+          <div class="vx-asnaf-name">The Wayfarer</div>
+          <p class="vx-asnaf-desc">Stranded students or travelers temporarily cut off from their family and financial support.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Fi-Sabilillah</span>
+          <div class="vx-asnaf-name">In the Cause of Allah</div>
+          <p class="vx-asnaf-desc">Education, orphan care, and community welfare initiatives approved under Islamic scholarship.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Ar-Riqaab</span>
+          <div class="vx-asnaf-name">Empowerment</div>
+          <p class="vx-asnaf-desc">Liberating struggling breadwinners from coercive predatory lending and bonded traps.</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Amilina Alayha</span>
+          <div class="vx-asnaf-name">Zakat Administrators</div>
+          <p class="vx-asnaf-desc">Honoring ground workers who collect and audit distributions (Amanah platform charges 0%).</p>
+        </div>
+
+        <div class="vx-asnaf-card">
+          <span class="vx-asnaf-tag">Mu'allafat al-Qulub</span>
+          <div class="vx-asnaf-name">Reconciling Hearts</div>
+          <p class="vx-asnaf-desc">Providing solidarity, communal harmony, and emergency relief to vulnerable new converts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Governance & Privacy -->
+  <section class="vx-trust-section" id="governance">
+    <div class="vx-container">
+      <span class="vx-section-kicker">ETHICAL &amp; CONFIDENTIAL</span>
+      <h2 class="vx-section-title">Dignity and Protection for Every Household.</h2>
+      <p class="vx-section-sub">
+        Amanah enforces zero-compromise security so recipients are honored and givers have complete peace of mind.
+      </p>
+
+      <div class="vx-trust-grid">
+        <div class="vx-trust-card">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🔒</div>
+          <h4>Quarantined Identity Documents</h4>
+          <p>Applicant medical records, identity cards, and family details are visible only to assigned Mahallu verifiers—never published online.</p>
+        </div>
+
+        <div class="vx-trust-card">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">✍</div>
+          <h4>Dual-Signature Approvals</h4>
+          <p>Disbursements require dual-key authorization from the Mahallu committee president and Imam to prevent favoritism.</p>
+        </div>
+
+        <div class="vx-trust-card">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🤝</div>
+          <h4>Double-Handshake Receipts</h4>
+          <p>Direct cash or bank disbursements are closed only after digital or SMS verification from the recipient household.</p>
+        </div>
+
+        <div class="vx-trust-card">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📖</div>
+          <h4>Immutable Community Ledger</h4>
+          <p>Every rupee contributed, allocated, and disbursed is permanently recorded in an auditable financial trail.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Role Pathways -->
+  <section class="vx-roles-section" id="roles">
+    <div class="vx-container">
+      <span class="vx-section-kicker">COMMUNITY ROLES</span>
+      <h2 class="vx-section-title">Built for Everyone in Your Mahallu.</h2>
+      <p class="vx-section-sub">
+        Whether fulfilling your obligation, seeking emergency assistance, or governing your masjid's Baitulmal.
+      </p>
+
+      <div class="vx-roles-grid">
+        <div class="vx-role-card featured">
+          <div class="vx-role-badge">MOST POPULAR</div>
+          <div class="vx-role-header">
+            <h3>For Zakat Givers</h3>
+            <p>Calculate with certainty and give directly to verified households in your PIN code.</p>
+            <ul class="vx-role-features">
+              <li>✓ Instant accurate Nisab calculation</li>
+              <li>✓ Search verified households by locality</li>
+              <li>✓ 100% direct transfer with zero fees</li>
+              <li>✓ Receive instant shariah-compliant receipts</li>
+            </ul>
+          </div>
+          <a class="vx-btn vx-btn-primary" href="#how-it-works">Give Zakat Directly →</a>
+        </div>
+
+        <div class="vx-role-card">
+          <div class="vx-role-header">
+            <h3>For Deserving Families</h3>
+            <p>Request support with complete dignity, confidentiality, and prompt committee review.</p>
+            <ul class="vx-role-features">
+              <li>✓ Zero public exposure or photos</li>
+              <li>✓ Assigned to your local Mahallu</li>
+              <li>✓ Track case review progress in real time</li>
+              <li>✓ Receive direct cash or pharmacy transfers</li>
+            </ul>
+          </div>
+          <a class="vx-btn vx-btn-secondary" href="#governance">Request Assistance →</a>
+        </div>
+
+        <div class="vx-role-card">
+          <div class="vx-role-header">
+            <h3>For Mahallu Masjids</h3>
+            <p>Digitize your community Baitulmal, eliminate duplications, and manage verified rosters.</p>
+            <ul class="vx-role-features">
+              <li>✓ Unified Mahallu member directory</li>
+              <li>✓ Eligibility review &amp; delegation workflow</li>
+              <li>✓ Committee collection &amp; disbursement ledger</li>
+              <li>✓ Eradicate poverty through local coordination</li>
+            </ul>
+          </div>
+          <a class="vx-btn vx-btn-secondary" href="#roles">Mahallu Committee Access →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="vx-cta-section">
+    <div class="vx-container">
+      <div class="vx-badge-pill">
+        <span class="vx-badge-dot"></span>
+        <span>START TODAY</span>
+      </div>
+      <h2 class="vx-cta-title">
+        Bring <span class="serif">Barakah</span> to Your Wealth and Dignity to Your Community.
+      </h2>
+      <p class="vx-cta-sub">
+        Join thousands of givers and dozens of Mahallus using Amanah to fulfill Zakat as it was intended: direct, transparent, and transformative.
+      </p>
+
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a class="vx-btn vx-btn-primary" style="padding: 0.9rem 2rem; font-size: 1rem;" href="#how-it-works">
+          Find Verified Households →
+        </a>
+        <a class="vx-btn vx-btn-secondary" style="padding: 0.9rem 1.8rem; font-size: 1rem;" href="#calculator">
+          Calculate Nisab
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="vx-footer">
+    <div class="vx-container">
+      <div class="vx-footer-grid">
+        <div class="vx-footer-brand">
+          <h4>AMANAH</h4>
+          <p>
+            A community-driven Zakat management platform connecting Zakat givers, eligible recipients, and local Mahallus through a transparent, verified system.
+          </p>
+          <div style="font-size: 0.8rem; color: #8dafa4;">
+            Dedicated to poverty alleviation, recipient dignity, and absolute Shariah compliance.
+          </div>
+        </div>
+
+        <div class="vx-footer-col">
+          <h5>Platform</h5>
+          <ul>
+            <li><a href="#how-it-works">Give Zakat</a></li>
+            <li><a href="#calculator">Zakat Calculator</a></li>
+            <li><a href="#roles">Request Support</a></li>
+            <li><a href="#metrics">Community Ledger</a></li>
+          </ul>
+        </div>
+
+        <div class="vx-footer-col">
+          <h5>Governance</h5>
+          <ul>
+            <li><a href="#asnaf">8 Quranic Asnaf</a></li>
+            <li><a href="#governance">Shariah Verification</a></li>
+            <li><a href="#how-it-works">Mahallu Inspection</a></li>
+            <li><a href="#metrics">Direct Rail Audit</a></li>
+          </ul>
+        </div>
+
+        <div class="vx-footer-col">
+          <h5>Community</h5>
+          <ul>
+            <li><a href="#roles">Mahallu Directory</a></li>
+            <li><a href="#roles">Committee Access</a></li>
+            <li><a href="#calculator">Nisab Standards</a></li>
+            <li><a href="#governance">Eligibility Guide</a></li>
+          </ul>
+        </div>
+
+        <div class="vx-footer-col">
+          <h5>Account</h5>
+          <ul>
+            <li><a href="#roles">Sign In</a></li>
+            <li><a href="#roles">Register Mahallu</a></li>
+            <li><a href="#roles">My Profile</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="vx-footer-bottom">
+        <div>© 2026 AMANAH Zakat Platform. All rights reserved.</div>
+        <div>Built for the Ummah · Zero Administrative Cut · Direct Community Impact</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function calculateLive() {
+      const cash = Number(document.getElementById('calcCash').value) || 0;
+      const gold = Number(document.getElementById('calcGold').value) || 0;
+      const stock = Number(document.getElementById('calcStock').value) || 0;
+      const goldRate = 6840;
+      const nisab = 85 * goldRate;
+      const total = cash + (gold * goldRate) + stock;
+      const isEligible = total >= nisab;
+      const due = isEligible ? Math.round(total * 0.025) : 0;
+
+      document.getElementById('totalWealthLabel').innerText = 'Total Wealth: ₹' + total.toLocaleString();
+      document.getElementById('dueVal').innerText = isEligible ? '₹' + due.toLocaleString() : '₹0';
+      document.getElementById('dueLabel').innerText = isEligible ? 'Total Zakat Due (2.5%)' : 'Net Wealth Below Nisab';
+    }
+  </script>
+</body>
+</html>

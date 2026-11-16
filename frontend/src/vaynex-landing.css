@@ -1,0 +1,1217 @@
+/* ==========================================================================
+   VAYNEX-INSPIRED DESIGN SYSTEM FOR AMANAH LANDING PAGE
+   Aesthetic: Clean Emerald & Obsidian FinTech, Editorial Serif, Geist Mono Data
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --vx-primary: #0e5c48;
+  --vx-primary-hover: #0b4a3a;
+  --vx-primary-glow: rgba(14, 92, 72, 0.25);
+  --vx-dark: #0b2a22;
+  --vx-dark-deep: #071f19;
+  --vx-dark-card: #0d352b;
+  --vx-mint: #2a8f72;
+  --vx-mint-light: #eef7f3;
+  --vx-mint-border: #d4e7df;
+  --vx-canvas: #ffffff;
+  --vx-surface-alt: #f6faf8;
+  --vx-surface-card: #ffffff;
+  --vx-border: #e4eae8;
+  --vx-border-subtle: #edf3f0;
+  --vx-text-primary: #0b2a22;
+  --vx-text-secondary: #5f706a;
+  --vx-text-muted: #8b9b95;
+  --vx-gold: #c9a86a;
+  --vx-gold-light: #fdf8ed;
+  
+  --vx-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --vx-font-serif: 'Instrument Serif', Georgia, serif;
+  --vx-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Base Landing Reset & Container */
+.vx-landing {
+  font-family: var(--vx-font-sans);
+  color: var(--vx-text-primary);
+  background-color: var(--vx-canvas);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.vx-landing * {
+  box-sizing: border-box;
+}
+
+.vx-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1.25rem, 3vw, 2.5rem);
+  padding-right: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.vx-serif {
+  font-family: var(--vx-font-serif);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.vx-mono {
+  font-family: var(--vx-font-mono);
+}
+
+/* ==========================================================================
+   1. NAVIGATION BAR (Floating Pill Glass)
+   ========================================================================== */
+.vx-nav-wrapper {
+  position: sticky;
+  top: 1rem;
+  z-index: 100;
+  width: 100%;
+  padding: 0 clamp(1rem, 2vw, 2rem);
+  margin-bottom: 1.5rem;
+}
+
+.vx-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(14, 92, 72, 0.12);
+  border-radius: 9999px;
+  padding: 0.6rem 0.8rem 0.6rem 1.4rem;
+  box-shadow: 0 4px 24px rgba(11, 42, 34, 0.05), 0 1px 2px rgba(11, 42, 34, 0.04);
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.vx-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--vx-dark);
+}
+
+.vx-brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(135deg, var(--vx-primary) 0%, var(--vx-dark) 100%);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-family: var(--vx-font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(14, 92, 72, 0.25);
+}
+
+.vx-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.vx-brand-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--vx-dark);
+}
+
+.vx-brand-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vx-mint);
+  margin-top: 2px;
+}
+
+.vx-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vx-nav-link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--vx-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.vx-nav-link:hover {
+  color: var(--vx-primary);
+}
+
+.vx-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.vx-btn-ghost {
+  background: transparent;
+  color: var(--vx-text-primary);
+  border-color: transparent;
+}
+
+.vx-btn-ghost:hover {
+  background: var(--vx-surface-alt);
+  color: var(--vx-primary);
+}
+
+.vx-btn-primary {
+  background: var(--vx-primary);
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px var(--vx-primary-glow);
+}
+
+.vx-btn-primary:hover {
+  background: var(--vx-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(14, 92, 72, 0.35);
+}
+
+.vx-btn-secondary {
+  background: #ffffff;
+  color: var(--vx-dark) !important;
+  border-color: var(--vx-border);
+}
+
+.vx-btn-secondary:hover {
+  border-color: var(--vx-primary);
+  background: var(--vx-surface-alt);
+}
+
+/* ==========================================================================
+   2. HERO SECTION
+   ========================================================================== */
+.vx-hero {
+  padding-top: 1.5rem;
+  padding-bottom: 5rem;
+  position: relative;
+}
+
+.vx-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 800px;
+  background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 92, 72, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vx-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  background: var(--vx-mint-light);
+  border: 1px solid var(--vx-mint-border);
+  color: var(--vx-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.vx-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vx-mint);
+  box-shadow: 0 0 8px var(--vx-mint);
+}
+
+.vx-hero-title {
+  font-size: clamp(2.75rem, 6.2vw, 5.25rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--vx-dark);
+  max-width: 18ch;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.vx-hero-title span.serif {
+  font-family: var(--vx-font-serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--vx-primary);
+  letter-spacing: -0.02em;
+}
+
+.vx-hero-sub {
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+  color: var(--vx-text-secondary);
+  max-width: 44ch;
+  margin: 0 auto 2.25rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.vx-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+
+/* Hero App Frame Mockup (Vaynex-Style Multi-Layered UI Frame) */
+.vx-hero-frame-wrap {
+  position: relative;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.vx-hero-frame {
+  background: linear-gradient(165deg, #0b2a22 0%, #081d17 60%, #061712 100%);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  color: #ffffff;
+  box-shadow: 0 30px 80px rgba(7, 31, 25, 0.35), 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.vx-hero-frame::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42, 143, 114, 0.22) 0%, rgba(14, 92, 72, 0) 70%);
+  pointer-events: none;
+}
+
+.vx-app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.75rem;
+}
+
+.vx-app-status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: #a3c2b8;
+}
+
+.vx-app-badge {
+  background: rgba(42, 143, 114, 0.2);
+  border: 1px solid rgba(42, 143, 114, 0.4);
+  color: #72e0b9;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vx-app-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+  gap: 1.5rem;
+}
+
+.vx-fund-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 1.6rem;
+  backdrop-filter: blur(12px);
+}
+
+.vx-fund-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.vx-fund-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8dafa4;
+}
+
+.vx-fund-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #38ef7d;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.vx-fund-amount {
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0.25rem 0 1.25rem;
+  line-height: 1;
+}
+
+.vx-fund-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.vx-action-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #d1e2dc;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.vx-action-pill:hover {
+  background: rgba(42, 143, 114, 0.25);
+  border-color: rgba(42, 143, 114, 0.5);
+  color: #ffffff;
+}
+
+/* Recipient Feed List inside Frame */
+.vx-feed-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 1.4rem;
+}
+
+.vx-feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.vx-feed-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8dafa4;
+}
+
+.vx-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vx-feed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  gap: 0.75rem;
+}
+
+.vx-feed-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.vx-feed-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vx-feed-meta {
+  font-size: 0.72rem;
+  color: #8dafa4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.vx-feed-asnaf {
+  background: rgba(201, 168, 106, 0.18);
+  color: #e5c387;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.68rem;
+}
+
+.vx-feed-amount {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #38ef7d;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Floating Badges outside frame */
+.vx-floating-chip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--vx-border);
+  padding: 0.75rem 1.15rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(11, 42, 34, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 10;
+  color: var(--vx-dark);
+}
+
+.vx-chip-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: var(--vx-mint-light);
+  color: var(--vx-primary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.vx-chip-text strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.vx-chip-text span {
+  font-size: 0.74rem;
+  color: var(--vx-text-secondary);
+}
+
+.vx-chip-top {
+  top: -24px;
+  right: 24px;
+}
+
+.vx-chip-bottom {
+  bottom: -24px;
+  left: 24px;
+}
+
+/* ==========================================================================
+   3. MARQUEE TICKER (Infinite Smooth Scroll)
+   ========================================================================== */
+.vx-ticker {
+  background: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+  border-bottom: 1px solid var(--vx-border);
+  padding: 1.1rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  user-select: none;
+}
+
+.vx-ticker-track {
+  display: inline-flex;
+  gap: 2.5rem;
+  animation: vx-scroll 28s linear infinite;
+}
+
+.vx-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--vx-font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vx-primary);
+}
+
+.vx-ticker-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--vx-mint);
+}
+
+@keyframes vx-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ==========================================================================
+   4. "BY THE NUMBERS" STATS GRID (Vaynex Style 4-Cards)
+   ========================================================================== */
+.vx-stats-section {
+  padding: 6rem 0;
+  background: var(--vx-canvas);
+}
+
+.vx-section-kicker {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vx-mint);
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+.vx-section-title {
+  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--vx-dark);
+  margin: 0 0 1rem;
+}
+
+.vx-section-sub {
+  font-size: 1.1rem;
+  color: var(--vx-text-secondary);
+  max-width: 55ch;
+  margin: 0 0 3.5rem;
+  line-height: 1.6;
+}
+
+.vx-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.vx-stat-card {
+  background: var(--vx-surface-card);
+  border: 1px solid var(--vx-border);
+  border-radius: 22px;
+  padding: 1.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+}
+
+.vx-stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(14, 92, 72, 0.3);
+  box-shadow: 0 16px 36px rgba(11, 42, 34, 0.06);
+}
+
+.vx-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.vx-stat-idx {
+  font-family: var(--vx-font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--vx-text-muted);
+}
+
+.vx-stat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vx-mint);
+  background: var(--vx-mint-light);
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.vx-stat-value {
+  font-family: var(--vx-font-mono);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--vx-dark);
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+
+.vx-stat-label {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--vx-dark);
+  margin-bottom: 0.35rem;
+}
+
+.vx-stat-desc {
+  font-size: 0.85rem;
+  color: var(--vx-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ==========================================================================
+   5. "ONE FINANCIAL VIEW" / 3-PILLAR WORKFLOW
+   ========================================================================== */
+.vx-workflow-section {
+  padding: 6rem 0;
+  background: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+  border-bottom: 1px solid var(--vx-border);
+}
+
+.vx-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.vx-workflow-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 24px;
+  padding: 2.25rem 2rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 320px;
+}
+
+.vx-workflow-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(14, 92, 72, 0.3);
+  box-shadow: 0 20px 40px rgba(11, 42, 34, 0.08);
+}
+
+.vx-workflow-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 16px;
+  background: var(--vx-mint-light);
+  color: var(--vx-primary);
+  display: grid;
+  place-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.vx-workflow-card h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--vx-dark);
+  margin: 0 0 0.75rem;
+}
+
+.vx-workflow-card p {
+  font-size: 0.95rem;
+  color: var(--vx-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.vx-workflow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--vx-primary);
+  text-decoration: none;
+  margin-top: auto;
+}
+
+.vx-workflow-link:hover {
+  color: var(--vx-primary-hover);
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   6. INTERACTIVE NISAB CALCULATOR PREVIEW
+   ========================================================================== */
+.vx-calc-section {
+  padding: 6rem 0;
+  background: var(--vx-canvas);
+}
+
+.vx-calc-box {
+  background: linear-gradient(135deg, #0b2a22 0%, #0d382e 100%);
+  border-radius: 28px;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  color: #ffffff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 3rem;
+  align-items: center;
+  box-shadow: 0 24px 60px rgba(7, 31, 25, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vx-calc-copy h2 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+.vx-calc-copy p {
+  font-size: 1.05rem;
+  color: #a8c4bb;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.vx-nisab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(201, 168, 106, 0.15);
+  border: 1px solid rgba(201, 168, 106, 0.35);
+  color: #f3d79e;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.vx-calc-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.75rem;
+  backdrop-filter: blur(12px);
+}
+
+.vx-calc-input-group {
+  margin-bottom: 1.1rem;
+}
+
+.vx-calc-input-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8dafa4;
+  margin-bottom: 0.4rem;
+}
+
+.vx-calc-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  font-family: var(--vx-font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.vx-calc-input:focus {
+  border-color: #38ef7d;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.vx-calc-result-box {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vx-calc-due-label {
+  font-size: 0.85rem;
+  color: #8dafa4;
+}
+
+.vx-calc-due-val {
+  font-family: var(--vx-font-mono);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #38ef7d;
+}
+
+/* ==========================================================================
+   7. 8 QURANIC ASNAF GRID
+   ========================================================================== */
+.vx-asnaf-section {
+  padding: 6rem 0;
+  background: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+}
+
+.vx-asnaf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.vx-asnaf-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 18px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.vx-asnaf-card:hover {
+  border-color: var(--vx-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(11, 42, 34, 0.05);
+}
+
+.vx-asnaf-tag {
+  font-family: var(--vx-font-serif);
+  font-size: 1.25rem;
+  color: var(--vx-primary);
+  font-style: italic;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.vx-asnaf-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--vx-dark);
+  margin-bottom: 0.5rem;
+}
+
+.vx-asnaf-desc {
+  font-size: 0.85rem;
+  color: var(--vx-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ==========================================================================
+   8. PRIVACY & SHARIAH GOVERNANCE
+   ========================================================================== */
+.vx-trust-section {
+  padding: 6rem 0;
+  background: var(--vx-canvas);
+}
+
+.vx-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.vx-trust-card {
+  background: var(--vx-surface-alt);
+  border: 1px solid var(--vx-border);
+  border-radius: 20px;
+  padding: 1.75rem;
+}
+
+.vx-trust-card h4 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--vx-dark);
+  margin: 1rem 0 0.5rem;
+}
+
+.vx-trust-card p {
+  font-size: 0.88rem;
+  color: var(--vx-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ==========================================================================
+   9. ROLE PATHWAYS (GIVERS / RECIPIENTS / MAHALLUS)
+   ========================================================================== */
+.vx-roles-section {
+  padding: 6rem 0;
+  background: var(--vx-surface-alt);
+  border-top: 1px solid var(--vx-border);
+}
+
+.vx-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.vx-role-card {
+  background: #ffffff;
+  border: 1px solid var(--vx-border);
+  border-radius: 24px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+
+.vx-role-card.featured {
+  border: 2px solid var(--vx-primary);
+  box-shadow: 0 16px 40px rgba(14, 92, 72, 0.1);
+  position: relative;
+}
+
+.vx-role-badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  background: var(--vx-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.vx-role-header h3 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--vx-dark);
+  margin: 0 0 0.5rem;
+}
+
+.vx-role-header p {
+  font-size: 0.92rem;
+  color: var(--vx-text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+.vx-role-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vx-role-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--vx-text-primary);
+}
+
+.vx-role-features li svg {
+  color: var(--vx-primary);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   10. BOTTOM HERO CTA
+   ========================================================================== */
+.vx-cta-section {
+  padding: 7rem 0;
+  background: linear-gradient(180deg, var(--vx-canvas) 0%, #f1f7f4 100%);
+  text-align: center;
+}
+
+.vx-cta-title {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--vx-dark);
+  max-width: 18ch;
+  margin: 0 auto 1.25rem;
+  line-height: 1.1;
+}
+
+.vx-cta-sub {
+  font-size: 1.15rem;
+  color: var(--vx-text-secondary);
+  max-width: 48ch;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   11. FOOTER
+   ========================================================================== */
+.vx-footer {
+  background: var(--vx-dark-deep);
+  color: #ffffff;
+  padding: 5rem 0 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vx-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 4rem;
+}
+
+.vx-footer-brand h4 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vx-footer-brand p {
+  color: #8dafa4;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  max-width: 32ch;
+  margin: 0 0 1.5rem;
+}
+
+.vx-footer-col h5 {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8dafa4;
+  margin: 0 0 1.25rem;
+}
+
+.vx-footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.vx-footer-col a {
+  font-size: 0.88rem;
+  color: #d1e2dc;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.vx-footer-col a:hover {
+  color: #38ef7d;
+}
+
+.vx-footer-bottom {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #72968b;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .vx-app-grid {
+    grid-template-columns: 1fr;
+  }
+  .vx-stats-grid, .vx-asnaf-grid, .vx-trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vx-calc-box {
+    grid-template-columns: 1fr;
+  }
+  .vx-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .vx-nav-links {
+    display: none;
+  }
+  .vx-stats-grid, .vx-workflow-grid, .vx-asnaf-grid, .vx-trust-grid, .vx-roles-grid {
+    grid-template-columns: 1fr;
+  }
+  .vx-floating-chip {
+    display: none;
+  }
+  .vx-fund-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vx-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
