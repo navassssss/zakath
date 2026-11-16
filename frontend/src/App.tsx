@@ -1,8 +1,9 @@
+import { DashboardSidebar, DashboardTopbar } from './DashboardChrome'
 import { Landing } from './Landing'
 import { Link } from './navigation'
 import { navigate } from './navigate'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Building2, Calculator, ClipboardCheck, HandHeart, House, LifeBuoy, UserRound, Wallet } from 'lucide-react'
+import { Building2, Calculator, ClipboardCheck, Wallet } from 'lucide-react'
 import { MahalluDirectory } from './MahalluDirectory'
 import { AdminOverview } from './AdminOverview'
 import { UserDashboard } from './UserDashboard'
@@ -14,6 +15,7 @@ import { Giving } from './Giving'
 import { ZakatCalculator } from './ZakatCalculator'
 import { CommitteeLedger } from './CommitteeLedger'
 import { CommitteeAllocations } from './CommitteeAllocations'
+import { KnowledgeModal } from './KnowledgeModal'
 
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN'; onboardingProfile?: OnboardingProfile | null }
@@ -25,19 +27,6 @@ const protectedPaths = ['/dashboard', '/onboarding', '/give', '/calculate', '/he
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
 const intakeSteps = ['Where you live', 'Your household', 'Monthly finances', 'Supporting information']
-const pages = [
-  ['/dashboard', 'Dashboard', House],
-  ['/give', 'Give', HandHeart],
-  ['/calculate', 'Calculate', Calculator],
-  ['/help', 'Get help', LifeBuoy],
-  ['/account', 'Account', UserRound],
-] as const
-const adminPages = [
-  ['/account', 'Dashboard', House],
-  ['/admin/review', 'Review', ClipboardCheck],
-  ['/admin/collections', 'Collections', Wallet],
-] as const
-const superAdminPages = [adminPages[0], [directoryPath, 'Mahallus', Building2] as const, ...adminPages.slice(1)]
 
 function Eligibility({ account }: { account: Account }) {
   const profile = account.onboardingProfile
@@ -312,32 +301,76 @@ export default function App() {
   const accountPage = !needsOnboarding && page === '/account'
   const publicLayout = page === '/' || page === '/login' || !account || needsOnboarding
   const canViewDirectory = account?.role === 'SUPER_ADMIN'
-  const navigation = canViewDirectory ? superAdminPages : isAdmin ? adminPages : pages
+  const activePage = isDirectoryPage(page) ? directoryPath : page
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeKnowledgeTopic, setActiveKnowledgeTopic] = useState<string | null>(null)
+
+  function signOut() {
+    sessionStorage.removeItem(sessionKey)
+    sessionStorage.removeItem(returnKey)
+    setAccount(null)
+    setError('')
+    navigate('/login')
+  }
 
   return (
-    <div className={publicLayout ? 'public-shell' : isAdmin ? 'app-shell admin-shell' : 'app-shell'}>
+    <div className={publicLayout ? 'public-shell' : 'reference-app'}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     {publicLayout ? (
-      <header className="public-header">
-        <div>
-          <Link className="wordmark" href="/">Amanah</Link>
-          <Link className="primary-link public-login" href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link>
+      page === '/' ? null : (
+        <header className="public-header">
+          <div>
+            <Link className="wordmark" href="/">Amanah</Link>
+            <Link className="primary-link public-login" href={account ? isAdmin ? '/account' : '/dashboard' : '/login'}>{account ? 'My account' : 'Log in'}</Link>
+          </div>
+        </header>
+      )
+    ) : (
+      <>
+        <div className="mobile-bar">
+          <div className="reference-logo" style={{ padding: 0 }}>
+            <div className="reference-logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path d="M24 4 L24 8" stroke="#0A4A2A" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="24" cy="10" r="2" fill="#C9A86A" />
+                <path d="M8 38 C8 24 14 18 24 12 C34 18 40 24 40 38" stroke="#0A4A2A" strokeWidth="2.4" fill="#EAF6EE" />
+                <path d="M17 38 V28 C17 24 20 22 24 22 C28 22 31 24 31 28 V38" fill="#C9A86A" opacity=".9" />
+                <path d="M6 38 H42" stroke="#0A4A2A" strokeWidth="2.4" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="reference-logo-text">
+              <strong>AMANAH</strong>
+              <span>Zakat Platform</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="menu-btn"
+            id="menuBtn"
+            aria-label="Open menu"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
         </div>
-      </header>
-    ) : <header className="site-header">
-      <div className="site-header-inner">
-        <Link className="wordmark" href="/">Amanah</Link>
-        <nav className="site-nav" aria-label="Main navigation">
-          {navigation.map(([path, title, Icon]) => (
-            <Link key={path} href={path} aria-current={page === path || (path === directoryPath && isDirectoryPage(page)) ? 'page' : undefined}>
-              <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
-              <span>{path === '/account' && !account ? 'Log in' : title}</span>
-            </Link>
-          ))}
-        </nav>
-      </div>
-    </header>}
-    <main id="main-content" className={page === '/' ? 'landing' : 'workspace'}>
+        <DashboardSidebar
+          active={activePage}
+          member={!isAdmin}
+          onSignOut={signOut}
+          onOpenKnowledge={(topic) => setActiveKnowledgeTopic(topic ?? 'What is Zakat?')}
+          open={mobileMenuOpen}
+          setOpen={setMobileMenuOpen}
+        />
+      </>
+    )}
+    <main id="main-content" className={page === '/' ? 'landing' : publicLayout ? 'workspace' : 'reference-main'}>
+    {!publicLayout && account && (
+      <DashboardTopbar
+        profile={account}
+        onSignOut={signOut}
+        onOpenKnowledge={(topic) => setActiveKnowledgeTopic(topic ?? 'What is Zakat?')}
+      />
+    )}
     {page === '/' && <Landing accountPath={account ? isAdmin ? '/account' : '/dashboard' : '/login'} />}
     {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
     {page === '/login' && <section className="login-panel">
@@ -356,13 +389,7 @@ export default function App() {
       {account && (
         <>
           <p>Signed in as {account.name ?? account.email}</p>
-          <button type="button" onClick={() => {
-            sessionStorage.removeItem(sessionKey)
-            sessionStorage.removeItem(returnKey)
-            setAccount(null)
-            setError('')
-            navigate('/login')
-          }}>Sign out</button>
+          <button type="button" onClick={signOut}>Sign out</button>
           {page === '/account' && canReview && token && <AdminOverview token={token} />}
           {isAdmin && page === '/account' && (
             canReview ? <div className="admin-shortcuts">
@@ -383,7 +410,13 @@ export default function App() {
       sessionStorage.removeItem(returnKey)
       navigate('/dashboard', true)
     }} />}
-    {page === '/dashboard' && token && account && !needsOnboarding && <UserDashboard token={token} name={account.name} />}
+    {page === '/dashboard' && token && account && !needsOnboarding && (
+      <UserDashboard
+        token={token}
+        name={account.name}
+        onOpenKnowledge={(topic) => setActiveKnowledgeTopic(topic ?? 'What is Zakat?')}
+      />
+    )}
     {page === '/help' && token && account && !needsOnboarding && <>
       <div className="panel"><Eligibility account={account} /></div>
       <CommitteeAllocations token={token} />
@@ -395,17 +428,19 @@ export default function App() {
         <section className="panel">
           <h1>Give Zakat</h1>
           <div className="admin-shortcuts">
-            <a href="#committee-giving"><Wallet aria-hidden="true" /><strong>{account?.mahallId ? 'Give through your Mahallu' : 'Give through the Super Admin fund'}</strong></a>
             <Link href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong></Link>
           </div>
         </section>
-        <CommitteeLedger token={token} hasHomeMahallu={Boolean(account?.mahallId)} />
         <Giving key={account?.email ?? 'guest'} token={token} />
       </>
     )}
     {page === '/calculate' && token && !needsOnboarding && <ZakatCalculator token={token} />}
     {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
     </main>
+    <KnowledgeModal
+      topic={activeKnowledgeTopic}
+      onClose={() => setActiveKnowledgeTopic(null)}
+    />
     </div>
   )
 }

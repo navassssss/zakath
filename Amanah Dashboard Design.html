@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>Amanah — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EDE8;
+  --panel:#FFFFFF;
+  --panel-soft:#F7F8F7;
+  --deep:#0A4A2A;
+  --deep2:#0B5D34;
+  --green:#0E7A3E;
+  --green-mid:#1F9D55;
+  --green-bright:#22A85A;
+  --light:#E6F4EA;
+  --light2:#DFF2E6;
+  --mint:#C7EACF;
+  --mint2:#A9D9B4;
+  --ink:#111814;
+  --muted:#6B7A6E;
+  --line:#E6EBE6;
+  --gold:#C9A86A;
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);font-family:"Manrope",Inter,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;min-height:36px}
+img,svg{display:block}
+.app{max-width:1520px;margin:0 auto;padding:14px;display:grid;grid-template-columns:272px 1fr;gap:16px;min-height:100vh}
+/* SIDEBAR */
+.sidebar{background:var(--panel);border-radius:24px;padding:22px 14px 16px;display:flex;flex-direction:column;position:sticky;top:14px;height:calc(100vh - 28px);overflow:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 10px 10px}
+.logo-mark{width:44px;height:44px;flex-shrink:0}
+.logo-text{line-height:1}
+.logo-text strong{display:block;font-size:22px;letter-spacing:.04em;font-weight:800;color:var(--deep);line-height:1}
+.logo-text span{display:block;font-size:12.5px;font-weight:600;color:#2B3A2E;margin-top:3px;letter-spacing:.01em}
+.nav-label{font-size:11px;letter-spacing:.12em;font-weight:700;color:#8A968C;text-transform:uppercase;padding:14px 12px 8px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;font-size:14.5px;font-weight:600;color:#263329;line-height:1;position:relative;min-height:38px}
+.nav a svg{width:20px;height:20px;flex-shrink:0;color:#3A4A3E}
+.nav a.active{background:var(--light);color:var(--deep);font-weight:700}
+.nav a.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--green)}
+.nav a.active svg{color:var(--green)}
+.nav a:hover{background:#F2F6F2}
+.side-card{margin-top:14px;background:linear-gradient(160deg,#0B4D2C 0%,#0A5F36 55%,#0E7242 100%);border-radius:18px;padding:14px 16px 14px;color:#fff;position:relative;overflow:hidden;flex-shrink:0}
+.side-card::after{content:"";position:absolute;right:-30px;bottom:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06)}
+.side-card .book{width:34px;height:34px;color:#D6EBDD;margin-bottom:8px}
+.side-card h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.side-card p{margin:6px 0 14px;font-size:13.5px;line-height:1.45;color:#D9EBDE;font-weight:500}
+.btn-calc{width:100%;border:0;background:#1FA85A;color:#fff;font-weight:700;font-size:14px;padding:11px 14px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-calc:hover{background:#25B866}
+/* MAIN */
+.main{background:#F6F7F6;border-radius:24px;padding:16px 20px 20px;min-width:0}
+.topbar{display:flex;align-items:center;gap:16px;background:#fff;border-radius:999px;padding:8px 10px 8px 18px;box-shadow:0 1px 0 rgba(0,0,0,.02);border:1px solid #EEF1EE}
+.search{flex:1;max-width:480px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #E8ECE8;border-radius:999px;padding:0 8px 0 14px;height:44px}
+.search svg{width:19px;height:19px;color:#7A877C;flex-shrink:0}
+.search input{border:0;outline:0;flex:1;font-family:inherit;font-size:14px;font-weight:500;color:var(--ink);background:transparent;min-width:0}
+.search input::placeholder{color:#8A968C}
+.kbd{font-size:12px;font-weight:600;color:#5F6E62;background:#F1F3F1;border:1px solid #E4E8E4;padding:5px 9px;border-radius:999px;white-space:nowrap}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.bell{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:0;background:transparent}
+.bell svg{width:22px;height:22px}
+.bell i{position:absolute;top:7px;right:8px;width:9px;height:9px;background:#E53935;border:2px solid #fff;border-radius:50%}
+.profile{display:flex;align-items:center;gap:10px}
+.avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;background:#EADBC8;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1px #E8E2D6}
+.avatar svg{width:100%;height:100%}
+.profile-text{line-height:1.15}
+.profile-text strong{display:block;font-size:14.5px;font-weight:800}
+.profile-text span{font-size:12.5px;color:var(--muted);font-weight:600}
+.chev{width:18px;height:18px;color:#6B7A6E}
+.head-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding:22px 4px 16px}
+.head-row h1{margin:0;font-size:36px;line-height:1;font-weight:800;letter-spacing:-.03em;color:#0E2A1A}
+.head-row p{margin:6px 0 0;font-size:15px;color:#6B7A6E;font-weight:500}
+.head-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mahallu-pill{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 10px 9px 14px;font-weight:700;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.mahallu-pill svg{width:20px;height:20px;color:var(--green)}
+.verified{display:inline-flex;align-items:center;gap:5px;background:var(--light);color:var(--green);font-size:12.5px;font-weight:800;padding:6px 10px;border-radius:999px}
+.verified svg{width:14px;height:14px}
+.btn-give{background:var(--green);color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:800;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 16px rgba(14,122,62,.25);white-space:nowrap}
+.btn-give:hover{background:var(--deep2)}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;position:relative;min-height:148px}
+.stat.dark{background:linear-gradient(145deg,#0A5A33,#0B6B3E);color:#fff;border-color:transparent}
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start}
+.stat-icon{width:28px;height:28px}
+.stat.dark .stat-icon{color:#CDEBD6}
+.stat:not(.dark) .stat-icon{color:var(--green)}
+.stat-arrow{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:#fff;color:#334338;flex-shrink:0}
+.stat.dark .stat-arrow{background:#DFF2E6;border-color:transparent;color:var(--deep)}
+.stat-arrow svg{width:14px;height:14px}
+.stat-label{margin-top:12px;font-size:14.5px;font-weight:700}
+.stat-value{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:2px}
+.stat.dark .stat-value{font-size:30px}
+.stat-sub{margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700}
+.stat.dark .stat-sub{background:rgba(255,255,255,.14);padding:5px 9px;border-radius:999px}
+.stat:not(.dark) .stat-sub{color:#5F6E62}
+.pill-approved{background:var(--light);color:var(--green)!important;padding:5px 10px;border-radius:999px}
+.check-badge{width:28px;height:28px;border-radius:50%;background:var(--light);display:grid;place-items:center;color:var(--green)}
+.check-badge svg{width:16px;height:16px}
+/* GRID ROWS */
+.row2{display:grid;grid-template-columns:1.55fr 1.08fr 1.08fr;gap:14px;margin-top:14px}
+.row3{display:grid;grid-template-columns:1.55fr 1.08fr 1.08fr;gap:14px;margin-top:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h2{margin:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card-head h2 svg{width:19px;height:19px;color:var(--green)}
+.select-pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.select-pill svg{width:14px;height:14px}
+/* CHART */
+.chart{display:flex;align-items:flex-end;gap:10px;height:150px;padding:6px 6px 0}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;height:100%;justify-content:flex-end}
+.bar{width:100%;max-width:52px;border-radius:10px 10px 6px 6px}
+.bar-label{font-size:12.5px;font-weight:600;color:#6B7A6E}
+.b-jan{height:52px;background:var(--mint)}
+.b-feb{height:96px;background:#2E9E5B}
+.b-mar{height:72px;background:var(--mint2)}
+.b-apr{height:122px;background:var(--green)}
+.b-may{height:48px;background:var(--mint)}
+.b-jun{height:88px;background:var(--mint2)}
+/* QUICK / KNOWLEDGE */
+.qa-list{display:flex;flex-direction:column;gap:10px}
+.qa-item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:999px;padding:9px 12px 9px 9px;font-weight:700;font-size:14px;background:#fff;width:100%;text-align:left}
+.qa-item:hover{border-color:#CDE0D0;background:#F7FBF7}
+.qa-ico{width:36px;height:36px;border-radius:50%;background:var(--light);display:grid;place-items:center;color:var(--green);flex:0 0 36px}
+.qa-ico svg{width:19px;height:19px}
+.qa-item>span:nth-child(2){flex:1}
+.qa-item .arr{width:16px;height:16px;color:#8A968C}
+.k-list{display:flex;flex-direction:column}
+.k-item{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid #EEF1EE;font-size:13.8px;font-weight:600}
+.k-item:last-child{border-bottom:0}
+.k-item svg:first-child{width:18px;height:18px;color:#3A4A3E;flex-shrink:0}
+.k-item span{flex:1}
+.k-item svg:last-child{width:15px;height:15px;color:#9AA69C}
+/* RECENT */
+.view-all{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700}
+.activity{display:flex;flex-direction:column;gap:16px}
+.act{display:flex;gap:12px;align-items:flex-start}
+.act-ico{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+.act-ico svg{width:20px;height:20px}
+.act-ico.g{background:#E2F2E6;color:var(--green)}
+.act-ico.y{background:#FEF3C7;color:#92400E}
+.act-main{flex:1;min-width:0}
+.act-main strong{display:block;font-size:14px;font-weight:800;line-height:1.2}
+.act-main p{margin:2px 0 0;font-size:13px;color:var(--muted);font-weight:500;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-date{font-size:12.5px;font-weight:600;color:#7A877C;white-space:nowrap;padding-top:2px}
+/* STATUS */
+.status-body{display:flex;align-items:center;gap:16px;margin:6px 0 16px}
+.gauge{width:92px;height:92px;flex-shrink:0;position:relative}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-center{position:absolute;inset:0;display:grid;place-items:center}
+.gauge-center span{width:36px;height:36px;border-radius:50%;background:var(--light);display:grid;place-items:center;color:var(--green)}
+.gauge-center svg{width:18px;height:18px;transform:none}
+.status-text strong{display:block;font-size:18px;color:var(--green);font-weight:800}
+.status-text p{margin:4px 0 0;font-size:13.5px;line-height:1.45;color:var(--muted);font-weight:500}
+.btn-outline{border:1px solid #D8E0D8;background:#fff;border-radius:999px;padding:10px 18px;font-weight:700;font-size:14px;width:100%}
+.btn-outline:hover{background:#F6F8F6}
+/* BLESSING */
+.blessing{background:linear-gradient(150deg,#0A4A2A 0%,#0C6B3C 58%,#147A45 100%);color:#fff;border-radius:18px;padding:20px;position:relative;overflow:hidden;min-height:196px;display:flex;flex-direction:column}
+.blessing h3{margin:0;font-size:24px;line-height:1;font-weight:800;letter-spacing:-.02em}
+.blessing h4{margin:4px 0 0;font-size:16px;font-weight:700}
+.blessing p{margin:10px 0 0;font-size:13.5px;line-height:1.5;color:#D6EBDD;font-weight:500;max-width:210px}
+.blessing .btn-white{margin-top:auto;align-self:flex-start;background:#fff;color:#12351F;border:0;border-radius:999px;padding:10px 16px;font-weight:800;font-size:14px;display:inline-flex;gap:8px;align-items:center;position:relative;z-index:2}
+.mosque{position:absolute;right:-6px;bottom:0;width:150px;height:130px;opacity:.95;pointer-events:none}
+/* MOBILE BAR */
+.mobile-bar{display:none}
+@media(max-width:1100px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .row2,.row3{grid-template-columns:1fr 1fr}
+  .row2 .card:first-child,.row3 .card:first-child{grid-column:1/-1}
+}
+@media(max-width:860px){
+  .app{grid-template-columns:1fr;padding:10px;gap:10px}
+  .sidebar{position:static;height:auto;display:none}
+  .sidebar.open{display:flex}
+  .mobile-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;padding:10px 14px}
+  .mobile-bar .logo{padding:0}
+  .menu-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center}
+  .main{padding:12px}
+  .topbar{border-radius:16px;flex-wrap:wrap}
+  .search{max-width:none;order:3;flex-basis:100%}
+  .head-row h1{font-size:30px}
+  .row2,.row3{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .profile-text{display:none}
+}
+@media(max-width:520px){
+  .stats{grid-template-columns:1fr}
+  .head-actions{width:100%}
+  .btn-give{flex:1;justify-content:center}
+  .mahallu-pill{flex:1;justify-content:center}
+  .act-main p{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Mobile top -->
+  <div class="mobile-bar">
+    <div class="logo" style="padding:0">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none"><path d="M24 4 L24 8" stroke="#0A4A2A" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="10" r="2" fill="#C9A86A"/><path d="M8 38 C8 24 14 18 24 12 C34 18 40 24 40 38" stroke="#0A4A2A" stroke-width="2.4" fill="#EAF6EE"/><path d="M17 38 V28 C17 24 20 22 24 22 C28 22 31 24 31 28 V38" fill="#C9A86A" opacity=".9"/><path d="M6 38 H42" stroke="#0A4A2A" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="logo-text"><strong>AMANAH</strong><span>Zakat Platform</span></div>
+    </div>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none"><path d="M24 3 V7" stroke="#0A4A2A" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="9" r="2.2" fill="#C9A86A"/><path d="M7 39 C7 24 13.5 17.5 24 11 C34.5 17.5 41 24 41 39" stroke="#0A4A2A" stroke-width="2.6" fill="#EFF8F1"/><path d="M16.5 39 V28.5 C16.5 24.2 19.8 21.5 24 21.5 C28.2 21.5 31.5 24.2 31.5 28.5 V39" fill="#D9A441"/><path d="M5 39 H43" stroke="#0A4A2A" stroke-width="2.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="logo-text"><strong>AMANAH</strong><span>Zakat Platform</span></div>
+    </div>
+
+    <div class="nav-label">Menu</div>
+    <nav class="nav" aria-label="Main">
+      <a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.6-9.3-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.3 12C19 16.4 12 21 12 21Z"/><path d="M7 12h3l1.2-2 1.6 4L14 12h3"/></svg>Give Zakat</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Request Assistance</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h13l-2.5-2.5M20 17H7l2.5 2.5"/></svg>My Transactions</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>My Applications</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>Calculator</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>Learn About Zakat</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg>Ask a Question</a>
+    </nav>
+
+    <div class="nav-label">Account</div>
+    <nav class="nav" aria-label="Account">
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5.5 8-5.5s6.5 1.5 8 5.5"/></svg>My Profile</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z"/></svg>Settings</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3A2.6 2.6 0 1 1 12 12v1.5M12 17h.01"/></svg>Help</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout</a>
+    </nav>
+
+    <div class="side-card">
+      <svg class="book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>
+      <h3>Zakat Calculator</h3>
+      <p>Easily calculate<br>your Zakat amount</p>
+      <button class="btn-calc" onclick="document.getElementById('calcFocus').scrollIntoView({behavior:'smooth',block:'center'})">Calculate Now <span>→</span></button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="searchInput" type="search" placeholder="Search anything in Amanah..." aria-label="Search anything in Amanah">
+        <span class="kbd">Ctrl K</span>
+      </label>
+      <div class="top-right">
+        <button class="bell" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0"/></svg><i></i></button>
+        <div class="profile">
+          <div class="avatar" aria-hidden="true">
+            <svg viewBox="0 0 44 44"><rect width="44" height="44" fill="#EADCC6"/><ellipse cx="22" cy="17" rx="9" ry="10" fill="#8D5A3B"/><path d="M13 15c0-6 4-10 9-10s9 4 9 10l-2 1c-1-3-3-5-7-5s-6 2-7 5z" fill="#fff"/><path d="M10 44c1-8 6-12 12-12s11 4 12 12z" fill="#1E3A2A"/><circle cx="18.5" cy="17" r="1.1" fill="#1A1A1A"/><circle cx="25.5" cy="17" r="1.1" fill="#1A1A1A"/><path d="M18 26c1.2 2.5 6.8 2.5 8 0-1 3.5-2 5-4 5s-3-1.5-4-5z" fill="#5C3A26"/></svg>
+          </div>
+          <div class="profile-text"><strong>Muhammed Parad</strong><span>Member • Kannur Mahallu</span></div>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="head-row">
+      <div><h1>Dashboard</h1><p>Your Zakat journey at a glance.</p></div>
+      <div class="head-actions">
+        <div class="mahallu-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.8-3.2 3.4-4.8 6.5-4.8s5.7 1.6 6.5 4.8M16 5.5a3.2 3.2 0 0 1 0 5.8M17.8 15.5c2 .6 3.2 2 3.7 4.5"/></svg>
+          Kannur Mahallu
+          <span class="verified"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="#0E7A3E"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified</span>
+        </div>
+        <button class="btn-give"><span style="font-size:20px;line-height:1;font-weight:400">+</span> Give Zakat</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <section class="stats" aria-label="Summary">
+      <article class="stat dark">
+        <div class="stat-top">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7" ry="3"/><path d="M5 5.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6M5 11.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+          <span class="stat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="stat-label">Total Contributed</div>
+        <div class="stat-value">₹50,000</div>
+        <div class="stat-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c.7-3 3-4.5 6-4.5s5.3 1.5 6 4.5"/></svg> 3 Contributions</div>
+      </article>
+
+      <article class="stat">
+        <div class="stat-top">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20.5s-7.5-4.9-9.5-9.3C1 7.7 3.2 4.5 6.6 4.5c2 0 3.9 1.1 5.4 3 1.5-1.9 3.4-3 5.4-3 3.4 0 5.6 3.2 4.1 6.7-2 4.4-9.5 9.3-9.5 9.3Z"/></svg>
+          <span class="stat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="stat-label">Assistance Received</div>
+        <div class="stat-value">₹15,000</div>
+        <div class="stat-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 1 Distribution</div>
+      </article>
+
+      <article class="stat">
+        <div class="stat-top">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>
+          <span class="stat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="stat-label">My Applications</div>
+        <div class="stat-value">1</div>
+        <div class="stat-sub pill-approved"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="8" r="3.2"/><path d="M4 20c.7-3 3-4.6 6-4.6 1 0 1.9.2 2.7.5M15 19l2 2 4-4"/></svg> Approved</div>
+      </article>
+
+      <article class="stat">
+        <div class="stat-top">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6L12 16.9 6.6 19.6l1-6L3.3 9.4l6-.9z"/></svg>
+          <span class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        </div>
+        <div class="stat-label">Mahallu Status</div>
+        <div class="stat-value" style="font-size:21px;padding-top:4px">Verified Member</div>
+        <div class="stat-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 21V10l8-6 8 6v11M9 21v-6h6v6"/></svg> Kannur Mahallu</div>
+      </article>
+    </section>
+
+    <!-- ROW 2 -->
+    <div class="row2">
+      <section class="card">
+        <div class="card-head"><h2>My Zakat Activity</h2><button class="select-pill">This Year <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button></div>
+        <div class="chart" role="img" aria-label="Bar chart of Zakat activity from January to June">
+          <div class="bar-wrap"><div class="bar b-jan"></div><span class="bar-label">Jan</span></div>
+          <div class="bar-wrap"><div class="bar b-feb"></div><span class="bar-label">Feb</span></div>
+          <div class="bar-wrap"><div class="bar b-mar"></div><span class="bar-label">Mar</span></div>
+          <div class="bar-wrap"><div class="bar b-apr"></div><span class="bar-label">Apr</span></div>
+          <div class="bar-wrap"><div class="bar b-may"></div><span class="bar-label">May</span></div>
+          <div class="bar-wrap"><div class="bar b-jun"></div><span class="bar-label">Jun</span></div>
+        </div>
+      </section>
+
+      <section class="card" id="calcFocus">
+        <div class="card-head"><h2><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5z"/></svg> Quick Actions</h2></div>
+        <div class="qa-list">
+          <button class="qa-item"><span class="qa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.6-9.3-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.3 12C19 16.4 12 21 12 21Z"/><path d="M3 13c2 1 4 1.2 6 .5M21 13c-2 1-4 1.2-6 .5"/></svg></span><span>Give Zakat</span><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button class="qa-item"><span class="qa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg></span><span>Request Assistance</span><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button class="qa-item"><span class="qa-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg></span><span>Calculate Zakat</span><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg> Zakat Knowledge</h2></div>
+        <div class="k-list">
+          <a class="k-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3A2.6 2.6 0 1 1 12 12v1.5M12 17h.01"/></svg><span>What is Zakat?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
+          <a class="k-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="2.5"/><path d="M6.5 19c.8-2.8 2.9-4.2 5.5-4.2s4.7 1.4 5.5 4.2"/></svg><span>Who can receive Zakat?</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
+          <a class="k-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Nisab and Hawl</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
+          <a class="k-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg><span>Asnaf Categories</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+      </section>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="row3">
+      <section class="card">
+        <div class="card-head"><h2>Recent Activity</h2><button class="view-all">View All</button></div>
+        <div class="activity">
+          <div class="act">
+            <span class="act-ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></svg></span>
+            <div class="act-main"><strong>Zakat Distributed</strong><p>Assistance of ₹15,000 received</p></div>
+            <span class="act-date">12 Nov 2026</span>
+          </div>
+          <div class="act">
+            <span class="act-ico y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7" ry="3"/><path d="M5 5.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6M5 11.5v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></span>
+            <div class="act-main"><strong>Contribution Recorded</strong><p>₹50,000 to Kannur Mahallu Committee</p></div>
+            <span class="act-date">28 Oct 2026</span>
+          </div>
+          <div class="act">
+            <span class="act-ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg></span>
+            <div class="act-main"><strong>Assistance Application</strong><p>Application approved</p></div>
+            <span class="act-date">20 Oct 2026</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Application Status</h2></div>
+        <div class="status-body">
+          <div class="gauge" aria-hidden="true">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#E2EFE5" stroke-width="11"/><circle cx="50" cy="50" r="42" fill="none" stroke="#1F9D55" stroke-width="11" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="72"/></svg>
+            <div class="gauge-center"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div>
+          </div>
+          <div class="status-text"><strong>Approved</strong><p>Your assistance application has been approved.</p></div>
+        </div>
+        <button class="btn-outline">View Application</button>
+      </section>
+
+      <section class="blessing">
+        <h3>Zakat</h3>
+        <h4>Time is a Blessing</h4>
+        <p>Fulfil your Zakat, support those in need.</p>
+        <button class="btn-white">Give Zakat <span>→</span></button>
+        <svg class="mosque" viewBox="0 0 160 130" fill="none" aria-hidden="true">
+          <ellipse cx="105" cy="118" rx="58" ry="10" fill="#0A3D22" opacity=".45"/>
+          <path d="M105 18 L105 28" stroke="#D9C98A" stroke-width="2" stroke-linecap="round"/><circle cx="105" cy="14" r="3" fill="#E8D9A0"/>
+          <path d="M62 118 C62 72 78 52 105 38 C132 52 148 72 148 118 Z" fill="#1A5C36"/>
+          <path d="M70 118 C70 78 82 60 105 48 C128 60 140 78 140 118 Z" fill="#C9D99A" opacity=".95"/>
+          <path d="M92 118 V92 C92 84 97 80 105 80 C113 80 118 84 118 92 V118 Z" fill="#0E4A2A"/>
+          <path d="M28 118 V78 L38 70 V118 M142 118 V78 L152 70 V118" fill="#174F30"/>
+          <circle cx="33" cy="66" r="4" fill="#D9C98A"/><circle cx="147" cy="66" r="4" fill="#D9C98A"/>
+        </svg>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener('keydown', function(e){
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); var s=document.getElementById('searchInput'); if(s) s.focus(); }
+});
+var menuBtn=document.getElementById('menuBtn');
+var sidebar=document.getElementById('sidebar');
+if(menuBtn && sidebar){
+  menuBtn.addEventListener('click', function(){ sidebar.classList.toggle('open'); menuBtn.textContent = sidebar.classList.contains('open') ? '✕' : '☰'; });
+}
+document.querySelectorAll('.nav a').forEach(function(a){
+  a.addEventListener('click', function(e){
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(function(x){ x.classList.remove('active'); });
+    a.classList.add('active');
+    if(window.innerWidth<=860 && sidebar) sidebar.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

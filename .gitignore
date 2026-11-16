@@ -37,3 +37,11 @@ Thumbs.db
 
 # Design files
 /design/
+
+# Agent tools & temp files
+.agents/
+.autohand/
+.taste-skill/
+skills-lock.json
+vaynex/
+frontend/src/vaynex-landing.css

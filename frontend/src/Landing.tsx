@@ -1,8 +1,8 @@
-import { ArrowUpRight, Calculator, HandHeart, Landmark, LifeBuoy, LockKeyhole, MapPin, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, Calculator, HandHeart, LifeBuoy, LockKeyhole, MapPin, ShieldCheck } from 'lucide-react'
 import { Link } from './navigation'
 
 const actions = [
-  { path: '/give', name: 'Give Zakat', description: 'Find a verified household or give through a Mahallu fund.', Icon: HandHeart },
+  { path: '/give', name: 'Give Zakat', description: 'Find a verified household and give directly.', Icon: HandHeart },
   { path: '/calculate', name: 'Calculate Zakat', description: 'Estimate your contribution using your Nisab threshold.', Icon: Calculator },
   { path: '/help', name: 'Request support', description: 'Send your request privately and follow the review.', Icon: LifeBuoy },
 ]
@@ -14,22 +14,22 @@ export function Landing({ accountPath }: { accountPath: string }) {
         <div className="wrap public-wrap hero-grid">
           <div className="hero-copy">
             <h1>Zakat for your community.</h1>
-            <p>Find verified households by locality or six-digit PIN code, give through your Mahallu, or request support privately.</p>
+            <p>Find verified households by locality or six-digit PIN code, give directly, or request support privately.</p>
             <div className="hero-actions">
               <Link className="primary-link" href="/give">Give Zakat <ArrowUpRight size={18} aria-hidden="true" /></Link>
               <Link className="action-link" href="/help">Request support</Link>
             </div>
           </div>
-          <div className="hero-product" data-visual>
-            <div className="product-window app-frame">
-              <div className="product-brand"><span className="product-mark"><Landmark size={18} aria-hidden="true" /></span>Amanah</div>
+          <div className="hero-product" aria-hidden="true">
+            <div className="product-window">
+              <div className="product-brand"><span className="product-mark">A</span><span>Amanah</span></div>
               <div className="product-content">
-                <strong className="product-title">Choose how to give</strong>
+                <span className="product-title">Community giving</span>
                 <Link className="product-option" href="/give">
                   <MapPin aria-hidden="true" size={20} /><span><strong>Find a household</strong><small>Search by locality or PIN code</small></span><ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
-                <Link className="product-option" href="/give">
-                  <Landmark aria-hidden="true" size={20} /><span><strong>Give through your Mahallu</strong><small>Track your contribution and receipt</small></span><ArrowUpRight size={16} aria-hidden="true" />
+                <Link className="product-option" href="/calculate">
+                  <Calculator aria-hidden="true" size={20} /><span><strong>Calculate Zakat</strong><small>Estimate your contribution</small></span><ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
                 <div className="product-verified"><ShieldCheck size={18} aria-hidden="true" /> Requests are reviewed before appearing in search.</div>
               </div>
@@ -37,30 +37,37 @@ export function Landing({ accountPath }: { accountPath: string }) {
           </div>
         </div>
       </section>
-      <section className="landing-overview" id="how-amanah-works">
-        <div className="wrap public-wrap workflow-content">
-          <h2>How Amanah works</h2>
-          <div className="landing-links" data-visual>
+      <section className="landing-overview">
+        <div className="wrap public-wrap">
+          <h2>Three simple paths.</h2>
+          <div className="landing-links">
             {actions.map(({ path, name, description, Icon }) => (
-              <Link key={path} href={path}><Icon aria-hidden="true" /><strong>{name}</strong><span>{description}</span><ArrowUpRight className="workflow-arrow" size={17} aria-hidden="true" /></Link>
+              <Link key={path} href={path}>
+                <Icon aria-hidden="true" size={24} />
+                <strong>{name}</strong>
+                <span>{description}</span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
       <section className="landing-privacy">
-        <div className="wrap public-wrap privacy-content">
-          <div>
-            <h2>Privacy for every household.</h2>
-            <p>Applicants share their circumstances privately for eligibility review.</p>
-            <Link className="action-link" href={accountPath}>{accountPath === '/login' ? 'Log in to Amanah' : 'Open your account'}</Link>
+        <div className="wrap public-wrap">
+          <div className="privacy-content">
+            <div>
+              <h2>Private and verified.</h2>
+              <p>Households are reviewed before requests appear in search. Direct transfers go straight to the recipient without intermediary fees.</p>
+            </div>
+            <div className="privacy-badge"><LockKeyhole size={28} aria-hidden="true" /><span>End-to-end community governance.</span></div>
           </div>
-          <dl className="privacy-access" data-visual>
-            <div><dt><LockKeyhole size={22} aria-hidden="true" /> Reviewers</dt><dd>See household details and the applicant’s explanation to assess the request.</dd></div>
-            <div><dt><ShieldCheck size={22} aria-hidden="true" /> Givers</dt><dd>See anonymous households by area, income range, and financial need.</dd></div>
-          </dl>
         </div>
       </section>
-      <footer className="public-wrap landing-footer"><Link className="wordmark" href="/">Amanah</Link><Link href={accountPath}>{accountPath === '/login' ? 'Log in' : 'My account'}</Link></footer>
+      <footer className="landing-footer">
+        <div className="wrap public-wrap">
+          <span>Amanah · Built for verified community giving</span>
+          <Link href={accountPath}>Account</Link>
+        </div>
+      </footer>
     </>
   )
 }

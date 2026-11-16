@@ -486,21 +486,59 @@ export class AuthController {
   async userDashboard(@Req() request: Request) {
     const user = await this.account(request);
     const db = this.prisma.client;
-    const [direct, committee, online, supported, onlineSupported, eligibility, mahallu] = await db.$transaction([
+    const [direct, committee, online, supported, onlineSupported, eligibility, mahallu, activity] = await db.$transaction([
       db.zakatHandover.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
       db.committeeContribution.aggregate({ where: { giverId: user.id, confirmedAt: { not: null } }, _sum: { amountPaise: true }, _count: true }),
       db.routePayment.aggregate({ where: { giverId: user.id, receivedPaise: { gt: 0 } }, _sum: { receivedPaise: true }, _count: true }),
       db.zakatHandover.groupBy({ by: ['caseId'], where: { giverId: user.id, confirmedAt: { not: null } } }),
       db.routePayment.groupBy({ by: ['caseId'], where: { giverId: user.id, receivedPaise: { gt: 0 } } }),
-      db.eligibilityCase.findUnique({ where: { applicantId: user.id }, select: { status: true } }),
+      db.eligibilityCase.findUnique({ where: { applicantId: user.id }, select: { status: true, createdAt: true, reviewedAt: true } }),
       db.user.findUnique({ where: { id: user.id }, select: { mahall: { select: { name: true } } } }),
+      db.$queryRaw<{ receivedPaise: number; receivedCount: number; monthly: { month: string; amountPaise: number }[]; recent: { kind: string; amountPaise: number; date: string }[] }[]>`
+        WITH own_case AS (
+          SELECT id FROM "EligibilityCase" WHERE "applicantId" = ${user.id}
+        ), activity AS (
+          SELECT 'giving' AS kind, "amountPaise", "confirmedAt" AS date FROM "ZakatHandover"
+            WHERE "giverId" = ${user.id} AND "confirmedAt" IS NOT NULL
+          UNION ALL SELECT 'giving', "amountPaise", "confirmedAt" FROM "CommitteeContribution"
+            WHERE "giverId" = ${user.id} AND "confirmedAt" IS NOT NULL
+          UNION ALL SELECT 'giving', "receivedPaise", "receivedAt" FROM "RoutePayment"
+            WHERE "giverId" = ${user.id} AND "receivedPaise" > 0 AND "receivedAt" IS NOT NULL
+          UNION ALL SELECT 'assistance', "amountPaise", "confirmedAt" FROM "ZakatHandover"
+            WHERE "caseId" IN (SELECT id FROM own_case) AND "confirmedAt" IS NOT NULL
+          UNION ALL SELECT 'assistance', "amountPaise", "confirmedAt" FROM "CommitteeAllocation"
+            WHERE "caseId" IN (SELECT id FROM own_case) AND "confirmedAt" IS NOT NULL
+          UNION ALL SELECT 'assistance', "receivedPaise", "receivedAt" FROM "RoutePayment"
+            WHERE "caseId" IN (SELECT id FROM own_case) AND "receivedPaise" > 0 AND "receivedAt" IS NOT NULL
+        ), months AS (
+          SELECT to_char(date + interval '330 minutes', 'YYYY-MM') AS month, SUM("amountPaise") AS "amountPaise"
+          FROM activity WHERE kind = 'giving' AND date >= now() - interval '7 months' GROUP BY 1
+        ), recent AS (
+          SELECT kind, "amountPaise", date AT TIME ZONE 'UTC' AS date FROM activity ORDER BY date DESC, kind, "amountPaise" DESC LIMIT 8
+        )
+        SELECT COALESCE(SUM("amountPaise") FILTER (WHERE kind = 'assistance'), 0)::float8 AS "receivedPaise",
+          COUNT(*) FILTER (WHERE kind = 'assistance')::int AS "receivedCount",
+          COALESCE((SELECT jsonb_agg(months ORDER BY month) FROM months), '[]'::jsonb) AS monthly,
+          COALESCE((SELECT jsonb_agg(recent ORDER BY date DESC) FROM recent), '[]'::jsonb) AS recent FROM activity
+      `,
     ]);
+    const firstActivity = activity?.[0] ?? {
+      receivedPaise: 0,
+      receivedCount: 0,
+      monthly: [],
+      recent: [],
+    };
     return {
       confirmedPaise: (direct._sum.amountPaise ?? 0) + (committee._sum.amountPaise ?? 0) + (online._sum.receivedPaise ?? 0),
       confirmedGifts: direct._count + committee._count + online._count,
       familiesSupported: new Set([...supported, ...onlineSupported].map(({ caseId }) => caseId)).size,
       eligibility: eligibility?.status ?? null,
+      eligibilityUpdatedAt: eligibility?.reviewedAt ?? eligibility?.createdAt ?? null,
       mahallName: mahallu?.mahall?.name ?? null,
+      receivedPaise: Number(firstActivity.receivedPaise ?? 0),
+      receivedCount: Number(firstActivity.receivedCount ?? 0),
+      monthly: Array.isArray(firstActivity.monthly) ? firstActivity.monthly : [],
+      recent: Array.isArray(firstActivity.recent) ? firstActivity.recent : [],
     };
   }
 
