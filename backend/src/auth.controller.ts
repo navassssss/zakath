@@ -265,6 +265,23 @@ export class AuthController {
     return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
   }
 
+  @Post('calculator')
+  calculate(@Body() input: unknown) {
+    if (!input || typeof input !== 'object') throw new BadRequestException('Enter your Zakat calculation details');
+    const { cash, metals, business, investments, debts, nisab, hawl } = input as Record<string, unknown>;
+    const limit = 100_000_000_000;
+    if (!this.isInteger(cash, 0, limit) || !this.isInteger(metals, 0, limit) ||
+        !this.isInteger(business, 0, limit) || !this.isInteger(investments, 0, limit) ||
+        !this.isInteger(debts, 0, limit) || !this.isInteger(nisab, 1, limit) ||
+        typeof hawl !== 'boolean') {
+      throw new BadRequestException('Enter valid amounts and a positive Nisab threshold');
+    }
+    const assets = cash + metals + business + investments;
+    const net = Math.max(assets - debts, 0);
+    const thresholdReached = net >= nisab;
+    return { assets, debts, net, thresholdReached, due: thresholdReached && hawl ? Math.round(net / 40) : 0 };
+  }
+
   @Get('review')
   @Header('Cache-Control', 'no-store')
   async reviewQueue(@Req() request: Request) {

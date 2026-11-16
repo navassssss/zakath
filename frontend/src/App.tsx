@@ -3,6 +3,7 @@ import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
 import { Giving } from './Giving'
+import { ZakatCalculator } from './ZakatCalculator'
 
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
@@ -200,6 +201,7 @@ export default function App() {
       )}
     </div>
     <Giving key={account?.email ?? 'guest'} token={account ? sessionStorage.getItem(sessionKey) : null} />
+    <ZakatCalculator />
     </main>
     </>
   )

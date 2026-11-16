@@ -20,6 +20,8 @@ h1 { margin-top: 0; font-size: clamp(1.8rem, 5vw, 2.5rem); }
 p { color: var(--muted); }
 label { display: block; font-weight: 600; }
 input, select, textarea { display: block; width: 100%; margin-top: .35rem; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: .65rem; background: white; color: inherit; font: inherit; }
+.checkbox { display: flex; align-items: baseline; gap: .6rem; }
+.checkbox input { width: auto; }
 button, .action-link { display: inline-block; border: 1px solid transparent; border-radius: .65rem; padding: .65rem .9rem; font: inherit; font-weight: 650; color: white; background: oklch(0.18 0 0); cursor: pointer; text-decoration: none; }
 button[type="button"], .action-link { background: white; color: inherit; border-color: var(--border); }
 button:disabled { cursor: default; opacity: .55; }
