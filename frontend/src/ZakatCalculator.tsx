@@ -44,9 +44,11 @@ export function ZakatCalculator() {
       <h2>Zakat calculator</h2>
       <p>Estimate Zakat at 2.5% for wealth that meets your chosen Nisab and Hawl criteria. Enter amounts in rupees.</p>
       <form onSubmit={(event) => void calculate(event)}>
-        {fields.map(([name, label]) => (
-          <p key={name}><label>{label}<input name={name} type="number" min={name === 'nisab' ? '.01' : '0'} max="1000000000" step=".01" required={name === 'nisab'} placeholder={name === 'nisab' ? '' : '0'} /></label></p>
-        ))}
+        <div className="calculator-fields">
+          {fields.map(([name, label]) => (
+            <label key={name}>{label}<input name={name} type="number" min={name === 'nisab' ? '.01' : '0'} max="1000000000" step=".01" required={name === 'nisab'} placeholder={name === 'nisab' ? '' : '0'} /></label>
+          ))}
+        </div>
         <p><label className="checkbox"><input name="hawl" type="checkbox" /> The applicable lunar-year holding period has passed</label></p>
         <button disabled={busy}>Calculate</button>
       </form>

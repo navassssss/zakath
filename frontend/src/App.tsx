@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Calculator, HandHeart, House, LifeBuoy, UserRound } from 'lucide-react'
 import { API_BASE_URL } from './config/api'
 import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
@@ -10,11 +11,11 @@ type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
 const pages = [
-  ['/', 'Home'],
-  ['/give', 'Give'],
-  ['/calculate', 'Calculate'],
-  ['/help', 'Get help'],
-  ['/account', 'Account'],
+  ['/', 'Home', House],
+  ['/give', 'Give', HandHeart],
+  ['/calculate', 'Calculate', Calculator],
+  ['/help', 'Get help', LifeBuoy],
+  ['/account', 'Account', UserRound],
 ] as const
 
 function Eligibility({ account }: { account: Account }) {
@@ -221,13 +222,16 @@ export default function App() {
   const authenticated = page === '/account' || page === '/help'
 
   return (
-    <>
+    <div className="app-shell">
     <header className="site-header">
       <div className="site-header-inner">
         <a className="wordmark" href="/">Amanah</a>
         <nav className="site-nav" aria-label="Main navigation">
-          {pages.map(([path, title]) => (
-            <a key={path} href={path} aria-current={page === path ? 'page' : undefined}>{title}</a>
+          {pages.map(([path, title, Icon]) => (
+            <a key={path} href={path} aria-current={page === path ? 'page' : undefined}>
+              <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
+              <span>{title}</span>
+            </a>
           ))}
         </nav>
       </div>
@@ -286,6 +290,6 @@ export default function App() {
     {page === '/calculate' && <ZakatCalculator />}
     {!pages.some(([path]) => path === page) && <h1>Page not found</h1>}
     </main>
-    </>
+    </div>
   )
 }
