@@ -24,6 +24,7 @@ function Eligibility({ account }: { account: Account }) {
   const [caseStatus, setCaseStatus] = useState<string | null | undefined>(undefined)
   const [caseError, setCaseError] = useState('')
   const [reviewNote, setReviewNote] = useState('')
+  const [applicantResponse, setApplicantResponse] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -38,6 +39,7 @@ function Eligibility({ account }: { account: Account }) {
         const result = await response.json()
         setCaseStatus(result.eligibility?.status ?? null)
         setReviewNote(result.eligibility?.additionalInformation ?? '')
+        setApplicantResponse(result.eligibility?.applicantResponse ?? '')
       } catch {
         if (!request.signal.aborted) setCaseError('Could not load your eligibility case. Reload or sign in again.')
       }
@@ -45,6 +47,28 @@ function Eligibility({ account }: { account: Account }) {
     void loadCase()
     return () => request.abort()
   }, [])
+
+  async function sendFollowUp(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const message = new FormData(event.currentTarget).get('message')
+    setSaving(true)
+    setCaseError('')
+    try {
+      const response = await fetch(new URL('/auth/eligibility/follow-up', API_BASE_URL), {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${sessionStorage.getItem(sessionKey)}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.message || 'Could not send your response')
+      setCaseStatus(result.status)
+      setApplicantResponse(result.applicantResponse)
+    } catch (error) {
+      setCaseError(error instanceof Error ? error.message : 'Could not send your response')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -105,6 +129,13 @@ function Eligibility({ account }: { account: Account }) {
       {caseStatus === undefined && !caseError && <p role="status">Loading your eligibility case…</p>}
       {caseStatus && <p role="status">Verification status: {caseStatus.toLowerCase().replaceAll('_', ' ')}</p>}
       {reviewNote && <p>{reviewNote}</p>}
+      {applicantResponse && <p><strong>Your response</strong><br />{applicantResponse}</p>}
+      {caseStatus === 'MORE_INFORMATION_REQUIRED' && (
+        <form onSubmit={(event) => void sendFollowUp(event)}>
+          <p><label>Respond to your reviewer<textarea name="message" rows={4} maxLength={2000} required /></label></p>
+          <button disabled={saving}>Send response</button>
+        </form>
+      )}
       {caseStatus === null && (
       <form onSubmit={(event) => void submit(event)}>
       <label htmlFor="mahall">Home Mahallu (optional)</label>

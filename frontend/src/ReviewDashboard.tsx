@@ -11,6 +11,7 @@ type Review = {
   monthlyIncomePaise: number
   monthlyExpensesPaise: number
   additionalInformation: string | null
+  applicantResponse: string | null
   applicant: { name: string | null; email: string; mahallId: string | null }
   reviewingMahall: { id: string; name: string } | null
 }
@@ -104,6 +105,7 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
             <p>Income {currency.format(review.monthlyIncomePaise / 100)} · Expenses {currency.format(review.monthlyExpensesPaise / 100)} per month</p>
             <p>{review.status.toLowerCase().replaceAll('_', ' ')} · {review.reviewingMahall?.name ?? 'Unaffiliated'}</p>
             {review.additionalInformation && <p>{review.additionalInformation}</p>}
+            {review.applicantResponse && <p><strong>Applicant response</strong><br />{review.applicantResponse}</p>}
             {open && (
               <form onSubmit={(event) => void save(event, '/auth/review/' + review.id + '/decision')}>
                 <p><label>Decision<select name="status" required>

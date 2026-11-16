@@ -216,9 +216,24 @@ export class AuthController {
     const user = await this.account(request);
     const eligibility = await this.prisma.client.eligibilityCase.findUnique({
       where: { applicantId: user.id },
-      select: { status: true, additionalInformation: true },
+      select: { status: true, additionalInformation: true, applicantResponse: true },
     });
     return { eligibility };
+  }
+
+  @Post('eligibility/follow-up')
+  @Header('Cache-Control', 'no-store')
+  async followUp(@Req() request: Request, @Body('message') message: unknown) {
+    const user = await this.account(request);
+    if (typeof message !== 'string' || !message.trim() || message.trim().length > 2000) {
+      throw new BadRequestException('Enter a response of up to 2,000 characters');
+    }
+    const changed = await this.prisma.client.eligibilityCase.updateMany({
+      where: { applicantId: user.id, status: 'MORE_INFORMATION_REQUIRED' },
+      data: { status: 'PENDING', applicantResponse: message.trim() },
+    });
+    if (!changed.count) throw new ConflictException('Your case is not waiting for a response');
+    return { status: 'PENDING', applicantResponse: message.trim() };
   }
 
   @Post('eligibility')
@@ -293,6 +308,7 @@ export class AuthController {
       select: {
         id: true, status: true, locality: true, postalCode: true, householdSize: true,
         monthlyIncomePaise: true, monthlyExpensesPaise: true, additionalInformation: true,
+        applicantResponse: true,
         applicant: { select: { name: true, email: true, mahallId: true } },
         reviewingMahall: { select: { id: true, name: true } },
       },

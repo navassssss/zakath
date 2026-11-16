@@ -72,6 +72,7 @@ model EligibilityCase {
   monthlyIncomePaise    Int
   monthlyExpensesPaise  Int
   additionalInformation String?
+  applicantResponse     String?
   reviewedById          String?
   reviewedBy            User?             @relation("EligibilityReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
   reviewedAt            DateTime?
