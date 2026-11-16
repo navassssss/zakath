@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { API_BASE_URL } from './config/api'
+import { EmailAccess } from './EmailAccess'
 
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null }
@@ -166,10 +167,18 @@ export default function App() {
   }, [])
 
   return (
-    <main style={{ maxWidth: '36rem', margin: '4rem auto', padding: '0 1rem', textAlign: 'left' }}>
-      <h1>Amanah</h1>
+    <>
+    <header className="site-header"><div><span aria-hidden="true">A</span>Amanah</div></header>
+    <main className="workspace">
+    <div className="panel">
+      <h1>{account ? 'Your account' : 'Welcome to Amanah'}</h1>
       {loading && <p role="status">Checking your session…</p>}
-      {!loading && !account && <a href={new URL('/auth/google', API_BASE_URL).href}>Sign in with Google</a>}
+      {!loading && !account && (
+        <>
+          <a className="action-link" href={new URL('/auth/google', API_BASE_URL).href}>Sign in with Google</a>
+          <EmailAccess sessionKey={sessionKey} />
+        </>
+      )}
       {error && <p role="alert">{error}</p>}
       {account && (
         <>
@@ -182,6 +191,8 @@ export default function App() {
           <Eligibility account={account} />
         </>
       )}
+    </div>
     </main>
+    </>
   )
 }

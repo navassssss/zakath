@@ -1,11 +1,14 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Header, Logger, Post, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 import type { Request, Response } from 'express';
 import { PrismaService } from './prisma.service.js';
 
 const stateCookie = 'amanah_google_state';
+const deriveKey = promisify(scrypt);
+const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex');
 const stateOptions = { httpOnly: true, sameSite: 'lax' as const, secure: process.env.NODE_ENV === 'production', path: '/auth/google/callback' };
 
 @Controller('auth')
@@ -88,14 +91,117 @@ export class AuthController {
         update: { name: profile.name, avatarUrl: profile.picture },
         select: { id: true },
       });
-      const token = await this.jwt.signAsync({ sub: user.id }, {
-        secret: config.secret, algorithm: 'HS256', issuer: 'amanah', audience: 'amanah-web', expiresIn: '1h',
-      });
+      const token = await this.session(user.id);
       response.redirect(config.frontend + '/#session=' + encodeURIComponent(token));
     } catch {
       this.logger.warn('Google sign-in callback failed');
       response.redirect(config.frontend + '/#auth_error=google');
     }
+  }
+
+  private session(userId: string) {
+    return this.jwt.signAsync({ sub: userId }, {
+      secret: this.config().secret, algorithm: 'HS256', issuer: 'amanah', audience: 'amanah-web', expiresIn: '1h',
+    });
+  }
+
+  @Post('email/register')
+  @Header('Cache-Control', 'no-store')
+  async registerEmail(@Body('email') address: unknown) {
+    const email = this.normalizeEmail(address);
+    const { RESEND_API_KEY, AUTH_EMAIL_FROM } = process.env;
+    if (!RESEND_API_KEY || !AUTH_EMAIL_FROM) throw new ServiceUnavailableException('Email registration is not configured');
+    const { frontend } = this.config();
+    const result = { message: 'If this address can be registered, you will receive an email with the next step.' };
+    const database = this.prisma.client;
+    if (await database.user.findUnique({ where: { email }, select: { id: true } })) return result;
+
+    const token = randomBytes(32).toString('hex');
+    const hash = tokenHash(token);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 60_000);
+    const updated = await database.pendingEmailRegistration.updateMany({
+      where: { email, createdAt: { lte: new Date(now.getTime() - 60_000) } },
+      data: { tokenHash: hash, createdAt: now, expiresAt },
+    });
+    if (!updated.count) {
+      try {
+        await database.pendingEmailRegistration.create({ data: { email, tokenHash: hash, createdAt: now, expiresAt } });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return result;
+        throw error;
+      }
+    }
+    try {
+      const delivery = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: AUTH_EMAIL_FROM, to: [email], subject: 'Verify your Amanah email',
+          text: 'Open this link within 30 minutes to set your Amanah password: ' + frontend + '/#verify_email=' + token,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!delivery.ok) throw new Error('Email delivery failed');
+    } catch {
+      await database.pendingEmailRegistration.deleteMany({ where: { email, tokenHash: hash } });
+      throw new ServiceUnavailableException('Could not send verification email. Try again later');
+    }
+    return result;
+  }
+
+  @Post('email/verify')
+  @Header('Cache-Control', 'no-store')
+  async verifyEmail(@Body('token') token: unknown, @Body('password') password: unknown) {
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) throw new BadRequestException('Invalid verification link');
+    if (typeof password !== 'string' || password.length < 12 || password.length > 128) {
+      throw new BadRequestException('Use a password with 12 to 128 characters');
+    }
+    const hash = tokenHash(token);
+    const database = this.prisma.client;
+    const pending = await database.pendingEmailRegistration.findUnique({ where: { tokenHash: hash } });
+    if (!pending || pending.expiresAt <= new Date()) throw new BadRequestException('Verification link expired or was already used');
+    const salt = randomBytes(16).toString('hex');
+    const key = await deriveKey(password, salt, 64) as Buffer;
+    try {
+      const user = await database.$transaction(async (tx) => {
+        const consumed = await tx.pendingEmailRegistration.deleteMany({
+          where: { tokenHash: hash, expiresAt: { gt: new Date() } },
+        });
+        if (!consumed.count) throw new BadRequestException('Verification link expired or was already used');
+        return tx.user.create({
+          data: { email: pending.email, passwordHash: salt + ':' + key.toString('hex') },
+          select: { id: true },
+        });
+      });
+      return { session: await this.session(user.id) };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('An account already exists for this email. Use your original sign-in method');
+      }
+      throw error;
+    }
+  }
+
+  @Post('email/login')
+  @Header('Cache-Control', 'no-store')
+  async loginEmail(@Body('email') address: unknown, @Body('password') password: unknown) {
+    const email = this.normalizeEmail(address);
+    if (typeof password !== 'string' || password.length > 128) throw new UnauthorizedException('Invalid email or password');
+    const user = await this.prisma.client.user.findUnique({
+      where: { email },
+      select: { id: true, passwordHash: true },
+    });
+    const [salt, hash] = (user?.passwordHash ?? '00000000000000000000000000000000:' + '0'.repeat(128)).split(':');
+    const key = await deriveKey(password, salt, 64) as Buffer;
+    if (!timingSafeEqual(key, Buffer.from(hash, 'hex')) || !user?.passwordHash) throw new UnauthorizedException('Invalid email or password');
+    return { session: await this.session(user.id) };
+  }
+
+  private normalizeEmail(address: unknown) {
+    const email = typeof address === 'string' ? address.trim().toLowerCase() : '';
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Enter a valid email address');
+    return email;
   }
 
   @Get('me')
