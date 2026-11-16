@@ -407,8 +407,15 @@ export default function App() {
     {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><Link href="/account">Go to your account</Link></section>}
     {page === '/give' && token && !needsOnboarding && (
       <>
+        <section className="panel">
+          <h1>Give Zakat</h1>
+          <div className="admin-shortcuts">
+            <a href="#committee-giving"><Wallet aria-hidden="true" /><strong>{account?.mahallId ? 'Give through your Mahallu' : 'Give through the Super Admin fund'}</strong></a>
+            <Link href="/calculate"><Calculator aria-hidden="true" /><strong>Calculate Zakat</strong></Link>
+          </div>
+        </section>
+        <CommitteeLedger token={token} hasHomeMahallu={Boolean(account?.mahallId)} />
         <Giving key={account?.email ?? 'guest'} token={token} />
-        {token && <CommitteeLedger token={token} />}
       </>
     )}
     {page === '/calculate' && token && !needsOnboarding && <ZakatCalculator token={token} />}

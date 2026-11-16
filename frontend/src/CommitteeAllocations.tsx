@@ -2,10 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { API_BASE_URL } from './config/api'
 
 type Applicant = { name: string | null; email: string }
-type Allocation = { id: string; amountPaise: number; confirmedAt: string | null; mahall: { name: string }; eligibility?: { applicant: Applicant } }
+type Allocation = { id: string; amountPaise: number; confirmedAt: string | null; mahall: { name: string } | null; eligibility?: { applicant: Applicant } }
 type Overview = {
-  mahalls: { id: string; name: string; availablePaise: number; distributedPaise: number }[]
-  eligible: { id: string; reviewingMahallId: string; applicant: Applicant }[]
+  mahalls: { id: string | null; name: string; availablePaise: number; distributedPaise: number }[]
+  eligible: { id: string; reviewingMahallId: string | null; applicant: Applicant }[]
   entries: Allocation[]
 }
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
@@ -65,7 +65,7 @@ export function CommitteeAllocations({ token, admin = false }: { token: string; 
     event.preventDefault()
     const form = event.currentTarget
     const data = new FormData(form)
-    if (await save(path, { caseId: data.get('caseId'), amountPaise: Math.round(Number(data.get('amount')) * 100) }, 'Funds reserved. The recipient can confirm once they receive them.')) form.reset()
+    if (await save(path, { caseId: data.get('caseId'), amountPaise: Math.round(Number(data.get('amount')) * 100), useCentralFund: data.has('useCentralFund') }, 'Funds reserved. The recipient can confirm once they receive them.')) form.reset()
   }
 
   return (
@@ -77,7 +77,7 @@ export function CommitteeAllocations({ token, admin = false }: { token: string; 
       {overview && <>
         <ul className="ledger-list">
           {overview.mahalls.map((mahall) => (
-            <li key={mahall.id}><strong>{mahall.name}</strong><div>
+            <li key={mahall.id ?? 'central'}><strong>{mahall.name}</strong><div>
               <span>{currency.format(mahall.availablePaise / 100)} available</span>
               <span>{currency.format(mahall.distributedPaise / 100)} receipt confirmed</span>
             </div></li>
@@ -91,6 +91,7 @@ export function CommitteeAllocations({ token, admin = false }: { token: string; 
             ))}
           </select></label></p>
           <p><label>Amount (₹)<input name="amount" type="number" inputMode="decimal" min=".01" max="21474836.47" step=".01" required /></label></p>
+          {overview.mahalls.some((mahall) => mahall.id === null) && <p><label className="checkbox"><input type="checkbox" name="useCentralFund" /> Use Super Admin fund</label></p>}
           <button disabled={busy || overview.eligible.length === 0}>Allocate funds</button>
         </form>
       </>}
@@ -98,7 +99,7 @@ export function CommitteeAllocations({ token, admin = false }: { token: string; 
       {!!entries?.length && <ul className="ledger-list">
         {entries.map((entry) => (
           <li key={entry.id}>
-            <div><strong>{entry.mahall.name}</strong>{entry.eligibility && <span>{entry.eligibility.applicant.name ?? entry.eligibility.applicant.email}</span>}</div>
+            <div><strong>{entry.mahall?.name ?? 'Super Admin fund'}</strong>{entry.eligibility && <span>{entry.eligibility.applicant.name ?? entry.eligibility.applicant.email}</span>}</div>
             <div><strong>{currency.format(entry.amountPaise / 100)}</strong>
               {!admin && !entry.confirmedAt
                 ? <button type="button" disabled={busy} onClick={() => void save(path + '/' + entry.id + '/confirm', {}, 'Receipt confirmed.')}>Confirm receipt</button>

@@ -105,8 +105,8 @@ model EligibilityCase {
 
 model CommitteeAllocation {
   id          String          @id @default(uuid())
-  mahallId    String
-  mahall      Mahall          @relation(fields: [mahallId], references: [id], onDelete: Restrict)
+  mahallId    String?
+  mahall      Mahall?         @relation(fields: [mahallId], references: [id], onDelete: Restrict)
   caseId      String
   eligibility EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
   amountPaise Int
@@ -135,8 +135,8 @@ model CommitteeContribution {
   id          String    @id @default(uuid())
   giverId     String
   giver       User      @relation(fields: [giverId], references: [id], onDelete: Restrict)
-  mahallId    String
-  mahall      Mahall    @relation(fields: [mahallId], references: [id], onDelete: Restrict)
+  mahallId    String?
+  mahall      Mahall?   @relation(fields: [mahallId], references: [id], onDelete: Restrict)
   amountPaise Int
   createdAt   DateTime  @default(now())
   confirmedAt DateTime?

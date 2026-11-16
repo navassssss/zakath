@@ -566,16 +566,14 @@ export class AuthController {
   @Post('contributions')
   async recordContribution(
     @Req() request: Request,
-    @Body('mahallId') mahallId: unknown,
     @Body('amountPaise') amountPaise: unknown,
   ) {
     const giver = await this.account(request);
-    if (typeof mahallId !== 'string' || !this.isInteger(amountPaise, 1, 2147483647) ||
-        !await this.prisma.client.mahall.count({ where: { id: mahallId } })) {
-      throw new BadRequestException('Select a registered Mahallu and enter a positive amount');
+    if (!this.isInteger(amountPaise, 1, 2147483647)) {
+      throw new BadRequestException('Enter a positive contribution amount');
     }
     return this.prisma.client.committeeContribution.create({
-      data: { giverId: giver.id, mahallId, amountPaise },
+      data: { giverId: giver.id, mahallId: giver.mahallId, amountPaise },
       select: { id: true, confirmedAt: true },
     });
   }
@@ -660,7 +658,7 @@ export class AuthController {
     const [mahalls, eligible, entries, collections, reserved, distributed] = await db.$transaction([
       db.mahall.findMany({ where: { id: mahallId }, orderBy: { name: 'asc' }, select: { id: true, name: true } }),
       db.eligibilityCase.findMany({
-        where: { status: 'APPROVED', reviewingMahallId: mahallId ?? { not: null }, applicantId: { not: reviewer.id } },
+        where: { status: 'APPROVED', reviewingMahallId: mahallId, applicantId: { not: reviewer.id } },
         select: { id: true, reviewingMahallId: true, applicant: { select: { name: true, email: true } } },
       }),
       db.committeeAllocation.findMany({
@@ -673,7 +671,8 @@ export class AuthController {
     ], { isolationLevel: 'RepeatableRead' });
     const totals = (rows: typeof collections) => new Map(rows.map(({ mahallId: id, _sum }) => [id, _sum.amountPaise ?? 0]));
     const collected = totals(collections), allocated = totals(reserved), paid = totals(distributed);
-    return { eligible, entries, mahalls: mahalls.map((mahall) => ({
+    const funds = reviewer.role === 'SUPER_ADMIN' ? [{ id: null, name: 'Super Admin fund' }, ...mahalls] : mahalls;
+    return { eligible, entries, mahalls: funds.map((mahall) => ({
       ...mahall,
       availablePaise: (collected.get(mahall.id) ?? 0) - (allocated.get(mahall.id) ?? 0),
       distributedPaise: paid.get(mahall.id) ?? 0,
@@ -681,7 +680,12 @@ export class AuthController {
   }
 
   @Post('committee-allocations')
-  async createAllocation(@Req() request: Request, @Body('caseId') caseId: unknown, @Body('amountPaise') amountPaise: unknown) {
+  async createAllocation(
+    @Req() request: Request,
+    @Body('caseId') caseId: unknown,
+    @Body('amountPaise') amountPaise: unknown,
+    @Body('useCentralFund') useCentralFund: unknown,
+  ) {
     const reviewer = await this.reviewer(request);
     if (typeof caseId !== 'string' || !this.isInteger(amountPaise, 1, 2147483647)) {
       throw new BadRequestException('Choose an eligible recipient and enter a positive amount');
@@ -692,14 +696,15 @@ export class AuthController {
           where: { id: caseId, status: 'APPROVED', applicantId: { not: reviewer.id } },
           select: { reviewingMahallId: true },
         });
-        const mahallId = entry?.reviewingMahallId;
-        if (!mahallId || (reviewer.role === 'MAHALL_ADMIN' && reviewer.mahallId !== mahallId)) {
+        if (!entry || (reviewer.role === 'MAHALL_ADMIN' && reviewer.mahallId !== entry.reviewingMahallId)) {
           throw new ConflictException('This recipient is unavailable for committee allocation');
         }
+        if (useCentralFund === true && reviewer.role !== 'SUPER_ADMIN') throw new ForbiddenException();
+        const mahallId = useCentralFund === true ? null : entry.reviewingMahallId;
         const collections = await db.committeeContribution.aggregate({ where: { mahallId, confirmedAt: { not: null } }, _sum: { amountPaise: true } });
         const allocations = await db.committeeAllocation.aggregate({ where: { mahallId }, _sum: { amountPaise: true } });
         if (amountPaise > (collections._sum.amountPaise ?? 0) - (allocations._sum.amountPaise ?? 0)) {
-          throw new ConflictException('This Mahallu does not have enough available funds');
+          throw new ConflictException('This fund does not have enough available funds');
         }
         return db.committeeAllocation.create({ data: { mahallId, caseId, amountPaise }, select: { id: true } });
       }, { isolationLevel: 'Serializable' });
