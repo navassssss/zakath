@@ -8,7 +8,7 @@ export function EmailAccess({ sessionKey }: { sessionKey: string }) {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    if (token) history.replaceState(null, '', location.pathname + location.search)
+    if (token) history.replaceState(null, '', '/account' + location.search)
   }, [token])
 
   async function submit(event: FormEvent<HTMLFormElement>) {

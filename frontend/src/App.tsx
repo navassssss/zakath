@@ -8,6 +8,13 @@ import { ZakatCalculator } from './ZakatCalculator'
 type Mahall = { id: string; name: string; locality: string }
 type Account = { email: string; name: string | null; mahallId: string | null; role: 'USER' | 'MAHALL_ADMIN' | 'SUPER_ADMIN' }
 const sessionKey = 'amanah-session'
+const pages = [
+  ['/', 'Home'],
+  ['/give', 'Give'],
+  ['/calculate', 'Calculate'],
+  ['/help', 'Get help'],
+  ['/account', 'Account'],
+] as const
 
 function Eligibility({ account }: { account: Account }) {
   const [mahalls, setMahalls] = useState<Mahall[]>([])
@@ -132,6 +139,12 @@ function Eligibility({ account }: { account: Account }) {
 }
 
 export default function App() {
+  const [page] = useState(() => {
+    const params = new URLSearchParams(location.hash.slice(1))
+    return ['session', 'auth_error', 'verify_email'].some((key) => params.has(key))
+      ? '/account'
+      : location.pathname.replace(/\/$/, '') || '/'
+  })
   const [account, setAccount] = useState<Account | null>(null)
   const [loading, setLoading] = useState(() =>
     new URLSearchParams(window.location.hash.slice(1)).has('session') ||
@@ -148,7 +161,7 @@ export default function App() {
     const returnedToken = params.get('session')
     if (returnedToken) sessionStorage.setItem(sessionKey, returnedToken)
     if (returnedToken || params.has('auth_error')) {
-      history.replaceState(null, '', window.location.pathname + window.location.search)
+      history.replaceState(null, '', '/account' + window.location.search)
     }
     const token = sessionStorage.getItem(sessionKey)
     if (!token) return
@@ -172,12 +185,41 @@ export default function App() {
     return () => request.abort()
   }, [])
 
+  const token = account ? sessionStorage.getItem(sessionKey) : null
+  const authenticated = page === '/account' || page === '/help'
+
   return (
     <>
-    <header className="site-header"><div><span aria-hidden="true">A</span>Amanah</div></header>
-    <main className="workspace">
-    <div className="panel">
-      <h1>{account ? 'Your account' : 'Welcome to Amanah'}</h1>
+    <header className="site-header">
+      <div className="site-header-inner">
+        <a className="wordmark" href="/">Amanah</a>
+        <nav className="site-nav" aria-label="Main navigation">
+          {pages.map(([path, title]) => (
+            <a key={path} href={path} aria-current={page === path ? 'page' : undefined}>{title}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main id="main-content" className={page === '/' ? 'landing' : 'workspace'}>
+    {page === '/' && (
+      <>
+        <section className="landing-hero">
+          <h1>Zakat,<br />made simple.</h1>
+          <p>Give to verified recipients in your community or check your eligibility through Amanah.</p>
+          <div className="hero-actions">
+            <a className="primary-link" href="/give">I want to give</a>
+            <a className="action-link" href="/help">I need help</a>
+          </div>
+        </section>
+        <div className="landing-links">
+          <a href="/calculate"><strong>Calculate Zakat</strong><span>Estimate what you owe using your Nisab threshold.</span></a>
+          <a href="/help"><strong>Check your eligibility</strong><span>Submit your details or see your verification status.</span></a>
+        </div>
+      </>
+    )}
+    {authenticated && <div className="panel account-panel">
+      <h1>{page === '/help' ? 'Get help with Zakat' : account ? 'Your account' : 'Welcome to Amanah'}</h1>
+      {page === '/help' && !account && <p>Sign in to submit your details for eligibility verification.</p>}
       {loading && <p role="status">Checking your session…</p>}
       {!loading && !account && (
         <>
@@ -194,14 +236,17 @@ export default function App() {
             setAccount(null)
             setError('')
           }}>Sign out</button>
-          {account.role === 'USER'
-            ? <Eligibility account={account} />
-            : <ReviewDashboard token={sessionStorage.getItem(sessionKey) ?? ''} superAdmin={account.role === 'SUPER_ADMIN'} />}
+          {account.role !== 'USER' && page === '/account' && (
+            <ReviewDashboard token={token ?? ''} superAdmin={account.role === 'SUPER_ADMIN'} />
+          )}
+          {page === '/help' && <Eligibility account={account} />}
+          {page === '/account' && account.role === 'USER' && <p><a href="/help">Check your eligibility</a></p>}
         </>
       )}
-    </div>
-    <Giving key={account?.email ?? 'guest'} token={account ? sessionStorage.getItem(sessionKey) : null} />
-    <ZakatCalculator />
+    </div>}
+    {page === '/give' && <Giving key={account?.email ?? 'guest'} token={token} />}
+    {page === '/calculate' && <ZakatCalculator />}
+    {!pages.some(([path]) => path === page) && <h1>Page not found</h1>}
     </main>
     </>
   )
