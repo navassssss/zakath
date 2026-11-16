@@ -250,7 +250,7 @@ export class AuthController {
     const user = await this.account(request);
     const eligibility = await this.prisma.client.eligibilityCase.findUnique({
       where: { applicantId: user.id },
-      select: { status: true, additionalInformation: true, applicantResponse: true },
+      select: { status: true, additionalInformation: true, applicantResponse: true, requestCategory: true, requestedPaise: true },
     });
     return { eligibility };
   }
@@ -277,6 +277,16 @@ export class AuthController {
     if (!body || typeof body !== 'object') throw new BadRequestException('Enter your household details');
     const fields = body as Record<string, unknown>;
     const { locality, postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise, mahallId } = fields;
+    const { requestCategory, requestReason, requestedPaise, shareIncome } = fields;
+    let requestDetails = {};
+    if (requestCategory !== undefined || requestReason !== undefined || requestedPaise !== undefined) {
+      if (typeof requestCategory !== 'string' || !['Food', 'Rent', 'Medicine', 'Education', 'Debt', 'Other'].includes(requestCategory) ||
+          typeof requestReason !== 'string' || !requestReason.trim() || requestReason.trim().length > 2000 ||
+          !this.isInteger(requestedPaise, 1, 2147483647) || typeof shareIncome !== 'boolean') {
+        throw new BadRequestException('Choose a need and enter a request amount and reason');
+      }
+      requestDetails = { requestCategory, requestReason: requestReason.trim(), requestedPaise, shareIncome };
+    }
     if (typeof locality !== 'string' || !locality.trim() || locality.trim().length > 120 ||
         typeof postalCode !== 'string' || !/^\d{6}$/.test(postalCode) ||
         !this.isInteger(householdSize, 1, 100) ||
@@ -295,7 +305,7 @@ export class AuthController {
           select: { id: true },
         }),
         this.prisma.client.eligibilityCase.create({
-          data: { applicantId: user.id, reviewingMahallId, locality: locality.trim(), postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise },
+          data: { applicantId: user.id, reviewingMahallId, locality: locality.trim(), postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise, ...requestDetails },
           select: { status: true },
         }),
       ]);
@@ -344,6 +354,7 @@ export class AuthController {
         id: true, status: true, locality: true, postalCode: true, householdSize: true,
         monthlyIncomePaise: true, monthlyExpensesPaise: true, additionalInformation: true,
         applicantResponse: true,
+        requestCategory: true, requestReason: true, requestedPaise: true,
         applicant: { select: { name: true, email: true, mahallId: true } },
         reviewingMahall: { select: { id: true, name: true } },
       },
@@ -476,7 +487,7 @@ export class AuthController {
   @Get('discovery')
   @Header('Cache-Control', 'no-store')
   async discover(@Req() request: Request, @Query('area') area: unknown) {
-    await this.account(request);
+    const giver = await this.account(request);
     if (typeof area !== 'string' || area.trim().length < 2 || area.trim().length > 120) {
       throw new BadRequestException('Enter a locality or six-digit PIN code');
     }
@@ -487,13 +498,15 @@ export class AuthController {
     const offset = 330 * 60 * 1000;
     const local = new Date(Date.now() + offset);
     const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offset);
-    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean }[]>`
-      SELECT ranked.id, ranked.locality,
+    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean; requestCategory: string | null; requestedPaise: number | null; monthlyIncomePaise: number | null }[]>`
+      SELECT ranked.id, ranked.locality, ranked."requestCategory", ranked."requestedPaise", ranked."monthlyIncomePaise",
         CASE WHEN ranked.remaining >= 500000 THEN 'High unmet need' ELSE 'Unmet need' END AS priority,
         ranked.received = 0 AS "noReceipts"
       FROM (
-        SELECT e.id, e.locality, COALESCE(receipts.amount, 0) AS received,
-          e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise" - COALESCE(receipts.amount, 0) AS remaining
+        SELECT e.id, e.locality, e."requestCategory", e."requestedPaise",
+          CASE WHEN e."shareIncome" THEN e."monthlyIncomePaise" END AS "monthlyIncomePaise",
+          COALESCE(receipts.amount, 0) AS received,
+          COALESCE(e."requestedPaise"::bigint, e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise") - COALESCE(receipts.amount, 0) AS remaining
         FROM "EligibilityCase" e
         LEFT JOIN LATERAL (
           SELECT SUM(receipt."amountPaise") AS amount FROM (
@@ -502,7 +515,7 @@ export class AuthController {
             SELECT "amountPaise" FROM "CommitteeAllocation" WHERE "caseId" = e.id AND "confirmedAt" >= ${monthStart}
           ) receipt
         ) receipts ON true
-        WHERE e.status = 'APPROVED' AND ${match}
+        WHERE e.status = 'APPROVED' AND e."applicantId" <> ${giver.id} AND ${match}
       ) ranked
       WHERE ranked.remaining > 0
       ORDER BY ranked.remaining DESC, ranked.received ASC, ranked.id

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { API_BASE_URL } from './config/api'
 
-type Recipient = { id: string; locality: string; priority: string; noReceipts: boolean }
+type Recipient = { id: string; locality: string; priority: string; noReceipts: boolean; requestCategory: string | null; requestedPaise: number | null; monthlyIncomePaise: number | null }
 type Handover = { id: string; amountPaise: number; createdAt: string; confirmedAt: string | null; incoming: boolean }
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
@@ -90,6 +90,8 @@ export function Giving({ token }: { token: string | null }) {
         <article className="review-card" key={recipient.id}>
           <h3>{recipient.locality}</h3>
           <p>{recipient.priority}{recipient.noReceipts && ' · No confirmed receipt this month'}</p>
+          {recipient.requestCategory && recipient.requestedPaise != null && <p><strong>{recipient.requestCategory}</strong> · {currency.format(recipient.requestedPaise / 100)} requested</p>}
+          {recipient.monthlyIncomePaise != null && <p>Monthly household income {currency.format(recipient.monthlyIncomePaise / 100)}</p>}
           {token && (
             <button type="button" disabled={busy} onClick={() => setSelected(recipient.id)}>Record direct handover</button>
           )}

@@ -23,7 +23,7 @@ const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
 const protectedPaths = ['/dashboard', '/onboarding', '/give', '/calculate', '/help', '/account', ...adminPaths]
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
-const intakeSteps = ['Where you live', 'Your household', 'Monthly finances']
+const intakeSteps = ['Where you live', 'Your household', 'Monthly finances', 'What help do you need?']
 const pages = [
   ['/dashboard', 'Dashboard', House],
   ['/give', 'Give', HandHeart],
@@ -122,6 +122,10 @@ function Eligibility({ account }: { account: Account }) {
           householdSize: Number(fields.get('householdSize')),
           monthlyIncomePaise: Math.round(Number(fields.get('income')) * 100),
           monthlyExpensesPaise: Math.round(Number(fields.get('expenses')) * 100),
+          requestCategory: fields.get('requestCategory'),
+          requestReason: fields.get('requestReason'),
+          requestedPaise: Math.round(Number(fields.get('requested')) * 100),
+          shareIncome: fields.has('shareIncome'),
         }),
       })
       const result = await response.json()
@@ -157,7 +161,7 @@ function Eligibility({ account }: { account: Account }) {
 
   return (
     <section aria-labelledby="eligibility-title">
-      <h2 id="eligibility-title">Zakat eligibility</h2>
+      <h2 id="eligibility-title">Request Zakat</h2>
       {caseError && <p role="alert">{caseError}</p>}
       {caseStatus === undefined && !caseError && <p role="status">Loading your eligibility case…</p>}
       {caseStatus && <p role="status">Verification status: {caseStatus.toLowerCase().replaceAll('_', ' ')}</p>}
@@ -196,14 +200,23 @@ function Eligibility({ account }: { account: Account }) {
         </div>
         <div hidden={step !== 2}>
           <p>Enter 0 if there is no income or expense to report.</p>
-          <p><label>Monthly household income (₹)<input name="income" defaultValue={profile ? profile.monthlyIncomePaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
-          <p><label>Monthly essential expenses (₹)<input name="expenses" defaultValue={profile ? profile.monthlyExpensesPaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step === 2} /></label></p>
+          <p><label>Monthly household income (₹)<input name="income" defaultValue={profile ? profile.monthlyIncomePaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step >= 2} /></label></p>
+          <p><label>Monthly essential expenses (₹)<input name="expenses" defaultValue={profile ? profile.monthlyExpensesPaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step >= 2} /></label></p>
+        </div>
+        <div hidden={step !== 3}>
+          <p><label>What is the money for?<select name="requestCategory" required={step === 3} defaultValue="">
+            <option value="">Choose a need</option>
+            {['Food', 'Rent', 'Medicine', 'Education', 'Debt', 'Other'].map((need) => <option key={need}>{need}</option>)}
+          </select></label></p>
+          <p><label>Amount requested (₹)<input name="requested" type="number" inputMode="decimal" min=".01" max="21474836.47" step=".01" required={step === 3} /></label></p>
+          <p><label>Tell your reviewer what you need<textarea name="requestReason" rows={4} maxLength={2000} required={step === 3} /></label></p>
+          <p><label className="checkbox"><input name="shareIncome" type="checkbox" /> Show my exact monthly household income to signed-in givers after approval</label></p>
         </div>
         <div className="intake-actions">
           {step > 0 && <button type="button" disabled={saving} onClick={() => changeStep(step - 1)}>Back</button>}
-          <button disabled={saving || (step === 0 && status !== 'ready')}>{step === 2 ? 'Submit for verification' : 'Continue'}</button>
+          <button disabled={saving || (step === 0 && status !== 'ready')}>{step === 3 ? 'Send request' : 'Continue'}</button>
         </div>
-        <p className="privacy-note">Only authorized reviewers can see your household details.</p>
+        <p className="privacy-note">Your explanation goes to your reviewer. If approved, givers can see the request category and amount.</p>
       </form>
       )}
     </section>

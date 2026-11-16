@@ -12,6 +12,9 @@ type Review = {
   monthlyExpensesPaise: number
   additionalInformation: string | null
   applicantResponse: string | null
+  requestCategory: string | null
+  requestReason: string | null
+  requestedPaise: number | null
   applicant: { name: string | null; email: string; mahallId: string | null }
   reviewingMahall: { id: string; name: string } | null
 }
@@ -88,6 +91,8 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
             <h3>{review.applicant.name ?? review.applicant.email}</h3>
             <p>{review.locality} · {review.postalCode} · {review.householdSize} in household</p>
             <p>Income {currency.format(review.monthlyIncomePaise / 100)} · Expenses {currency.format(review.monthlyExpensesPaise / 100)} per month</p>
+            {review.requestCategory && review.requestedPaise !== null && <p><strong>{review.requestCategory}</strong> · {currency.format(review.requestedPaise / 100)} requested</p>}
+            {review.requestReason && <p>{review.requestReason}</p>}
             <p>{review.status.toLowerCase().replaceAll('_', ' ')} · {review.reviewingMahall?.name ?? 'Unaffiliated'}</p>
             {review.additionalInformation && <p>{review.additionalInformation}</p>}
             {review.applicantResponse && <p><strong>Applicant response</strong><br />{review.applicantResponse}</p>}
