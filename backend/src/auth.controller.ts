@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, Param, Post, Query, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, NotFoundException, Param, Post, Query, Req, Res, ServiceUnavailableException, StreamableFile, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
@@ -278,6 +278,11 @@ export class AuthController {
     const fields = body as Record<string, unknown>;
     const { locality, postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise, mahallId } = fields;
     const { requestCategory, requestReason, requestedPaise, shareIncome } = fields;
+    const { verificationNotes, document } = fields;
+    const attachment = this.eligibilityDocument(document);
+    if (verificationNotes !== undefined && (typeof verificationNotes !== 'string' || !verificationNotes.trim() || verificationNotes.trim().length > 2000)) {
+      throw new BadRequestException('Describe your circumstances in up to 2,000 characters');
+    }
     let requestDetails = {};
     if (requestCategory !== undefined || requestReason !== undefined || requestedPaise !== undefined) {
       if (typeof requestCategory !== 'string' || !['Food', 'Rent', 'Medicine', 'Education', 'Debt', 'Other'].includes(requestCategory) ||
@@ -305,7 +310,12 @@ export class AuthController {
           select: { id: true },
         }),
         this.prisma.client.eligibilityCase.create({
-          data: { applicantId: user.id, reviewingMahallId, locality: locality.trim(), postalCode, householdSize, monthlyIncomePaise, monthlyExpensesPaise, ...requestDetails },
+          data: {
+            applicantId: user.id, reviewingMahallId, locality: locality.trim(), postalCode, householdSize,
+            monthlyIncomePaise, monthlyExpensesPaise, ...requestDetails,
+            ...(typeof verificationNotes === 'string' ? { requestReason: verificationNotes.trim() } : {}),
+            ...(attachment ? { verificationDocument: { create: attachment } } : {}),
+          },
           select: { status: true },
         }),
       ]);
@@ -318,6 +328,23 @@ export class AuthController {
       }
       throw error;
     }
+  }
+
+  private eligibilityDocument(value: unknown) {
+    if (value === undefined || value === null) return null;
+    if (typeof value !== 'string' || value.length > 2_796_204 || !/^[A-Za-z0-9+/]+={0,2}$/.test(value)) {
+      throw new BadRequestException('Upload a PDF, JPEG or PNG up to 2 MB');
+    }
+    const content = Buffer.from(value, 'base64');
+    if (content.length > 2_097_152 || content.toString('base64') !== value) {
+      throw new BadRequestException('Upload a PDF, JPEG or PNG up to 2 MB');
+    }
+    const prefix = content.subarray(0, 8).toString('hex');
+    const contentType = prefix.startsWith('255044462d') ? 'application/pdf'
+      : prefix.startsWith('ffd8ff') ? 'image/jpeg'
+      : prefix === '89504e470d0a1a0a' ? 'image/png' : null;
+    if (!contentType) throw new BadRequestException('Upload a PDF, JPEG or PNG');
+    return { contentType, content };
   }
 
   private isInteger(value: unknown, min: number, max: number): value is number {
@@ -355,10 +382,25 @@ export class AuthController {
         monthlyIncomePaise: true, monthlyExpensesPaise: true, additionalInformation: true,
         applicantResponse: true,
         requestCategory: true, requestReason: true, requestedPaise: true,
+        verificationDocument: { select: { caseId: true } },
         applicant: { select: { name: true, email: true, mahallId: true } },
         reviewingMahall: { select: { id: true, name: true } },
       },
     });
+  }
+
+  @Get('review/:id/document')
+  @Header('Cache-Control', 'no-store')
+  @Header('X-Content-Type-Options', 'nosniff')
+  async reviewDocument(@Req() request: Request, @Param('id') id: string) {
+    const reviewer = await this.reviewer(request);
+    const document = await this.prisma.client.eligibilityDocument.findFirst({
+      where: { caseId: id, ...(reviewer.role === 'MAHALL_ADMIN' ? { eligibility: { reviewingMahallId: reviewer.mahallId } } : {}) },
+      select: { content: true, contentType: true },
+    });
+    if (!document) throw new NotFoundException('Document not found');
+    const extension = document.contentType === 'application/pdf' ? 'pdf' : document.contentType === 'image/png' ? 'png' : 'jpg';
+    return new StreamableFile(document.content, { type: document.contentType, disposition: 'attachment; filename="eligibility-document.' + extension + '"' });
   }
 
   @Post('review/:id/assignment')
@@ -488,25 +530,28 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   async discover(@Req() request: Request, @Query('area') area: unknown) {
     const giver = await this.account(request);
-    if (typeof area !== 'string' || area.trim().length < 2 || area.trim().length > 120) {
+    if (area !== undefined && (typeof area !== 'string' || area.trim().length < 2 || area.trim().length > 120)) {
       throw new BadRequestException('Enter a locality or six-digit PIN code');
     }
-    const query = area.trim();
+    const query = typeof area === 'string' ? area.trim() : '';
     const match = /^\d{6}$/.test(query)
       ? Prisma.sql`e."postalCode" = ${query}`
-      : Prisma.sql`strpos(lower(e."locality"), lower(${query})) > 0`;
+      : query ? Prisma.sql`strpos(lower(e."locality"), lower(${query})) > 0` : Prisma.sql`true`;
     const offset = 330 * 60 * 1000;
     const local = new Date(Date.now() + offset);
     const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offset);
-    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean; requestCategory: string | null; requestedPaise: number | null; monthlyIncomePaise: number | null }[]>`
-      SELECT ranked.id, ranked.locality, ranked."requestCategory", ranked."requestedPaise", ranked."monthlyIncomePaise",
+    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean; incomeBand: string; demo: boolean }[]>`
+      SELECT ranked.id, ranked.locality, ranked.demo, ranked."incomeBand",
         CASE WHEN ranked.remaining >= 500000 THEN 'High unmet need' ELSE 'Unmet need' END AS priority,
         ranked.received = 0 AS "noReceipts"
       FROM (
-        SELECT e.id, e.locality, e."requestCategory", e."requestedPaise",
-          CASE WHEN e."shareIncome" THEN e."monthlyIncomePaise" END AS "monthlyIncomePaise",
+        SELECT e.id, e.locality, starts_with(e.id, 'demo-recipient-') AS demo,
+          CASE WHEN e."monthlyIncomePaise" = 0 THEN 'No monthly income'
+               WHEN e."monthlyIncomePaise" < 500000 THEN 'Under ₹5,000 a month'
+               WHEN e."monthlyIncomePaise" < 1000000 THEN '₹5,000–₹9,999 a month'
+               ELSE '₹10,000 or more a month' END AS "incomeBand",
           COALESCE(receipts.amount, 0) AS received,
-          COALESCE(e."requestedPaise"::bigint, e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise") - COALESCE(receipts.amount, 0) AS remaining
+          e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise" - COALESCE(receipts.amount, 0) AS remaining
         FROM "EligibilityCase" e
         LEFT JOIN LATERAL (
           SELECT SUM(receipt."amountPaise") AS amount FROM (
@@ -518,14 +563,14 @@ export class AuthController {
         WHERE e.status = 'APPROVED' AND e."applicantId" <> ${giver.id} AND ${match}
       ) ranked
       WHERE ranked.remaining > 0
-      ORDER BY ranked.remaining DESC, ranked.received ASC, ranked.id
+      ORDER BY ranked.demo, ranked.remaining DESC, ranked.received ASC, ranked.id
       LIMIT 30`;
   }
 
   @Post('handovers')
   async recordHandover(@Req() request: Request, @Body('caseId') caseId: unknown, @Body('amountPaise') amountPaise: unknown) {
     const giver = await this.account(request);
-    if (typeof caseId !== 'string' || caseId.length > 36 || !this.isInteger(amountPaise, 1, 2147483647)) {
+    if (typeof caseId !== 'string' || caseId.startsWith('demo-recipient-') || caseId.length > 36 || !this.isInteger(amountPaise, 1, 2147483647)) {
       throw new BadRequestException('Choose an eligible recipient and enter a positive amount');
     }
     const recipient = await this.prisma.client.eligibilityCase.findFirst({
@@ -658,7 +703,7 @@ export class AuthController {
     const [mahalls, eligible, entries, collections, reserved, distributed] = await db.$transaction([
       db.mahall.findMany({ where: { id: mahallId }, orderBy: { name: 'asc' }, select: { id: true, name: true } }),
       db.eligibilityCase.findMany({
-        where: { status: 'APPROVED', reviewingMahallId: mahallId, applicantId: { not: reviewer.id } },
+        where: { status: 'APPROVED', reviewingMahallId: mahallId, applicantId: { not: reviewer.id }, NOT: { id: { startsWith: 'demo-recipient-' } } },
         select: { id: true, reviewingMahallId: true, applicant: { select: { name: true, email: true } } },
       }),
       db.committeeAllocation.findMany({
@@ -687,7 +732,7 @@ export class AuthController {
     @Body('useCentralFund') useCentralFund: unknown,
   ) {
     const reviewer = await this.reviewer(request);
-    if (typeof caseId !== 'string' || !this.isInteger(amountPaise, 1, 2147483647)) {
+    if (typeof caseId !== 'string' || caseId.startsWith('demo-recipient-') || !this.isInteger(amountPaise, 1, 2147483647)) {
       throw new BadRequestException('Choose an eligible recipient and enter a positive amount');
     }
     try {

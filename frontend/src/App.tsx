@@ -24,7 +24,7 @@ const adminPaths = ['/admin/review', '/admin/collections', directoryPath]
 const protectedPaths = ['/dashboard', '/onboarding', '/give', '/calculate', '/help', '/account', ...adminPaths]
 const isDirectoryPage = (path: string) => path === directoryPath || /^\/admin\/mahallus\/[^/]+$/.test(path)
 const isAdminPage = (path: string) => adminPaths.includes(path) || isDirectoryPage(path)
-const intakeSteps = ['Where you live', 'Your household', 'Monthly finances', 'What help do you need?']
+const intakeSteps = ['Where you live', 'Your household', 'Monthly finances', 'Supporting information']
 const pages = [
   ['/dashboard', 'Dashboard', House],
   ['/give', 'Give', HandHeart],
@@ -110,6 +110,17 @@ function Eligibility({ account }: { account: Account }) {
     setSaving(true)
     setCaseError('')
     try {
+      const file = fields.get('document')
+      let document: string | undefined
+      if (file instanceof File && file.size > 0) {
+        if (file.size > 2_097_152) throw new Error('Choose a document up to 2 MB.')
+        document = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(String(reader.result).split(',')[1])
+          reader.onerror = () => reject(new Error('Could not read your document. Choose the file again.'))
+          reader.readAsDataURL(file)
+        })
+      }
       const response = await fetch(new URL('/auth/eligibility', API_BASE_URL), {
         method: 'POST',
         headers: {
@@ -123,10 +134,8 @@ function Eligibility({ account }: { account: Account }) {
           householdSize: Number(fields.get('householdSize')),
           monthlyIncomePaise: Math.round(Number(fields.get('income')) * 100),
           monthlyExpensesPaise: Math.round(Number(fields.get('expenses')) * 100),
-          requestCategory: fields.get('requestCategory'),
-          requestReason: fields.get('requestReason'),
-          requestedPaise: Math.round(Number(fields.get('requested')) * 100),
-          shareIncome: fields.has('shareIncome'),
+          verificationNotes: fields.get('verificationNotes'),
+          document,
         }),
       })
       const result = await response.json()
@@ -162,7 +171,8 @@ function Eligibility({ account }: { account: Account }) {
 
   return (
     <section aria-labelledby="eligibility-title">
-      <h2 id="eligibility-title">Request Zakat</h2>
+      <h1 id="eligibility-title">Apply for Zakat eligibility</h1>
+      {!caseStatus && <p>Share your household circumstances so an authorized reviewer can assess your eligibility.</p>}
       {caseError && <p role="alert">{caseError}</p>}
       {caseStatus === undefined && !caseError && <p role="status">Loading your eligibility case…</p>}
       {caseStatus && <p role="status">Verification status: {caseStatus.toLowerCase().replaceAll('_', ' ')}</p>}
@@ -205,19 +215,15 @@ function Eligibility({ account }: { account: Account }) {
           <p><label>Monthly essential expenses (₹)<input name="expenses" defaultValue={profile ? profile.monthlyExpensesPaise / 100 : undefined} type="number" inputMode="decimal" min="0" max="21474836.47" step="0.01" required={step >= 2} /></label></p>
         </div>
         <div hidden={step !== 3}>
-          <p><label>What is the money for?<select name="requestCategory" required={step === 3} defaultValue="">
-            <option value="">Choose a need</option>
-            {['Food', 'Rent', 'Medicine', 'Education', 'Debt', 'Other'].map((need) => <option key={need}>{need}</option>)}
-          </select></label></p>
-          <p><label>Amount requested (₹)<input name="requested" type="number" inputMode="decimal" min=".01" max="21474836.47" step=".01" required={step === 3} /></label></p>
-          <p><label>Tell your reviewer what you need<textarea name="requestReason" rows={4} maxLength={2000} required={step === 3} /></label></p>
-          <p><label className="checkbox"><input name="shareIncome" type="checkbox" /> Show my exact monthly household income to signed-in givers after approval</label></p>
+          <p><label>Tell your reviewer about your circumstances<textarea name="verificationNotes" rows={4} maxLength={2000} required={step === 3} /></label></p>
+          <p><label>Supporting document (optional)<input name="document" type="file" accept="application/pdf,image/jpeg,image/png" aria-describedby="document-hint" /></label></p>
+          <p id="document-hint" className="privacy-note">One PDF, JPEG or PNG up to 2 MB. Choose a file that helps verify your circumstances.</p>
         </div>
         <div className="intake-actions">
           {step > 0 && <button type="button" disabled={saving} onClick={() => changeStep(step - 1)}>Back</button>}
-          <button disabled={saving || (step === 0 && status !== 'ready')}>{step === 3 ? 'Send request' : 'Continue'}</button>
+          <button disabled={saving || (step === 0 && status !== 'ready')}>{step === 3 ? 'Submit for verification' : 'Continue'}</button>
         </div>
-        <p className="privacy-note">Your explanation goes to your reviewer. If approved, givers can see the request category and amount.</p>
+        <p className="privacy-note">Reviewers see your details and document. Givers only see your area and a broad financial summary after approval.</p>
       </form>
       )}
     </section>
@@ -303,7 +309,7 @@ export default function App() {
     }
   }, [account, destination, isAdmin, loading, needsOnboarding, page, requiresLogin])
 
-  const accountPage = !needsOnboarding && (page === '/account' || page === '/help')
+  const accountPage = !needsOnboarding && page === '/account'
   const publicLayout = page === '/' || page === '/login' || !account || needsOnboarding
   const canViewDirectory = account?.role === 'SUPER_ADMIN'
   const navigation = canViewDirectory ? superAdminPages : isAdmin ? adminPages : pages
@@ -346,7 +352,7 @@ export default function App() {
       )}
     </section>}
     {accountPage && account && <div className={isAdmin && page === '/account' ? 'panel' : 'panel account-panel'}>
-      <h1>{page === '/help' ? 'Get help with Zakat' : account.role === 'SUPER_ADMIN' ? 'Super admin dashboard' : account.role === 'MAHALL_ADMIN' ? 'Mahallu dashboard' : 'Your account'}</h1>
+      <h1>{account.role === 'SUPER_ADMIN' ? 'Super admin dashboard' : account.role === 'MAHALL_ADMIN' ? 'Mahallu dashboard' : 'Your account'}</h1>
       {account && (
         <>
           <p>Signed in as {account.name ?? account.email}</p>
@@ -365,7 +371,6 @@ export default function App() {
               <Link href="/admin/collections"><Wallet aria-hidden="true" /><strong>Committee collections</strong><span>Check contributions and confirm receipts.</span></Link>
             </div> : <p>A super admin needs to assign your Mahallu before you can review cases or collections.</p>
           )}
-          {page === '/help' && <Eligibility account={account} />}
           {page === '/account' && account.role === 'USER' && <p><Link href="/help">Check your eligibility</Link></p>}
         </>
       )}
@@ -379,7 +384,10 @@ export default function App() {
       navigate('/dashboard', true)
     }} />}
     {page === '/dashboard' && token && account && !needsOnboarding && <UserDashboard token={token} name={account.name} />}
-    {page === '/help' && token && !needsOnboarding && <CommitteeAllocations token={token} />}
+    {page === '/help' && token && account && !needsOnboarding && <>
+      <div className="panel"><Eligibility account={account} /></div>
+      <CommitteeAllocations token={token} />
+    </>}
     {isDirectoryPage(page) && token && canViewDirectory && <MahalluDirectory token={token} path={directoryPath} selectedId={page === directoryPath ? undefined : page.slice(directoryPath.length + 1)} />}
     {isAdminPage(page) && account && (isDirectoryPage(page) ? !canViewDirectory : !canReview) && <section className="panel"><h1>Admin access required</h1><p>This page is available to authorized admins.</p><Link href="/account">Go to your account</Link></section>}
     {page === '/give' && token && !needsOnboarding && (

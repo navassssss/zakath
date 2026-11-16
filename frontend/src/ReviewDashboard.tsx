@@ -15,6 +15,7 @@ type Review = {
   requestCategory: string | null
   requestReason: string | null
   requestedPaise: number | null
+  verificationDocument: { caseId: string } | null
   applicant: { name: string | null; email: string; mahallId: string | null }
   reviewingMahall: { id: string; name: string } | null
 }
@@ -77,6 +78,26 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
 
   const options = mahalls.map((mahall) => <option key={mahall.id} value={mahall.id}>{mahall.name} ({mahall.locality})</option>)
 
+  async function downloadDocument(id: string) {
+    setError('')
+    try {
+      const response = await fetch(new URL('/auth/review/' + encodeURIComponent(id) + '/document', API_BASE_URL), {
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      if (!response.ok) throw new Error('Could not download the supporting document.')
+      const file = await response.blob()
+      const url = URL.createObjectURL(file)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = response.headers.get('Content-Type')?.includes('pdf') ? 'eligibility-document.pdf'
+        : file.type.includes('png') ? 'eligibility-document.png' : 'eligibility-document.jpg'
+      link.click()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Could not download the supporting document.')
+    }
+  }
+
   return (
     <section aria-labelledby="review-heading" className="review-dashboard">
       <h2 id="review-heading">Eligibility review</h2>
@@ -93,6 +114,7 @@ export function ReviewDashboard({ token, superAdmin }: { token: string; superAdm
             <p>Income {currency.format(review.monthlyIncomePaise / 100)} · Expenses {currency.format(review.monthlyExpensesPaise / 100)} per month</p>
             {review.requestCategory && review.requestedPaise !== null && <p><strong>{review.requestCategory}</strong> · {currency.format(review.requestedPaise / 100)} requested</p>}
             {review.requestReason && <p>{review.requestReason}</p>}
+            {review.verificationDocument && <button type="button" onClick={() => void downloadDocument(review.id)}>Download supporting document</button>}
             <p>{review.status.toLowerCase().replaceAll('_', ' ')} · {review.reviewingMahall?.name ?? 'Unaffiliated'}</p>
             {review.additionalInformation && <p>{review.additionalInformation}</p>}
             {review.applicantResponse && <p><strong>Applicant response</strong><br />{review.applicantResponse}</p>}

@@ -51,12 +51,12 @@ export function Landing({ accountPath }: { accountPath: string }) {
         <div className="wrap public-wrap privacy-content">
           <div>
             <h2>Privacy for every household.</h2>
-            <p>Applicants choose whether to share their exact income with signed-in givers.</p>
+            <p>Applicants share their circumstances privately for eligibility review.</p>
             <Link className="action-link" href={accountPath}>{accountPath === '/login' ? 'Log in to Amanah' : 'Open your account'}</Link>
           </div>
           <dl className="privacy-access" data-visual>
             <div><dt><LockKeyhole size={22} aria-hidden="true" /> Reviewers</dt><dd>See household details and the applicant’s explanation to assess the request.</dd></div>
-            <div><dt><ShieldCheck size={22} aria-hidden="true" /> Givers</dt><dd>See approved requests by area, support category, and amount.</dd></div>
+            <div><dt><ShieldCheck size={22} aria-hidden="true" /> Givers</dt><dd>See anonymous households by area, income range, and financial need.</dd></div>
           </dl>
         </div>
       </section>

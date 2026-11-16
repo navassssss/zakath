@@ -83,6 +83,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--forest); }
 .overview-metrics div:first-child, .admin-shell .overview-metrics div:first-child { background: var(--forest); color: white; border-color: var(--forest); }
 .overview-metrics div:first-child dt { color: #e4f4ea; }
 .dashboard-row a, .directory-back { color: var(--forest); text-underline-offset: .2em; }
+.giving-search { display: flex; align-items: end; gap: .65rem; }
+.giving-search label { flex: 1; min-width: 0; }
+.giving-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .75rem; margin-block: 1.25rem; }
+.giving-household { margin: 0; }
+.giving-household h3, .giving-status { display: flex; align-items: center; gap: .4rem; }
+.giving-status { margin-bottom: .65rem; color: var(--forest); font-size: .8rem; font-weight: 700; }
+.giving-household dt { color: var(--muted); font-size: .82rem; }
+.giving-household dd { margin: 0 0 .65rem; font-weight: 650; }
 .admin-shortcuts a:hover { background: var(--mint); }
 @media (min-width: 768px) {
   .admin-shell { background: var(--surface); border-color: var(--border); }

@@ -90,6 +90,7 @@ model EligibilityCase {
   requestReason         String?
   requestedPaise        Int?
   shareIncome           Boolean           @default(false)
+  verificationDocument EligibilityDocument?
   reviewedById          String?
   reviewedBy            User?             @relation("EligibilityReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
   reviewedAt            DateTime?
@@ -101,6 +102,13 @@ model EligibilityCase {
   @@index([reviewingMahallId, status])
   @@index([postalCode, status])
   @@index([reviewedById])
+}
+
+model EligibilityDocument {
+  caseId      String          @id
+  eligibility EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  contentType String
+  content     Bytes
 }
 
 model CommitteeAllocation {

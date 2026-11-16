@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { API_BASE_URL } from './config/api'
+import { MapPin, ShieldCheck } from 'lucide-react'
 
-type Recipient = { id: string; locality: string; priority: string; noReceipts: boolean; requestCategory: string | null; requestedPaise: number | null; monthlyIncomePaise: number | null }
+type Recipient = { id: string; locality: string; priority: string; noReceipts: boolean; incomeBand: string; demo: boolean }
 type Handover = { id: string; amountPaise: number; createdAt: string; confirmedAt: string | null; incoming: boolean }
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
@@ -13,6 +14,30 @@ export function Giving({ token }: { token: string | null }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [revision, setRevision] = useState(0)
+  const [filter, setFilter] = useState({ area: '' })
+  const [searching, setSearching] = useState(true)
+  const [searchError, setSearchError] = useState('')
+
+  useEffect(() => {
+    if (!token) return
+    const controller = new AbortController()
+    async function discover() {
+      try {
+        const url = new URL('/auth/discovery', API_BASE_URL)
+        if (filter.area) url.searchParams.set('area', filter.area)
+        const response = await fetch(url, { signal: controller.signal, headers: { Authorization: 'Bearer ' + token } })
+        const results = await response.json()
+        if (!response.ok) throw new Error(results.message || 'Could not load eligible households')
+        setRecipients(results)
+      } catch (failure) {
+        if (!controller.signal.aborted) setSearchError(failure instanceof Error ? failure.message : 'Could not load eligible households')
+      } finally {
+        if (!controller.signal.aborted) setSearching(false)
+      }
+    }
+    void discover()
+    return () => controller.abort()
+  }, [token, filter, revision])
 
   useEffect(() => {
     if (!token) return
@@ -32,25 +57,12 @@ export function Giving({ token }: { token: string | null }) {
     return () => controller.abort()
   }, [token, revision])
 
-  async function search(event: FormEvent<HTMLFormElement>) {
+  function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const url = new URL('/auth/discovery', API_BASE_URL)
-    url.searchParams.set('area', String(new FormData(event.currentTarget).get('area')))
-    setBusy(true)
-    setError('')
-    setMessage('')
+    setSearching(true)
+    setSearchError('')
     setSelected('')
-    try {
-      const response = await fetch(url, { headers: { Authorization: 'Bearer ' + token } })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.message)
-      setRecipients(result)
-    } catch (failure) {
-      setRecipients(null)
-      setError(failure instanceof Error ? failure.message : 'Could not search this area')
-    } finally {
-      setBusy(false)
-    }
+    setFilter({ area: String(new FormData(event.currentTarget).get('area')).trim() })
   }
 
   async function update(path: string, body?: object) {
@@ -67,7 +79,6 @@ export function Giving({ token }: { token: string | null }) {
       if (!response.ok) throw new Error(result.message)
       setMessage(body ? 'Handover recorded. Awaiting recipient confirmation.' : 'Receipt confirmed.')
       setSelected('')
-      if (!body) setRecipients(null)
       setRevision((previous) => previous + 1)
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Could not save the handover')
@@ -78,21 +89,25 @@ export function Giving({ token }: { token: string | null }) {
 
   return (
     <section className="panel">
-      <h2>Find verified recipients</h2>
-      <form onSubmit={(event) => void search(event)}>
-        <p><label>Locality or PIN code<input name="area" minLength={2} maxLength={120} required /></label></p>
-        <button disabled={busy}>Search</button>
+      <h2>Find eligible households</h2>
+      <p>Browse anonymous profiles verified by a Mahallu or Super Admin.</p>
+      <form className="giving-search" onSubmit={search}>
+        <label>Locality or PIN code<input name="area" minLength={2} maxLength={120} placeholder="All areas" /></label>
+        <button disabled={searching}>Search</button>
       </form>
       {error && <p role="alert">{error}</p>}
       {message && <p role="status">{message}</p>}
-      {recipients?.length === 0 && <p>No verified recipients with unmet need found in this area.</p>}
-      {recipients?.map((recipient) => (
-        <article className="review-card" key={recipient.id}>
-          <h3>{recipient.locality}</h3>
-          <p>{recipient.priority}{recipient.noReceipts && ' · No confirmed receipt this month'}</p>
-          {recipient.requestCategory && recipient.requestedPaise != null && <p><strong>{recipient.requestCategory}</strong> · {currency.format(recipient.requestedPaise / 100)} requested</p>}
-          {recipient.monthlyIncomePaise != null && <p>Monthly household income {currency.format(recipient.monthlyIncomePaise / 100)}</p>}
-          {token && (
+      {searchError && <p role="alert">{searchError}</p>}
+      {searching && <p role="status">Loading households…</p>}
+      {!searching && !searchError && recipients?.length === 0 && <p>No eligible households with unmet need found. Try another area.</p>}
+      <div className="giving-grid">
+      {!searching && !searchError && recipients?.map((recipient) => (
+        <article className="review-card giving-household" key={recipient.id}>
+          <div className="giving-status"><ShieldCheck size={16} aria-hidden="true" /> {recipient.demo ? 'Demo profile' : 'Verified eligible'}</div>
+          <h3><MapPin size={18} aria-hidden="true" /> {recipient.locality}</h3>
+          <dl><dt>Monthly household income</dt><dd>{recipient.incomeBand}</dd><dt>Financial need</dt><dd>{recipient.priority}</dd></dl>
+          {recipient.noReceipts && <p>No confirmed Zakat this month.</p>}
+          {recipient.demo ? <p>Example only. Giving is disabled.</p> : token && (
             <button type="button" disabled={busy} onClick={() => setSelected(recipient.id)}>Record direct handover</button>
           )}
           {!token && <p>Sign in to record a handover.</p>}
@@ -109,6 +124,7 @@ export function Giving({ token }: { token: string | null }) {
           )}
         </article>
       ))}
+      </div>
       {token && (
         <section>
           <h2>Your handovers</h2>
