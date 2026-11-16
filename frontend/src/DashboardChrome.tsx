@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Landmark } from 'lucide-react'
 import { Link } from './navigation'
 import { navigate } from './navigate'
 
@@ -26,19 +27,13 @@ export function DashboardSidebar({
 }) {
   return (
     <aside className={open ? 'reference-sidebar open' : 'reference-sidebar'} id="sidebar">
-      <Link className="reference-logo" href={member ? '/dashboard' : '/account'} onClick={() => setOpen(false)}>
-        <div className="reference-logo-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none">
-            <path d="M24 3 V7" stroke="#0A4A2A" stroke-width="2" stroke-linecap="round" />
-            <circle cx="24" cy="9" r="2.2" fill="#C9A86A" />
-            <path d="M7 39 C7 24 13.5 17.5 24 11 C34.5 17.5 41 24 41 39" stroke="#0A4A2A" stroke-width="2.6" fill="#EFF8F1" />
-            <path d="M16.5 39 V28.5 C16.5 24.2 19.8 21.5 24 21.5 C28.2 21.5 31.5 24.2 31.5 28.5 V39" fill="#D9A441" />
-            <path d="M5 39 H43" stroke="#0A4A2A" stroke-width="2.6" stroke-linecap="round" />
-          </svg>
+      <Link className="vx-brand" href={member ? '/dashboard' : '/account'} onClick={() => setOpen(false)} style={{ padding: '4px 10px 14px' }}>
+        <div className="vx-brand-mark" aria-hidden="true" style={{ width: '2.4rem', height: '2.4rem' }}>
+          <Landmark size={20} />
         </div>
-        <div className="reference-logo-text">
-          <strong>AMANAH</strong>
-          <span>Zakat Platform</span>
+        <div className="vx-brand-text">
+          <span className="vx-brand-name">AMANAH</span>
+          <span className="vx-brand-tag">Community Zakat</span>
         </div>
       </Link>
 

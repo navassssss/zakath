@@ -1,5 +1,6 @@
 import { DashboardSidebar, DashboardTopbar } from './DashboardChrome'
 import { Landing } from './Landing'
+import { AuthPage } from './AuthPage'
 import { Link } from './navigation'
 import { navigate } from './navigate'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
@@ -9,7 +10,6 @@ import { AdminOverview } from './AdminOverview'
 import { UserDashboard } from './UserDashboard'
 import { Onboarding, type OnboardingProfile } from './Onboarding'
 import { API_BASE_URL } from './config/api'
-import { EmailAccess } from './EmailAccess'
 import { ReviewDashboard } from './ReviewDashboard'
 import { Giving } from './Giving'
 import { ZakatCalculator } from './ZakatCalculator'
@@ -283,6 +283,8 @@ export default function App() {
     ? nextPath && isAdminPage(nextPath) ? nextPath : '/account'
     : '/dashboard'
 
+  const isAuthPage = page === '/login' || page === '/register'
+
   useEffect(() => {
     if (loading) return
     if (requiresLogin) {
@@ -292,14 +294,14 @@ export default function App() {
       navigate('/onboarding', true)
     } else if (page === '/onboarding' && account && !needsOnboarding) {
       navigate(isAdmin ? '/account' : '/dashboard', true)
-    } else if (page === '/login' && account) {
+    } else if (isAuthPage && account) {
       sessionStorage.removeItem(returnKey)
       navigate(destination, true)
     }
-  }, [account, destination, isAdmin, loading, needsOnboarding, page, requiresLogin])
+  }, [account, destination, isAdmin, isAuthPage, loading, needsOnboarding, page, requiresLogin])
 
   const accountPage = !needsOnboarding && page === '/account'
-  const publicLayout = page === '/' || page === '/login' || !account || needsOnboarding
+  const publicLayout = page === '/' || isAuthPage || !account || needsOnboarding
   const canViewDirectory = account?.role === 'SUPER_ADMIN'
   const activePage = isDirectoryPage(page) ? directoryPath : page
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -317,7 +319,7 @@ export default function App() {
     <div className={publicLayout ? 'public-shell' : 'reference-app'}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     {publicLayout ? (
-      page === '/' ? null : (
+      page === '/' || isAuthPage ? null : (
         <header className="public-header">
           <div>
             <Link className="wordmark" href="/">Amanah</Link>
@@ -328,21 +330,15 @@ export default function App() {
     ) : (
       <>
         <div className="mobile-bar">
-          <div className="reference-logo" style={{ padding: 0 }}>
-            <div className="reference-logo-mark" aria-hidden="true">
-              <svg viewBox="0 0 48 48" fill="none">
-                <path d="M24 4 L24 8" stroke="#0A4A2A" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="24" cy="10" r="2" fill="#C9A86A" />
-                <path d="M8 38 C8 24 14 18 24 12 C34 18 40 24 40 38" stroke="#0A4A2A" strokeWidth="2.4" fill="#EAF6EE" />
-                <path d="M17 38 V28 C17 24 20 22 24 22 C28 22 31 24 31 28 V38" fill="#C9A86A" opacity=".9" />
-                <path d="M6 38 H42" stroke="#0A4A2A" strokeWidth="2.4" strokeLinecap="round" />
-              </svg>
+          <Link className="vx-brand" href={!isAdmin ? '/dashboard' : '/account'} style={{ padding: 0 }}>
+            <div className="vx-brand-mark" aria-hidden="true" style={{ width: '2.2rem', height: '2.2rem' }}>
+              <Building2 size={18} />
             </div>
-            <div className="reference-logo-text">
-              <strong>AMANAH</strong>
-              <span>Zakat Platform</span>
+            <div className="vx-brand-text">
+              <span className="vx-brand-name">AMANAH</span>
+              <span className="vx-brand-tag">Community Zakat</span>
             </div>
-          </div>
+          </Link>
           <button
             type="button"
             className="menu-btn"
@@ -363,7 +359,7 @@ export default function App() {
         />
       </>
     )}
-    <main id="main-content" className={page === '/' ? 'landing' : publicLayout ? 'workspace' : 'reference-main'}>
+    <main id="main-content" className={page === '/' || isAuthPage ? 'landing' : publicLayout ? 'workspace' : 'reference-main'}>
     {!publicLayout && account && (
       <DashboardTopbar
         profile={account}
@@ -373,17 +369,14 @@ export default function App() {
     )}
     {page === '/' && <Landing accountPath={account ? isAdmin ? '/account' : '/dashboard' : '/login'} />}
     {requiresLogin && <p role="status">{loading ? 'Checking your session…' : 'Opening login…'}</p>}
-    {page === '/login' && <section className="login-panel">
-      <h1>Welcome back</h1>
-      <p>{nextPath ? 'Log in to continue.' : 'Log in to Amanah.'}</p>
-      {error && <p role="alert">{error}</p>}
-      {loading ? <p role="status">Checking your session…</p> : !account && (
-        <>
-          <EmailAccess sessionKey={sessionKey} />
-          <a className="action-link google-login" href={new URL('/auth/google', API_BASE_URL).href}>Sign in with Google</a>
-        </>
-      )}
-    </section>}
+    {isAuthPage && !account && (
+      <AuthPage
+        initialMode={page === '/register' ? 'register' : 'login'}
+        sessionKey={sessionKey}
+        nextPath={nextPath}
+        initialError={error}
+      />
+    )}
     {accountPage && account && <div className={isAdmin && page === '/account' ? 'panel' : 'panel account-panel'}>
       <h1>{account.role === 'SUPER_ADMIN' ? 'Super admin dashboard' : account.role === 'MAHALL_ADMIN' ? 'Mahallu dashboard' : 'Your account'}</h1>
       {account && (
@@ -435,7 +428,7 @@ export default function App() {
       </>
     )}
     {page === '/calculate' && token && !needsOnboarding && <ZakatCalculator token={token} />}
-    {page !== '/' && page !== '/login' && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
+    {page !== '/' && !isAuthPage && !protectedPaths.includes(page) && !isDirectoryPage(page) && <h1>Page not found</h1>}
     </main>
     <KnowledgeModal
       topic={activeKnowledgeTopic}

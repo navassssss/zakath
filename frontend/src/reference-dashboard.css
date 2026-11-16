@@ -1,20 +1,20 @@
 :root {
-  --bg: #E9EDE8;
-  --panel: #FFFFFF;
-  --panel-soft: #F7F8F7;
-  --deep: #0A4A2A;
-  --deep2: #0B5D34;
-  --green: #0E7A3E;
-  --green-mid: #1F9D55;
-  --green-bright: #22A85A;
-  --light: #E6F4EA;
-  --light2: #DFF2E6;
-  --mint: #C7EACF;
-  --mint2: #A9D9B4;
-  --ink: #111814;
-  --muted: #6B7A6E;
-  --line: #E6EBE6;
-  --gold: #C9A86A;
+  --bg: #f6faf8;
+  --panel: #ffffff;
+  --panel-soft: #fbfdfc;
+  --deep: #0b2a22;
+  --deep2: #071f19;
+  --green: #0e5c48;
+  --green-mid: #2a8f72;
+  --green-bright: #38ef7d;
+  --light: #eef7f3;
+  --light2: #e4eae8;
+  --mint: #d4e7df;
+  --mint2: #2a8f72;
+  --ink: #0b2a22;
+  --muted: #5f706a;
+  --line: #e4eae8;
+  --gold: #c9a86a;
   --radius: 20px;
 }
 
@@ -28,7 +28,7 @@
   gap: 16px;
   min-height: 100vh;
   background: var(--bg);
-  font-family: "Manrope", Inter, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
@@ -38,6 +38,7 @@
 .reference-sidebar {
   background: var(--panel);
   border-radius: 24px;
+  border: 1px solid var(--line);
   padding: 22px 14px 16px;
   display: flex;
   flex-direction: column;
@@ -46,7 +47,7 @@
   height: calc(100vh - 28px);
   overflow-y: auto;
   scrollbar-width: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  box-shadow: 0 4px 20px rgba(11, 42, 34, 0.03);
   box-sizing: border-box;
 }
 .reference-sidebar::-webkit-scrollbar { display: none; }
@@ -173,34 +174,45 @@
   background: rgba(255,255,255,.06);
   pointer-events: none;
 }
+.reference-side-card {
+  margin-top: auto;
+  background: linear-gradient(145deg, #0b2a22 0%, #0d352b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 16px 14px;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(7, 31, 25, 0.18);
+  position: relative;
+  overflow: hidden;
+}
 .reference-side-card .book {
-  width: 34px;
-  height: 34px;
-  color: #D6EBDD;
+  width: 28px;
+  height: 28px;
+  color: #38ef7d;
   margin-bottom: 8px;
 }
 .reference-side-card h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -.01em;
   color: #fff;
 }
 .reference-side-card p {
   margin: 6px 0 14px;
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.45;
-  color: #D9EBDE;
+  color: #8dafa4;
   font-weight: 500;
 }
 .btn-calc {
   width: 100%;
   border: 0;
-  background: #1FA85A;
+  background: var(--green-mid);
   color: #fff;
   font-weight: 700;
-  font-size: 14px;
-  padding: 11px 14px;
+  font-size: 13.5px;
+  padding: 10px 14px;
   border-radius: 999px;
   display: flex;
   align-items: center;
@@ -208,22 +220,27 @@
   gap: 8px;
   cursor: pointer;
   text-decoration: none;
-  transition: background .15s ease;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
+  box-shadow: 0 4px 12px rgba(42, 143, 114, 0.3);
 }
 .btn-calc:hover {
-  background: #25B866;
+  background: #38ef7d;
+  color: #0b2a22;
+  transform: translateY(-2px);
 }
 
 /* MAIN AREA */
 .reference-main {
-  background: #F6F7F6;
+  background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 24px;
-  padding: 16px 20px 20px;
+  padding: 20px 24px 24px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  box-shadow: 0 4px 24px rgba(11, 42, 34, 0.03);
 }
 
 /* TOPBAR */
@@ -515,22 +532,23 @@
   color: #fff;
   border: 0;
   border-radius: 999px;
-  padding: 12px 20px;
-  font-size: 15px;
-  font-weight: 800;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 6px 16px rgba(14,122,62,.25);
+  box-shadow: 0 4px 14px rgba(14, 92, 72, 0.25);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  transition: background .15s ease, transform .15s ease;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 .btn-give:hover {
   background: var(--deep2);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(14, 92, 72, 0.35);
 }
 
 /* STATS */
@@ -542,22 +560,25 @@
 .stat {
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 18px 18px 16px;
   position: relative;
   min-height: 148px;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s cubic-bezier(0.16, 1, 0.3, 1), border-color .25s;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 16px rgba(11, 42, 34, 0.03);
 }
 .stat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.04);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(14, 92, 72, 0.09);
+  border-color: rgba(42, 143, 114, 0.35);
 }
 .stat.dark {
-  background: linear-gradient(145deg, #0A5A33, #0B6B3E);
+  background: linear-gradient(145deg, #0b2a22 0%, #0d352b 100%);
   color: #fff;
-  border-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(7, 31, 25, 0.2);
 }
 .stat-top {
   display: flex;
@@ -569,7 +590,7 @@
   height: 28px;
 }
 .stat.dark .stat-icon {
-  color: #CDEBD6;
+  color: #72e0b9;
 }
 .stat:not(.dark) .stat-icon {
   color: var(--green);
@@ -586,11 +607,15 @@
   flex-shrink: 0;
   text-decoration: none;
   cursor: pointer;
+  transition: all .2s;
+}
+.stat-arrow:hover {
+  transform: scale(1.08);
 }
 .stat.dark .stat-arrow {
-  background: #DFF2E6;
-  border-color: transparent;
-  color: var(--deep);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 .stat-arrow svg {
   width: 14px;
@@ -598,20 +623,22 @@
 }
 .stat-label {
   margin-top: 12px;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
   color: inherit;
 }
 .stat-value {
-  font-size: 28px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 27px;
   font-weight: 800;
   letter-spacing: -.03em;
   line-height: 1.1;
-  margin-top: 2px;
+  margin-top: 4px;
   color: inherit;
 }
 .stat.dark .stat-value {
-  font-size: 30px;
+  font-size: 29px;
+  color: #ffffff;
 }
 .stat-sub {
   margin-top: auto;

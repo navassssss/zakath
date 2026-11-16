@@ -96,8 +96,10 @@ export function UserDashboard({
     <>
       <div className="head-row">
         <div>
-          <h1>Dashboard</h1>
-          <p>{name ? `Welcome back, ${name.split(' ')[0]}. Your Zakat journey at a glance.` : 'Your Zakat journey at a glance.'}</p>
+          <h1>
+            Welcome back, <span className="vx-serif" style={{ color: 'var(--green)' }}>{name ? name.split(' ')[0] : 'Member'}</span>.
+          </h1>
+          <p>Your community Zakat portfolio, verified Mahallu allocations, and Shariah receipts.</p>
         </div>
         <div className="head-actions">
           <div className="mahallu-pill">
