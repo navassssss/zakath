@@ -33,6 +33,7 @@ model User {
   mahall             Mahall?           @relation(fields: [mahallId], references: [id], onDelete: Restrict)
   eligibilityCase    EligibilityCase?  @relation("EligibilityApplicant")
   eligibilityReviews EligibilityCase[] @relation("EligibilityReviewer")
+  zakatHandovers     ZakatHandover[]
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
@@ -74,8 +75,23 @@ model EligibilityCase {
   reviewedAt            DateTime?
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
+  handovers             ZakatHandover[]
 
   @@index([reviewingMahallId, status])
   @@index([postalCode, status])
   @@index([reviewedById])
+}
+
+model ZakatHandover {
+  id          String          @id @default(uuid())
+  giverId     String
+  giver       User            @relation(fields: [giverId], references: [id], onDelete: Restrict)
+  caseId      String
+  eligibility EligibilityCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  amountPaise Int
+  createdAt   DateTime        @default(now())
+  confirmedAt DateTime?
+
+  @@index([giverId, createdAt])
+  @@index([caseId, confirmedAt])
 }

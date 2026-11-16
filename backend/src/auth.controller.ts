@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, Param, Post, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Logger, Param, Post, Query, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
@@ -344,6 +344,79 @@ export class AuthController {
       throw new ForbiddenException();
     }
     return user;
+  }
+
+  @Get('discovery')
+  @Header('Cache-Control', 'no-store')
+  async discover(@Query('area') area: unknown) {
+    if (typeof area !== 'string' || area.trim().length < 2 || area.trim().length > 120) {
+      throw new BadRequestException('Enter a locality or six-digit PIN code');
+    }
+    const query = area.trim();
+    const match = /^\d{6}$/.test(query)
+      ? Prisma.sql`e."postalCode" = ${query}`
+      : Prisma.sql`strpos(lower(e."locality"), lower(${query})) > 0`;
+    const offset = 330 * 60 * 1000;
+    const local = new Date(Date.now() + offset);
+    const monthStart = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - offset);
+    return this.prisma.client.$queryRaw<{ id: string; locality: string; priority: string; noReceipts: boolean }[]>`
+      SELECT ranked.id, ranked.locality,
+        CASE WHEN ranked.remaining >= 500000 THEN 'High unmet need' ELSE 'Unmet need' END AS priority,
+        ranked.received = 0 AS "noReceipts"
+      FROM (
+        SELECT e.id, e.locality, COALESCE(receipts.amount, 0) AS received,
+          e."monthlyExpensesPaise"::bigint - e."monthlyIncomePaise" - COALESCE(receipts.amount, 0) AS remaining
+        FROM "EligibilityCase" e
+        LEFT JOIN LATERAL (
+          SELECT SUM(h."amountPaise") AS amount
+          FROM "ZakatHandover" h WHERE h."caseId" = e.id AND h."confirmedAt" >= ${monthStart}
+        ) receipts ON true
+        WHERE e.status = 'APPROVED' AND ${match}
+      ) ranked
+      WHERE ranked.remaining > 0
+      ORDER BY ranked.remaining DESC, ranked.received ASC, ranked.id
+      LIMIT 30`;
+  }
+
+  @Post('handovers')
+  async recordHandover(@Req() request: Request, @Body('caseId') caseId: unknown, @Body('amountPaise') amountPaise: unknown) {
+    const giver = await this.account(request);
+    if (typeof caseId !== 'string' || caseId.length > 36 || !this.isInteger(amountPaise, 1, 2147483647)) {
+      throw new BadRequestException('Choose an eligible recipient and enter a positive amount');
+    }
+    const recipient = await this.prisma.client.eligibilityCase.findFirst({
+      where: { id: caseId, status: 'APPROVED', applicantId: { not: giver.id } },
+      select: { id: true },
+    });
+    if (!recipient) throw new ConflictException('This recipient is unavailable for a handover');
+    return this.prisma.client.zakatHandover.create({
+      data: { caseId, giverId: giver.id, amountPaise },
+      select: { id: true, amountPaise: true, confirmedAt: true },
+    });
+  }
+
+  @Get('handovers')
+  @Header('Cache-Control', 'no-store')
+  async handovers(@Req() request: Request) {
+    const user = await this.account(request);
+    const records = await this.prisma.client.zakatHandover.findMany({
+      where: { OR: [{ giverId: user.id }, { eligibility: { applicantId: user.id } }] },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 50,
+      select: { id: true, giverId: true, amountPaise: true, createdAt: true, confirmedAt: true },
+    });
+    return records.map(({ giverId, ...record }) => ({ ...record, incoming: giverId !== user.id }));
+  }
+
+  @Post('handovers/:id/confirm')
+  async confirmHandover(@Req() request: Request, @Param('id') id: string) {
+    const recipient = await this.account(request);
+    const updated = await this.prisma.client.zakatHandover.updateMany({
+      where: { id, confirmedAt: null, eligibility: { applicantId: recipient.id } },
+      data: { confirmedAt: new Date() },
+    });
+    if (!updated.count) throw new ConflictException('This pending handover is unavailable to confirm');
+    return { updated: true };
   }
 
   @Post('mahalls/admins')
